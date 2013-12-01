@@ -1,0 +1,197 @@
+x = 5
+
+push_int 5
+pop_to_local x
+push_true
+return 1
+
+---
+
+x = 6
+x times:{ (i) i print }
+
+push_int 6
+set_local x
+open_block
+	push_local i
+	dispatch print, 0
+	return 1
+close_block
+dispatch_block times:, 1
+pop
+push_true
+return 1
+
+---
+
+class Foo
+{
+	+ woo:x
+	{
+		x print
+	}
+
+	- bar
+	{
+		Foo woo:"awesome"
+	}
+}
+
+b = Foo new
+b bar
+
+push_lobby
+push_literal :Foo
+push_nil
+push_lobby
+push_scope
+dispatch openClass:superclass:lobby:scope:, 4
+push_selector woo:
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_local x
+	dispatch print
+	return 1
+close_block
+dispatch classMethod:variables:visibility:code:, 4
+pop
+push_selector bar
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_constant Foo
+	push_literal "awesome"
+	dispatch woo:, 1
+	return 1
+close_block
+dispatch :instanceMethod:variables:visibility:code:, 4
+pop
+close_scope
+push_constant Foo
+dispatch new, 0
+set_local b
+dispatch bar
+pop
+push_true
+return 1
+
+---
+
+class Foo : Object
+{
+	<> name
+	> cost
+
+	+ woo:x
+	{
+		x print
+	}
+
+	- initWithCost:cost
+	{
+		self = super init
+		self ?
+		{
+			@cost = cost
+		}
+		self
+	}
+
+	- description
+	{
+		@name  + " "  + (@cost toString)
+	}
+
+	private
+	- bar
+	{
+		Foo woo:"awesome"
+	}
+}
+
+b = Foo alloc initWithCost:23
+b setName:"BOOM"
+b description print
+
+push_lobby
+push_literal :Foo
+push_literal :Object
+dispatch openClass:superclass:scope:, 4
+push_literal :name
+dispatch writer:, 1
+push_literal :name
+dispatch reader:, 1
+push_literal :cost
+dispatch reader:, 1
+push_selector woo:
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_local x
+	dispatch print
+	return 1
+close_block
+dispatch classMethod:variables:visibility:code:, 4
+pop
+push_selector initWithCost:
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_super
+	dispatch init, 0
+	set_self
+	pop
+	push_self
+	open_block
+		push_local cost
+		set_ivar cost
+		return 1
+	close_block
+	dispatch_block ifTrue:, 1
+	pop
+	push_self
+	return 1
+close_block
+dispatch instanceMethod:variables:visibility:code:, 4
+pop
+push_selector bar
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_constant Foo
+	push_literal "awesome"
+	dispatch woo:, 1
+	return 1
+close_block
+dispatch_block instanceMethod:variables:visibility:code:, 4
+pop
+push_selector description
+push_variables
+dispatch methodVisibility:, 0
+open_block
+	push_ivar name
+	push_literal " "
+	dispatch +
+	push_ivar cost
+	dispatch toString
+	dispatch +
+	return 1
+close_block
+dispatch classMethod:variables:visibility:code:, 4
+pop
+close_scope
+push_constant Foo
+dispatch alloc
+push_literal 23
+dispatch initWithCost:, 1
+set_local b
+push_literal "BOOM"
+dispatch setName:, 1
+pop
+push_local b
+dispatch description
+dispatch print
+pop
+push_true
+return 1

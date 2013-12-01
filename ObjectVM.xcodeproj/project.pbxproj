@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7501CBE6183DD08C00CCFF42 /* class.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBE5183DD08C00CCFF42 /* class.c */; };
+		7501CBEB183DD97600CCFF42 /* nil.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBEA183DD97600CCFF42 /* nil.c */; };
+		7541EAA118371D150082A78F /* str.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA018371D150082A78F /* str.c */; };
+		7541EAA4183727890082A78F /* object_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA3183727890082A78F /* object_table.c */; };
+		7541EAA918383C800082A78F /* assembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA818383C800082A78F /* assembler.c */; };
+		7541EAAD1839A07C0082A78F /* block.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAAC1839A07C0082A78F /* block.c */; };
 		7574404B183044D10008416B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7574404A183044D10008416B /* Cocoa.framework */; };
 		75744055183044D10008416B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75744053183044D10008416B /* InfoPlist.strings */; };
 		75744057183044D10008416B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75744056183044D10008416B /* main.m */; };
@@ -18,6 +24,15 @@
 		7574406B183044D10008416B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7574404A183044D10008416B /* Cocoa.framework */; };
 		75744073183044D10008416B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75744071183044D10008416B /* InfoPlist.strings */; };
 		75744075183044D10008416B /* ObjectVMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75744074183044D10008416B /* ObjectVMTests.m */; };
+		757440801830450B0008416B /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 7574407F1830450B0008416B /* object.c */; };
+		75744083183046E90008416B /* vm.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744082183046E90008416B /* vm.c */; };
+		75744088183048F50008416B /* stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744087183048F50008416B /* stack.c */; };
+		75A88B4E183F0B40007B7D7A /* true_false.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B4D183F0B40007B7D7A /* true_false.c */; };
+		75A88B511841EC52007B7D7A /* primitive_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B501841EC52007B7D7A /* primitive_table.c */; };
+		75A88B541842BF53007B7D7A /* integer.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B531842BF53007B7D7A /* integer.c */; };
+		75A88B5A18431CD3007B7D7A /* tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B5918431CD3007B7D7A /* tokenizer.c */; };
+		75A88B6118434127007B7D7A /* input_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B6018434127007B7D7A /* input_stream.c */; };
+		75A88B661847DC14007B7D7A /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B651847DC14007B7D7A /* parser.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +46,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7501CBE4183DD02200CCFF42 /* class.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = class.h; sourceTree = "<group>"; };
+		7501CBE5183DD08C00CCFF42 /* class.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = class.c; sourceTree = "<group>"; };
+		7501CBE7183DD8DA00CCFF42 /* nil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nil.h; sourceTree = "<group>"; };
+		7501CBEA183DD97600CCFF42 /* nil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nil.c; sourceTree = "<group>"; };
+		7541EA9F18371C750082A78F /* str.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = str.h; sourceTree = "<group>"; };
+		7541EAA018371D150082A78F /* str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = str.c; sourceTree = "<group>"; };
+		7541EAA2183726950082A78F /* object_table.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object_table.h; sourceTree = "<group>"; };
+		7541EAA3183727890082A78F /* object_table.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object_table.c; sourceTree = "<group>"; };
+		7541EAA618383AFC0082A78F /* assembler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = assembler.h; sourceTree = "<group>"; };
+		7541EAA718383B3D0082A78F /* instruction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = instruction.h; sourceTree = "<group>"; };
+		7541EAA818383C800082A78F /* assembler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = assembler.c; sourceTree = "<group>"; };
+		7541EAAB1839A0430082A78F /* block.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
+		7541EAAC1839A07C0082A78F /* block.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = block.c; sourceTree = "<group>"; };
 		75744047183044D10008416B /* ObjectVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectVM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7574404A183044D10008416B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		7574404D183044D10008416B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -50,6 +78,26 @@
 		75744070183044D10008416B /* ObjectVMTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ObjectVMTests-Info.plist"; sourceTree = "<group>"; };
 		75744072183044D10008416B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75744074183044D10008416B /* ObjectVMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectVMTests.m; sourceTree = "<group>"; };
+		7574407E183045020008416B /* object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object.h; sourceTree = "<group>"; };
+		7574407F1830450B0008416B /* object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object.c; sourceTree = "<group>"; };
+		75744081183046E10008416B /* vm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm.h; sourceTree = "<group>"; };
+		75744082183046E90008416B /* vm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vm.c; sourceTree = "<group>"; };
+		75744086183048F50008416B /* stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stack.h; sourceTree = "<group>"; };
+		75744087183048F50008416B /* stack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stack.c; sourceTree = "<group>"; };
+		75A88B4C183F0A7A007B7D7A /* true_false.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = true_false.h; sourceTree = "<group>"; };
+		75A88B4D183F0B40007B7D7A /* true_false.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = true_false.c; sourceTree = "<group>"; };
+		75A88B4F1841EBD0007B7D7A /* primitive_table.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = primitive_table.h; sourceTree = "<group>"; };
+		75A88B501841EC52007B7D7A /* primitive_table.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = primitive_table.c; sourceTree = "<group>"; };
+		75A88B521842BE21007B7D7A /* integer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = integer.h; sourceTree = "<group>"; };
+		75A88B531842BF53007B7D7A /* integer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = integer.c; sourceTree = "<group>"; };
+		75A88B5818431AAE007B7D7A /* tokenizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tokenizer.h; sourceTree = "<group>"; };
+		75A88B5918431CD3007B7D7A /* tokenizer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tokenizer.c; sourceTree = "<group>"; };
+		75A88B5B18431CFE007B7D7A /* token.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = token.h; sourceTree = "<group>"; };
+		75A88B5F1843405A007B7D7A /* input_stream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input_stream.h; sourceTree = "<group>"; };
+		75A88B6018434127007B7D7A /* input_stream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = input_stream.c; sourceTree = "<group>"; };
+		75A88B6318472E4D007B7D7A /* ast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast.h; sourceTree = "<group>"; };
+		75A88B641847D824007B7D7A /* parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = parser.h; sourceTree = "<group>"; };
+		75A88B651847DC14007B7D7A /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +163,7 @@
 		75744050183044D10008416B /* ObjectVM */ = {
 			isa = PBXGroup;
 			children = (
+				75744084183048D60008416B /* VM */,
 				7574405C183044D10008416B /* OVMAppDelegate.h */,
 				7574405D183044D10008416B /* OVMAppDelegate.m */,
 				7574405F183044D10008416B /* MainMenu.xib */,
@@ -152,6 +201,70 @@
 				75744071183044D10008416B /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		75744084183048D60008416B /* VM */ = {
+			isa = PBXGroup;
+			children = (
+				75A88B5718431AA5007B7D7A /* lexer */,
+				75A88B5618431A64007B7D7A /* parser */,
+				75A88B5518431A59007B7D7A /* vm */,
+			);
+			name = VM;
+			sourceTree = "<group>";
+		};
+		75A88B5518431A59007B7D7A /* vm */ = {
+			isa = PBXGroup;
+			children = (
+				7574407E183045020008416B /* object.h */,
+				7574407F1830450B0008416B /* object.c */,
+				75744081183046E10008416B /* vm.h */,
+				75744082183046E90008416B /* vm.c */,
+				75744086183048F50008416B /* stack.h */,
+				75744087183048F50008416B /* stack.c */,
+				7541EA9F18371C750082A78F /* str.h */,
+				7541EAA018371D150082A78F /* str.c */,
+				7541EAA2183726950082A78F /* object_table.h */,
+				7541EAA3183727890082A78F /* object_table.c */,
+				7541EAA618383AFC0082A78F /* assembler.h */,
+				7541EAA818383C800082A78F /* assembler.c */,
+				7541EAA718383B3D0082A78F /* instruction.h */,
+				7541EAAB1839A0430082A78F /* block.h */,
+				7541EAAC1839A07C0082A78F /* block.c */,
+				7501CBE4183DD02200CCFF42 /* class.h */,
+				7501CBE5183DD08C00CCFF42 /* class.c */,
+				7501CBE7183DD8DA00CCFF42 /* nil.h */,
+				7501CBEA183DD97600CCFF42 /* nil.c */,
+				75A88B4C183F0A7A007B7D7A /* true_false.h */,
+				75A88B4D183F0B40007B7D7A /* true_false.c */,
+				75A88B4F1841EBD0007B7D7A /* primitive_table.h */,
+				75A88B501841EC52007B7D7A /* primitive_table.c */,
+				75A88B521842BE21007B7D7A /* integer.h */,
+				75A88B531842BF53007B7D7A /* integer.c */,
+			);
+			name = vm;
+			sourceTree = "<group>";
+		};
+		75A88B5618431A64007B7D7A /* parser */ = {
+			isa = PBXGroup;
+			children = (
+				75A88B6318472E4D007B7D7A /* ast.h */,
+				75A88B641847D824007B7D7A /* parser.h */,
+				75A88B651847DC14007B7D7A /* parser.c */,
+			);
+			name = parser;
+			sourceTree = "<group>";
+		};
+		75A88B5718431AA5007B7D7A /* lexer */ = {
+			isa = PBXGroup;
+			children = (
+				75A88B5818431AAE007B7D7A /* tokenizer.h */,
+				75A88B5918431CD3007B7D7A /* tokenizer.c */,
+				75A88B5B18431CFE007B7D7A /* token.h */,
+				75A88B5F1843405A007B7D7A /* input_stream.h */,
+				75A88B6018434127007B7D7A /* input_stream.c */,
+			);
+			name = lexer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,8 +366,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75A88B661847DC14007B7D7A /* parser.c in Sources */,
+				7501CBEB183DD97600CCFF42 /* nil.c in Sources */,
+				7501CBE6183DD08C00CCFF42 /* class.c in Sources */,
+				75744088183048F50008416B /* stack.c in Sources */,
+				75744083183046E90008416B /* vm.c in Sources */,
+				75A88B541842BF53007B7D7A /* integer.c in Sources */,
+				7541EAA918383C800082A78F /* assembler.c in Sources */,
+				75A88B5A18431CD3007B7D7A /* tokenizer.c in Sources */,
+				757440801830450B0008416B /* object.c in Sources */,
+				7541EAAD1839A07C0082A78F /* block.c in Sources */,
+				7541EAA118371D150082A78F /* str.c in Sources */,
+				75A88B6118434127007B7D7A /* input_stream.c in Sources */,
 				75744057183044D10008416B /* main.m in Sources */,
 				7574405E183044D10008416B /* OVMAppDelegate.m in Sources */,
+				7541EAA4183727890082A78F /* object_table.c in Sources */,
+				75A88B511841EC52007B7D7A /* primitive_table.c in Sources */,
+				75A88B4E183F0B40007B7D7A /* true_false.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +593,7 @@
 				7574407A183044D10008416B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7574407B183044D10008416B /* Build configuration list for PBXNativeTarget "ObjectVMTests" */ = {
 			isa = XCConfigurationList;
@@ -473,6 +602,7 @@
 				7574407D183044D10008416B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
