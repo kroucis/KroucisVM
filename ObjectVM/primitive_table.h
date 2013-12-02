@@ -20,3 +20,4 @@ void primitive_table_dealloc(primitive_table*, struct clockwork_vm*);
 void primitive_table_set(primitive_table*, struct clockwork_vm*, char*, struct object*);
 struct object* primitive_table_get(primitive_table*, struct clockwork_vm*, char*);
 void primitive_table_purge(primitive_table*, struct clockwork_vm*);
+void primitive_table_print(primitive_table* table, struct clockwork_vm* vm);

@@ -100,12 +100,18 @@ void object_table_set(object_table* table, clockwork_vm* vm, str* key, object* v
         }
         else if (next == NULL)
         {
-            last->next = entry;
+            if (last)
+            {
+                last->next = entry;
+            }
         }
         else
         {
             entry->next = next;
-            last->next = entry;
+            if (last)
+            {
+                last->next = entry;
+            }
         }
 
         table->count++;
@@ -143,10 +149,13 @@ void object_table_remove(object_table* table, clockwork_vm* vm, str* key)
 		entry = entry->next;
 	}
 
-    if (entry == NULL || entry->key == NULL || str_compare(key, vm, entry->key) == 0 )
+    if (entry != NULL && entry->key != NULL && str_compare(key, vm, entry->key) == 0)
     {
 		object_release(entry->value, vm);
-        previous->next = entry->next;
+        if (previous)
+        {
+            previous->next = entry->next;
+        }
         vm_free(vm, entry);
         table->count--;
 	}

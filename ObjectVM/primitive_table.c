@@ -10,8 +10,10 @@
 
 #include "object.h"
 #include "vm.h"
+#include "class.h"
 
 #include <string.h>
+#include <stdio.h>
 
 struct primitive_table_entry
 {
@@ -98,12 +100,18 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
         }
         else if (next == NULL)
         {
-            last->next = entry;
+            if (last)
+            {
+                last->next = entry;
+            }
         }
         else
         {
             entry->next = next;
-            last->next = entry;
+            if (last)
+            {
+                last->next = entry;
+            }
         }
 
         m_table->count++;
@@ -141,9 +149,14 @@ void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
                 struct primitive_table_entry* entry = table->entries[i];
                 while (entry)
                 {
-                    struct primitive_table_entry* old = entry;
+//                    struct primitive_table_entry* old = entry;
+//                    vm_free(vm, entry->value);
+//                    entry = entry->next;
+//                    vm_free(vm, old);
+
                     vm_push(vm, entry->value);
-                    vm_dispatch(vm, "dealloc", 0);
+                    vm_dispatch(vm, "release", 0);
+                    struct primitive_table_entry* old = entry;
                     entry = entry->next;
                     vm_free(vm, old);
                 }
@@ -151,4 +164,21 @@ void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
             }
         }
     }
+}
+
+void primitive_table_print(primitive_table* table, clockwork_vm* vm)
+{
+    printf("{");
+    if (table->count > 0)
+    {
+        printf("\n");
+        for (int i = 0; i < table->capacity; i++)
+        {
+            if (table->entries[i] != NULL)
+            {
+                printf("\t%s => %s\n", table->entries[i]->key, class_name(object_getClass(table->entries[i]->value, vm), vm));
+            }
+        }
+    }
+    printf("}\n");
 }

@@ -29,29 +29,11 @@ struct class
     char* name;
 };
 
-static void class_dealloc_native(object* klass, clockwork_vm* vm)
-{
-    class* klazz = (class*)klass;
-    if (klazz->instanceMethods)
-    {
-        primitive_table_dealloc(klazz->instanceMethods, vm);
-    }
-
-    if (klazz->classMethods)
-    {
-        primitive_table_dealloc(klazz->classMethods, vm);
-    }
-
-    vm_free(vm, klazz->name);
-
-    vm_free(vm, klazz);
-}
-
 class* class_init(clockwork_vm* vm, char* name, char* superclass)
 {
     class* klass = vm_allocate(vm, sizeof(class));
 
-    if (superclass)
+    if (superclass && strlen(superclass) > 0)
     {
         object* sup = vm_getConstant(vm, superclass);
         klass->super = sup;
@@ -60,8 +42,6 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
     klass->isa = klass;
     klass->name = vm_allocate(vm, strlen(name));
     strcpy(klass->name, name);
-
-    class_addClassMethod(klass, vm, "dealloc", block_init_native(vm, NULL, &class_dealloc_native));
 
     return klass;
 }

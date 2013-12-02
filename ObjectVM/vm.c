@@ -51,12 +51,11 @@ struct clockwork_vm
 
 clockwork_vm* vm_init(void)
 {
-    clockwork_vm* vm = (clockwork_vm*)malloc(sizeof(clockwork_vm));
+    clockwork_vm* vm = (clockwork_vm*)calloc(1, sizeof(clockwork_vm));
 //    vm->allocatedMemory = 0;
     vm->stack = stack_init();
     vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
-    vm->pc = 0;
 
 //    vm->memoryPage = malloc(kVMMemorySize);
 
@@ -101,8 +100,9 @@ void vm_dealloc(clockwork_vm* vm)
         object_dealloc(o, vm);
 	}
     stack_dealloc(vm->stack);
-    primitive_table_dealloc(vm->locals, vm);
-    primitive_table_dealloc(vm->constants, vm);
+#warning LEAK?
+//    primitive_table_dealloc(vm->locals, vm);
+//    primitive_table_dealloc(vm->constants, vm);
     free(vm);
 }
 
@@ -271,7 +271,7 @@ void vm_pushSelf(clockwork_vm* vm)
 
 void vm_pushSuper(clockwork_vm* vm)
 {
-#warning IMPLEMENT!
+    stack_push(vm->stack, object_super(vm->currentSelf, vm));
 }
 
 #pragma mark - CONSTANT ACCESS
@@ -319,6 +319,32 @@ void vm_openClass(clockwork_vm* vm, char* newName, char* superName)
 
 #pragma mark - DISPATCH
 
+void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, uint8_t arg_count)
+{
+    block* m = object_findMethod(target, vm, "forwardMessage:withArguments:");
+    if (m == NULL)
+    {
+#warning THROW EXCEPTION
+        return;
+    }
+
+#warning PACKAGE args INTO ARRAY
+    str* messageStr = str_init(vm, message);
+    object* argsArray = vm->nilObject;     // REPLACE WITH arg ARRAY OBJECT
+
+    local_scope* locals = block_locals(m, vm);
+    if (local_scope_count(locals, vm) != 2)
+    {
+        printf("MISSING ARGUMENTS!");
+        return;
+    }
+    vm->currentSelf = target;
+    primitive_table_purge(vm->locals, vm);
+    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 0), (object*)messageStr);
+    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 1), argsArray);
+    assembler_run_block(m, vm);
+}
+
 void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
 {
     object* args[arg_count];
@@ -330,8 +356,7 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     block* m = object_findMethod(target, vm, selector);
     if (m == NULL)
     {
-        printf("CANNOT FIND METHOD %s!", selector);
-#warning THROW EXCEPTION
+        vm_forward(vm, target, selector, args, arg_count);
         return;
     }
     local_scope* locals = block_locals(m, vm);
@@ -341,7 +366,6 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
         return;
     }
     vm->currentSelf = target;
-    primitive_table_purge(vm->locals, vm);
     for (int i = 0; i < arg_count; i++)
 	{
         primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, i), args[i]);

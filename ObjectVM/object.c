@@ -44,15 +44,21 @@ static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
     vm_push(vm, klass);
 }
 
-static void object_init_native(object* klass, clockwork_vm* vm)
+static void object_init_native(object* instance, clockwork_vm* vm)
 {
-    object* obj = vm_allocate(vm, sizeof(object));
-    obj->isa = (class*)klass;
-    obj->retainCount = 1;
-    obj->ivars = NULL;
-    obj->super = NULL;
+    if (instance->super)
+    {
+        vm_pushSuper(vm);
+        vm_dispatch(vm, "init", 0);
+        vm_pop(vm);
+        vm_push(vm, instance);
+    }
+    else
+    {
+        instance->retainCount = 1;
 
-    vm_push(vm, obj);
+        vm_push(vm, instance);
+    }
 }
 
 static void object_dealloc_native(object* obj, clockwork_vm* vm)
@@ -97,10 +103,89 @@ static void object_isFalse_native(object* klass, clockwork_vm* vm)
     vm_pushFalse(vm);
 }
 
+static void object_description_native(object* instance, clockwork_vm* vm)
+{
+#warning IMPLEMENT FULLY?
+    vm_makeStringCstr(vm, class_name(instance->isa, vm));
+}
+
 static void object_forwardMessage_withArguments_native(object*klass, clockwork_vm* vm)
 {
 #warning THROW EXCEPTION
     signal(SIGKILL, NULL);
+}
+
+static void class_alloc_native(object* klass, clockwork_vm* vm)
+{
+    object* super = NULL;
+    if (klass->super)
+    {
+        vm_pushSuper(vm);
+        vm_dispatch(vm, "alloc", 0);
+        super = vm_pop(vm);
+    }
+    else
+    {
+        object* obj = object_init(vm);
+        vm_push(vm, obj);
+        return;
+    }
+    object* allocd = object_create_super(vm, super, (class*)klass, object_size());
+    vm_push(vm, allocd);
+}
+
+static void class_dealloc_native(object* klass, clockwork_vm* vm)
+{
+//    class* klazz = (class*)klass;
+//    if (klazz->instanceMethods)
+//    {
+//        primitive_table_dealloc(klazz->instanceMethods, vm);
+//    }
+//
+//    if (klazz->classMethods)
+//    {
+//        primitive_table_dealloc(klazz->classMethods, vm);
+//    }
+//
+//    vm_free(vm, klazz->name);
+//
+//    vm_free(vm, klazz);
+}
+
+static void class_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
+{
+    str* message = (str*)vm_getLocal(vm, "message");
+    object* argsArray = vm_getLocal(vm, "args");
+    char* msgBytes = str_raw_bytes(message, vm);
+    if (strncmp(msgBytes, "new", 3) != 0)
+    {
+        if (klass->super)
+        {
+            vm_pushSuper(vm);
+            vm_push(vm, (object*)message);
+            vm_push(vm, argsArray);
+            vm_dispatch(vm, "forwardMessage:withArguments:", 2);
+        }
+        else
+        {
+#warning THROW EXCEPTION
+            signal(SIGKILL, NULL);
+        }
+    }
+    else
+    {
+        int len = str_length(message, vm);
+        char initMessage[len + 1];
+        initMessage[0] = 'i'; initMessage[1] = 'n'; initMessage[2] = 'i'; initMessage[3] = 't';
+        if (len > 3)
+        {
+            strcpy(initMessage + 4, msgBytes + 3);
+
+#warning ITERATE OVER argsArray AND PUSH EACH VALUE ONTO THE STACK.
+        }
+
+        //        object_create_super(<#struct clockwork_vm *#>, <#object *#>, <#struct class *#>, <#unsigned long#>)
+    }
 }
 
 static void object_respondsToSelector_native(object* instance, clockwork_vm* vm)
@@ -129,6 +214,21 @@ class* object_class(clockwork_vm* vm)
     {
         block* initMethodNative = block_init_native(vm, NULL, &object_init_native);
         class_addInstanceMethod(objectClass, vm, "init", initMethodNative);
+    }
+
+    {
+        local_scope* fmwa_ls = local_scope_init(vm);
+        local_scope_addLocal(fmwa_ls, vm, "message");
+        local_scope_addLocal(fmwa_ls, vm, "args");
+        class_addClassMethod(objectClass, vm, "forwardMessage:withArguments:", block_init_native(vm, fmwa_ls, &class_forwardMessage_withArguments_native));
+    }
+
+    {
+        class_addClassMethod(objectClass, vm, "alloc", block_init_native(vm, NULL, &class_alloc_native));
+    }
+
+    {
+        class_addClassMethod(objectClass, vm, "dealloc", block_init_native(vm, NULL, &class_dealloc_native));
     }
 
     {
@@ -193,12 +293,17 @@ class* object_class(clockwork_vm* vm)
     }
 
     {
+        block* descriptionMethod = block_init_native(vm, NULL, &object_description_native);
+        class_addClassMethod(objectClass, vm, "description", descriptionMethod);
+        class_addInstanceMethod(objectClass, vm, "description", descriptionMethod);
+    }
+
+    {
         local_scope* fm_ls = local_scope_init(vm);
         local_scope_addLocal(fm_ls, vm, "message");
         local_scope_addLocal(fm_ls, vm, "args");
         block* forwardMessageMethod = block_init_native(vm, fm_ls, &object_forwardMessage_withArguments_native);
         class_addInstanceMethod(objectClass, vm, "forwardMessage:withArguments:", forwardMessageMethod);
-        class_addClassMethod(objectClass, vm, "forwardMessage:withArguments:", forwardMessageMethod);
     }
 
 #warning -isKindOfClass:
@@ -244,6 +349,11 @@ object* object_create_super(struct clockwork_vm* vm, object* sup, struct class* 
     obj->isa = klass;
     obj->super = sup;
     return obj;
+}
+
+uint32_t object_size(void)
+{
+    return sizeof(object);
 }
 
 void object_dealloc(object* instance, clockwork_vm* vm)
@@ -292,14 +402,22 @@ object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 
 object* object_retain(object* instance, clockwork_vm* vm)
 {
-    instance->retainCount++;
+    object* sup = instance;
+    while (sup->super) {
+        sup = sup->super;
+    }
+    sup->retainCount++;
 
     return instance;
 }
 
 void object_release(object* instance, clockwork_vm* vm)
 {
-    instance->retainCount--;
+    object* sup = instance;
+    while (sup->super) {
+        sup = sup->super;
+    }
+    sup->retainCount--;
 
     if (instance->retainCount == 0)
     {
@@ -362,15 +480,25 @@ block* object_findMethod(object* instance, clockwork_vm* vm, char* selector)
 {
     if (instance != (object*)instance->isa)
     {
-        return class_findClassMethod((class *)instance, vm, selector);
+        return object_findInstanceMethod(instance, vm, selector);
     }
     else
     {
-        return object_findInstanceMethod(instance, vm, selector);
+        return class_findClassMethod((class *)instance, vm, selector);
     }
 }
 
-void object_setSuper(object* instance, struct clockwork_vm* vm, object* sup)
+void object_setSuper(object* instance, clockwork_vm* vm, object* sup)
 {
     instance->super = sup;
+}
+
+object* object_super(object* instance, clockwork_vm* vm)
+{
+    return instance->super;
+}
+
+class* object_getClass(object* instance, clockwork_vm* vm)
+{
+    return instance->isa;
 }

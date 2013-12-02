@@ -115,7 +115,7 @@ static token tokenizer_find_next(tokenizer* tizer)
     token tok;
     char* buffer = tizer->tokenData;
     tok.data = buffer;
-    char c;
+    char c = '\0';
     while (!input_stream_at_end(tizer->input, 0) && (c = input_stream_consume(tizer->input)) && (isspace(c) || c == '#'))
     {
         if (c == '#') {

@@ -28,9 +28,9 @@ struct str
     char* data;
 };
 
-static void string_init_native(object* klass, clockwork_vm* vm)
+static void string_alloc_native(object* klass, clockwork_vm* vm)
 {
-
+    vm_push(vm, (object*)str_init(vm, NULL));
 }
 
 static void string_length_native(object* instance, clockwork_vm* vm)
@@ -42,7 +42,15 @@ static void string_length_native(object* instance, clockwork_vm* vm)
 
 static void string_dealloc_native(object* instance, clockwork_vm* vm)
 {
-    str_dealloc((str*)instance, vm);
+    str* string = (str*)instance;
+    if (str_length(string, vm) > 0)
+    {
+        vm_free(vm, string->data);
+    }
+    vm_pushSuper(vm);
+    vm_dispatch(vm, "dealloc", 0);
+    vm_free(vm, string);
+    vm_pop(vm);
     vm_pushNil(vm);
 }
 
@@ -50,8 +58,8 @@ struct class* string_class(clockwork_vm* vm)
 {
     class* stringClass = class_init(vm, "String", "Object");
 
+    class_addClassMethod(stringClass, vm, "alloc", block_init_native(vm, NULL, &string_alloc_native));
     class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, NULL, &string_length_native));
-
     class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, NULL, &string_dealloc_native));
 
     return stringClass;
@@ -59,7 +67,8 @@ struct class* string_class(clockwork_vm* vm)
 
 str* str_init(clockwork_vm* vm, const char* const data)
 {
-    return str_init_len(vm, data, (uint32_t)strlen(data));
+    uint32_t len = data ? (uint32_t)strlen(data) : 0;
+    return str_init_len(vm, data, len);
 }
 
 str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)

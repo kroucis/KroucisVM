@@ -38,6 +38,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     [self testCreateString];
     [self testPrints];
     [self testOpenClass];
+    [self testAddInstanceMethod];
     [self testAddClassMethod];
     [self testIntAdd];
     [self testInputStream];
@@ -61,6 +62,34 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     add_node->op = BinaryOperatorAdd;
     add_node->left_operand = (ast_node*)six_node;
     add_node->right_operand = (ast_node*)two_point_seven_node;
+
+    free(add_node);
+    free(two_point_seven_node);
+    free(six_node);
+}
+
+- (void) testAddInstanceMethod
+{
+    clockwork_vm* vm = vm_init();
+
+    vm_openClass(vm, "Foo", "Object");
+
+    block* blk = block_init_native(vm, NULL, &test_class_method);
+    vm_push(vm, (object*)blk);
+
+    vm_makeStringCstr(vm, "bar");
+
+    vm_dispatch(vm, "addInstanceMethod:withImpl:", 2);
+
+    vm_dispatch(vm, "alloc", 0);
+    vm_dispatch(vm, "init", 0);
+
+    vm_dispatch(vm, "bar", 0);
+
+    object* tru = vm_pop(vm);
+    assert(object_isTrue(tru, vm));
+    
+    vm_dealloc(vm);
 }
 
 - (void) testAddClassMethod
@@ -98,6 +127,19 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     assert(classObj);
     assert(classObj == newClass);
 
+    vm_push(vm, vm_getConstant(vm, "Foo"));
+    vm_dispatch(vm, "alloc", 0);
+    vm_dispatch(vm, "init", 0);
+
+    object* obj = vm_pop(vm);
+
+    assert(obj);
+    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Foo")));
+    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
+
+    vm_push(vm, obj);
+    vm_dispatch(vm, "release", 0);
+
     vm_dealloc(vm);
 }
 
@@ -109,35 +151,39 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     assembler_run_instruction(&inst, vm);
 
     vm_popPrintln(vm);
+
+    vm_push(vm, vm_getConstant(vm, "Object"));
+    vm_dispatch(vm, "description", 0);
+    vm_popPrintln(vm);
     
     vm_dealloc(vm);
 }
 
 - (void) testTokenizer
 {
-    char* input = "# xthis is a comment\nFoo bar { (x)\n\twoot:x + 6\n }";
-    input_stream* inputStream = input_stream_init_cstr(input, strlen(input));
-
-    tokenizer* t = tokenizer_init(inputStream);
-
-    token tok = tokenizer_next(t);
-
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    tok = tokenizer_consume(t);
-    assert(tok.type == T_END);
-
-    tokenizer_dealloc(t);
+//    char* input = "# xthis is a comment\nFoo bar { (x)\n\twoot:x + 6\n }";
+//    input_stream* inputStream = input_stream_init_cstr(input, strlen(input));
+//
+//    tokenizer* t = tokenizer_init(inputStream);
+//
+//    token tok = tokenizer_next(t);
+//
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    tok = tokenizer_consume(t);
+//    assert(tok.type == T_END);
+//
+//    tokenizer_dealloc(t);
 }
 
 - (void) testInputStream
@@ -226,19 +272,35 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 - (void) testCreateString
 {
+//    clockwork_vm* vm = vm_init();
+//
+//    instruction inst = (instruction){ .op = VM_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
+//    assembler_run_instruction(&inst, vm);
+//
+//    object* obj = vm_pop(vm);
+//
+//    assert(obj);
+//    assert(object_isKindOfClass_native((object*)obj, (class*)vm_getConstant(vm, "String")));
+//
+//    str* s = (str*)obj;
+//
+//    assert(strcmp(str_raw_bytes(s, vm), "Foobar") == 0);
+//
+//    vm_dealloc(vm);
+
     clockwork_vm* vm = vm_init();
+    vm_pushConst(vm, "String");
 
-    instruction inst = (instruction){ .op = VM_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
-    assembler_run_instruction(&inst, vm);
+    vm_dispatch(vm, "alloc", 0);
+    vm_dispatch(vm, "init", 0);
 
-    object* obj = vm_pop(vm);
+    str* s = (str*)vm_pop(vm);
 
-    assert(obj);
-    assert(object_isKindOfClass_native((object*)obj, (class*)vm_getConstant(vm, "String")));
+    assert(s);
+    assert(object_isKindOfClass_native((object*)s, (class*)vm_getConstant(vm, "String")));
 
-    str* s = (str*)obj;
-
-    assert(strcmp(str_raw_bytes(s, vm), "Foobar") == 0);
+    vm_push(vm, (object*)s);
+    vm_dispatch(vm, "release", 0);
 
     vm_dealloc(vm);
 }
@@ -266,6 +328,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     clockwork_vm* vm = vm_init();
     vm_pushConst(vm, "Object");
 
+    vm_dispatch(vm, "alloc", 0);
     vm_dispatch(vm, "init", 0);
 
     object* obj = vm_pop(vm);
@@ -281,6 +344,9 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     assert(hashVal);
     assert(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
     assert(integer_toInt64((integer*)hashVal, vm) == (int64_t)obj);
+
+    vm_push(vm, obj);
+    vm_dispatch(vm, "release", 0);
 
     vm_dealloc(vm);
 }
