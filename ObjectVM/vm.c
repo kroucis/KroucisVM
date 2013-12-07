@@ -23,7 +23,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//static uint64_t kVMMemorySize = sizeof(char) * INT32_MAX;
+static void dealloc_primitive_table_contents(clockwork_vm* vm, char* key, object* value)
+{
+    vm_push(vm, value);
+    vm_dispatch(vm, "dealloc", 0);
+    vm_pop(vm);
+}
 
 struct clockwork_vm
 {
@@ -100,9 +105,13 @@ void vm_dealloc(clockwork_vm* vm)
         object_dealloc(o, vm);
 	}
     stack_dealloc(vm->stack);
-#warning LEAK?
-//    primitive_table_dealloc(vm->locals, vm);
-//    primitive_table_dealloc(vm->constants, vm);
+#warning FIX THIS: NEED TO FREE ALL ALLOCATED MEMORY (CLASSES, LOCALS, AND ALL OBJECT GRAPHS)
+
+//    primitive_table_each(vm->locals, vm, dealloc_primitive_table_contents);
+//    primitive_table_dealloc(vm->locals, vm, No);
+//
+//    primitive_table_each(vm->constants, vm, dealloc_primitive_table_contents);
+//    primitive_table_dealloc(vm->constants, vm, No);
     free(vm);
 }
 
@@ -134,8 +143,13 @@ object* vm_currentSelf(clockwork_vm* vm)
 
 void* vm_allocate(clockwork_vm* vm, uint64_t bytes)
 {
-//    vm->allocatedMemory += bytes;
-    return calloc(1, bytes);
+    void* value = calloc(1, bytes);
+    if (!value)
+    {
+        printf("calloc FAILED TO RETURN VIABLE MEMORY!");
+    }
+
+    return value;
 }
 
 void vm_free(clockwork_vm* vm, void* memory)
@@ -335,11 +349,10 @@ void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, 
     local_scope* locals = block_locals(m, vm);
     if (local_scope_count(locals, vm) != 2)
     {
-        printf("MISSING ARGUMENTS!");
+        printf("Incorrect argument count to forward message %s!\n", message);
         return;
     }
     vm->currentSelf = target;
-    primitive_table_purge(vm->locals, vm);
     primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 0), (object*)messageStr);
     primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 1), argsArray);
     assembler_run_block(m, vm);
@@ -347,6 +360,12 @@ void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, 
 
 void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
 {
+    if (stack_count(vm->stack) < arg_count + 1)
+    {
+        printf("Not enough objects on the stack to satisfy target and %d arguments for selector %s!\n", arg_count, selector);
+        return;
+    }
+
     object* args[arg_count];
     for (int i = 0; i < arg_count; i++)
 	{
@@ -362,7 +381,7 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     local_scope* locals = block_locals(m, vm);
     if (local_scope_count(locals, vm) != arg_count)
     {
-        printf("MISSING ARGUMENTS!");
+        printf("Missing arguments for selector %s!\n", selector);
         return;
     }
     vm->currentSelf = target;

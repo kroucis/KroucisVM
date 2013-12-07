@@ -68,6 +68,8 @@ void vm_openClass(clockwork_vm*, char*, char*);
 //void vm_openClassWithMixins(clockwork_vm*, char*, char*, char**, uint8_t);
 
 // BLOCKS
+void vm_openBlock(clockwork_vm*);
+void vm_closeBlock(clockwork_vm*);
 
 // DISPATCH
 void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count);

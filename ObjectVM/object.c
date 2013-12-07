@@ -44,6 +44,16 @@ static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
     vm_push(vm, klass);
 }
 
+static void class_release_native(object* klass, clockwork_vm* vm)
+{
+    vm_pushNil(vm);
+}
+
+static void class_retain_native(object* klass, clockwork_vm* vm)
+{
+    vm_pushSelf(vm);
+}
+
 static void object_init_native(object* instance, clockwork_vm* vm)
 {
     if (instance->super)
@@ -67,7 +77,7 @@ static void object_dealloc_native(object* obj, clockwork_vm* vm)
     printf("Deallocating instance 0x%lld\n", (uint64_t)obj);
     if (obj->ivars)
     {
-        primitive_table_dealloc(obj->ivars, vm);
+        primitive_table_dealloc(obj->ivars, vm, Yes);
     }
     vm_free(vm, obj);
 
@@ -136,7 +146,9 @@ static void class_alloc_native(object* klass, clockwork_vm* vm)
 
 static void class_dealloc_native(object* klass, clockwork_vm* vm)
 {
-//    class* klazz = (class*)klass;
+    class* klazz = (class*)klass;
+    printf("Deallocating class %s (0x%lld)\n", class_name(klazz, vm), (uint64_t)klass);
+#warning FIX THIS: DEALLOCATE INSTANCE METHODS AND SUCH
 //    if (klazz->instanceMethods)
 //    {
 //        primitive_table_dealloc(klazz->instanceMethods, vm);
@@ -146,10 +158,12 @@ static void class_dealloc_native(object* klass, clockwork_vm* vm)
 //    {
 //        primitive_table_dealloc(klazz->classMethods, vm);
 //    }
-//
-//    vm_free(vm, klazz->name);
-//
-//    vm_free(vm, klazz);
+
+    vm_free(vm, class_name(klazz, vm));
+
+    vm_free(vm, klazz);
+
+    vm_pushNil(vm);
 }
 
 static void class_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
@@ -174,17 +188,23 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
     }
     else
     {
+        vm_pushSelf(vm);
+
         int len = str_length(message, vm);
-        char initMessage[len + 1];
+        int argCount = 0;
+        char initMessage[len + 2];
         initMessage[0] = 'i'; initMessage[1] = 'n'; initMessage[2] = 'i'; initMessage[3] = 't';
         if (len > 3)
         {
             strcpy(initMessage + 4, msgBytes + 3);
-
+#warning SET ARG COUNT TO argsArray count
 #warning ITERATE OVER argsArray AND PUSH EACH VALUE ONTO THE STACK.
         }
 
-        //        object_create_super(<#struct clockwork_vm *#>, <#object *#>, <#struct class *#>, <#unsigned long#>)
+        initMessage[len + 1] = '\0';
+
+        vm_dispatch(vm, "alloc", 0);
+        vm_dispatch(vm, initMessage, argCount);
     }
 }
 
@@ -229,6 +249,11 @@ class* object_class(clockwork_vm* vm)
 
     {
         class_addClassMethod(objectClass, vm, "dealloc", block_init_native(vm, NULL, &class_dealloc_native));
+    }
+
+    {
+        class_addClassMethod(objectClass, vm, "retain", block_init_native(vm, NULL, &class_retain_native));
+        class_addClassMethod(objectClass, vm, "release", block_init_native(vm, NULL, &class_release_native));
     }
 
     {
@@ -361,7 +386,7 @@ void object_dealloc(object* instance, clockwork_vm* vm)
     printf("Deallocating instance 0x%lld\n", (uint64_t)instance);
     if (instance->ivars)
     {
-        primitive_table_dealloc(instance->ivars, vm);
+        primitive_table_dealloc(instance->ivars, vm, Yes);
     }
     vm_free(vm, instance);
 }

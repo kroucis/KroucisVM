@@ -64,9 +64,13 @@ primitive_table* primitive_table_init(clockwork_vm* vm, uint32_t capacity)
     return table;
 }
 
-void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm)
+void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean purge)
 {
-    primitive_table_purge(m_table, vm);
+    if (purge)
+    {
+        primitive_table_purge(m_table, vm);
+    }
+    
     vm_free(vm, m_table->entries);
     vm_free(vm, m_table);
 }
@@ -181,4 +185,24 @@ void primitive_table_print(primitive_table* table, clockwork_vm* vm)
         }
     }
     printf("}\n");
+}
+
+void primitive_table_each(primitive_table* table, clockwork_vm* vm, primitive_table_iterator itr)
+{
+    if (table->count > 0 && itr)
+    {
+        for (int i = 0; i < table->capacity; i++)
+        {
+            if (table->entries[i] != NULL)
+            {
+                struct primitive_table_entry* entry = table->entries[i];
+                while (entry)
+                {
+                    struct primitive_table_entry* next = entry->next;
+                    itr(vm, entry->key, entry->value);
+                    entry = next;
+                }
+            }
+        }
+    }
 }
