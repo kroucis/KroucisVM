@@ -27,6 +27,7 @@
 		757440801830450B0008416B /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 7574407F1830450B0008416B /* object.c */; };
 		75744083183046E90008416B /* vm.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744082183046E90008416B /* vm.c */; };
 		75744088183048F50008416B /* stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744087183048F50008416B /* stack.c */; };
+		75A7CE261852F25900D155A3 /* array.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A7CE251852F25900D155A3 /* array.c */; };
 		75A88B4E183F0B40007B7D7A /* true_false.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B4D183F0B40007B7D7A /* true_false.c */; };
 		75A88B511841EC52007B7D7A /* primitive_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B501841EC52007B7D7A /* primitive_table.c */; };
 		75A88B541842BF53007B7D7A /* integer.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B531842BF53007B7D7A /* integer.c */; };
@@ -84,6 +85,9 @@
 		75744082183046E90008416B /* vm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vm.c; sourceTree = "<group>"; };
 		75744086183048F50008416B /* stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stack.h; sourceTree = "<group>"; };
 		75744087183048F50008416B /* stack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stack.c; sourceTree = "<group>"; };
+		75A561411855697F00506F92 /* frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = frame.h; sourceTree = "<group>"; };
+		75A7CE231852F1D800D155A3 /* array.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
+		75A7CE251852F25900D155A3 /* array.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = array.c; sourceTree = "<group>"; };
 		75A88B4C183F0A7A007B7D7A /* true_false.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = true_false.h; sourceTree = "<group>"; };
 		75A88B4D183F0B40007B7D7A /* true_false.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = true_false.c; sourceTree = "<group>"; };
 		75A88B4F1841EBD0007B7D7A /* primitive_table.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = primitive_table.h; sourceTree = "<group>"; };
@@ -241,6 +245,9 @@
 				75A88B501841EC52007B7D7A /* primitive_table.c */,
 				75A88B521842BE21007B7D7A /* integer.h */,
 				75A88B531842BF53007B7D7A /* integer.c */,
+				75A7CE231852F1D800D155A3 /* array.h */,
+				75A7CE251852F25900D155A3 /* array.c */,
+				75A561411855697F00506F92 /* frame.h */,
 			);
 			name = vm;
 			sourceTree = "<group>";
@@ -375,6 +382,7 @@
 				7541EAA918383C800082A78F /* assembler.c in Sources */,
 				75A88B5A18431CD3007B7D7A /* tokenizer.c in Sources */,
 				757440801830450B0008416B /* object.c in Sources */,
+				75A7CE261852F25900D155A3 /* array.c in Sources */,
 				7541EAAD1839A07C0082A78F /* block.c in Sources */,
 				7541EAA118371D150082A78F /* str.c in Sources */,
 				75A88B6118434127007B7D7A /* input_stream.c in Sources */,
