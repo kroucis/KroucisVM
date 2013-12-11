@@ -22,6 +22,7 @@ void vm_dealloc(clockwork_vm*);
 void vm_print(clockwork_vm*, struct str*);
 void vm_println(clockwork_vm*, struct str*);
 void vm_popPrintln(clockwork_vm*);
+void vm_pushClockwork(clockwork_vm* vm);
 
 struct object* vm_currentSelf(clockwork_vm*);
 
@@ -73,6 +74,7 @@ void vm_closeBlock(clockwork_vm*);
 
 // DISPATCH
 void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count);
+void vm_return(clockwork_vm* vm);
 
 // HELPERS
 void vm_makeStringCstr(clockwork_vm* vm, const char* const string);

@@ -18,6 +18,8 @@
 #include <memory.h>
 #include <string.h>
 
+#pragma mark Class
+
 struct class
 {
     struct class* isa;
@@ -28,6 +30,8 @@ struct class
     primitive_table* classMethods;
     char* name;
 };
+
+#pragma mark - Native Methods
 
 class* class_init(clockwork_vm* vm, char* name, char* superclass)
 {

@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#pragma mark String
+
 struct str
 {
     class* isa;
@@ -28,9 +30,12 @@ struct str
     char* data;
 };
 
+#pragma mark - Bound Methods
+
 static void string_alloc_native(object* klass, clockwork_vm* vm)
 {
     vm_push(vm, (object*)str_init(vm, NULL));
+    vm_return(vm);
 }
 
 static void string_length_native(object* instance, clockwork_vm* vm)
@@ -38,6 +43,7 @@ static void string_length_native(object* instance, clockwork_vm* vm)
     str* s = (str*)instance;
     integer* len = integer_init(vm, str_length(s, vm));
     vm_push(vm, (object*)len);
+    vm_return(vm);
 }
 
 static void string_dealloc_native(object* instance, clockwork_vm* vm)
@@ -52,7 +58,10 @@ static void string_dealloc_native(object* instance, clockwork_vm* vm)
     vm_free(vm, string);
     vm_pop(vm);
     vm_pushNil(vm);
+    vm_return(vm);
 }
+
+#pragma mark - Native Methods
 
 struct class* string_class(clockwork_vm* vm)
 {

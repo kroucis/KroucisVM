@@ -15,20 +15,30 @@
 #include "block.h"
 #include "nil.h"
 
+#pragma mark True
+#pragma mark False
+
+#pragma mark - Bound Methods
+
 static void false_is_nil_native(object* obj, clockwork_vm* vm)
 {
     vm_pushFalse(vm);
+    vm_return(vm);
 }
 
 static void false_is_true_native(object* obj, clockwork_vm* vm)
 {
     vm_pushFalse(vm);
+    vm_return(vm);
 }
 
 static void false_is_false_native(object* obj, clockwork_vm* vm)
 {
     vm_pushTrue(vm);
+    vm_return(vm);
 }
+
+#pragma mark - Native Methods
 
 class* true_class(clockwork_vm* vm)
 {
@@ -72,7 +82,7 @@ class* false_class(clockwork_vm* vm)
 object* false_instance(clockwork_vm* vm)
 {
     object* falseSuper = object_init(vm);
-    object* falseObj = object_create_super(vm, falseSuper, (class*)vm_getConstant(vm, "True"), sizeof(void*) * 3);
+    object* falseObj = object_create_super(vm, falseSuper, (class*)vm_getConstant(vm, "False"), sizeof(void*) * 3);
     return falseObj;
 }
 

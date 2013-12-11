@@ -26,6 +26,8 @@ struct local_scope
     char** locals;
 };
 
+#pragma mark Block
+
 struct block
 {
     class* isa;
@@ -82,6 +84,8 @@ char* local_scope_localAt(local_scope* scope, clockwork_vm* vm, uint8_t idx)
 
     return scope->locals[idx];
 }
+
+#pragma mark - Native Methods
 
 class* block_class(clockwork_vm* vm)
 {

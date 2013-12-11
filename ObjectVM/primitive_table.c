@@ -90,7 +90,13 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
     // Already a value at this location, replace it.
     if (next != NULL && next->key != NULL && strcmp(key, next->key) == 0)
     {
-        vm_free(vm, next->value);
+        vm_push(vm, obj);
+        vm_dispatch(vm, "retain", 0);
+        vm_pop(vm);
+        vm_push(vm, next->value);
+        vm_dispatch(vm, "release", 0);
+        vm_pop(vm);
+        
         next->value = obj;
     }
     // Create new pair and insert

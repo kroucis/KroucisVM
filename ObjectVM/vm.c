@@ -1,3 +1,4 @@
+
 //
 //  vm.c
 //  ObjectVM
@@ -19,16 +20,13 @@
 #include "true_false.h"
 #include "primitive_table.h"
 #include "integer.h"
+#include "array.h"
+#include "frame.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-static void dealloc_primitive_table_contents(clockwork_vm* vm, char* key, object* value)
-{
-    vm_push(vm, value);
-    vm_dispatch(vm, "dealloc", 0);
-    vm_pop(vm);
-}
+#pragma mark Clockwork
 
 struct clockwork_vm
 {
@@ -47,12 +45,23 @@ struct clockwork_vm
     object* trueObject;
     object* falseObject;
 
+    frame_stack frameStack;
+
     // TODO: Internal memory for the VM?
 //    void* memoryPage;
     // TODO: Track allocations?
 //    uint64_t allocatedMemory;
 };
 
+#pragma mark - Bound Methods
+
+#pragma mark - Native Methods
+
+class* clockwork_class(clockwork_vm* vm)
+{
+    class* clockworkClass = class_init(vm, "Clockwork", "Object");
+    return clockworkClass;
+}
 
 clockwork_vm* vm_init(void)
 {
@@ -61,6 +70,8 @@ clockwork_vm* vm_init(void)
     vm->stack = stack_init();
     vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
+
+    vm->frameStack.idx = 0;
 
 //    vm->memoryPage = malloc(kVMMemorySize);
 
@@ -72,6 +83,9 @@ clockwork_vm* vm_init(void)
 
     class* blockClass = block_class(vm);
     primitive_table_set(vm->constants, vm, class_name(blockClass, vm), (object*)blockClass);
+
+    class* arrayClass = array_class(vm);
+    primitive_table_set(vm->constants, vm, class_name(arrayClass, vm), (object*)arrayClass);
 
     class* nilClass = nil_class(vm);
     primitive_table_set(vm->constants, vm, class_name(nilClass, vm), (object*)nilClass);
@@ -93,6 +107,11 @@ clockwork_vm* vm_init(void)
 
     class* intClass = integer_class(vm);
     primitive_table_set(vm->constants, vm, class_name(intClass, vm), (object*)intClass);
+
+    class* clockworkClass = clockwork_class(vm);
+    primitive_table_set(vm->constants, vm, class_name(clockworkClass, vm), (object*)vm);
+
+    vm->isa = clockworkClass;
 
     return vm;
 }
@@ -132,6 +151,11 @@ void vm_popPrintln(clockwork_vm* vm)
 {
     str* string = (str*)vm_pop(vm);
     vm_println(vm, string);
+}
+
+void vm_pushClockwork(clockwork_vm* vm)
+{
+    stack_push(vm->stack, (object*)vm);
 }
 
 object* vm_currentSelf(clockwork_vm* vm)
@@ -344,7 +368,7 @@ void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, 
 
 #warning PACKAGE args INTO ARRAY
     str* messageStr = str_init(vm, message);
-    object* argsArray = vm->nilObject;     // REPLACE WITH arg ARRAY OBJECT
+    object* argsArray = (object*)array_initWithObjects(vm, args, arg_count);     // REPLACE WITH arg ARRAY OBJECT
 
     local_scope* locals = block_locals(m, vm);
     if (local_scope_count(locals, vm) != 2)
@@ -367,12 +391,17 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     }
 
     object* args[arg_count];
-    for (int i = 0; i < arg_count; i++)
+    for (uint8_t i = 0; i < arg_count; i++)
 	{
 		args[i] = vm_pop(vm);
 	}
     object* target = vm_pop(vm);
+    if (!target)
+    {
+        printf("Could not find target on stack... wtf?");
+    }
     block* m = object_findMethod(target, vm, selector);
+    vm->frameStack.frames[vm->frameStack.idx++].frameSelf = vm->currentSelf;
     if (m == NULL)
     {
         vm_forward(vm, target, selector, args, arg_count);
@@ -390,6 +419,11 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
         primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, i), args[i]);
 	}
     assembler_run_block(m, vm);
+}
+
+void vm_return(clockwork_vm* vm)
+{
+    vm->currentSelf = vm->frameStack.frames[--vm->frameStack.idx].frameSelf;
 }
 
 #pragma mark - HELPERS

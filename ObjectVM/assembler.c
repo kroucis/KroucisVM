@@ -145,10 +145,17 @@ void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
         }
         case VM_PUSH_NUMBER:
         {
+#warning IMPLEMENT
             break;
         }
         case VM_PUSH_CONSTANT:
         {
+#warning IMPLEMENT
+            break;
+        }
+        case VM_RETURN:
+        {
+            vm_return(vm);
             break;
         }
         default:

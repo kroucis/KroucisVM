@@ -35,6 +35,7 @@ enum
     VM_PUSH_INT,
     VM_PUSH_NUMBER,
     VM_PUSH_CONSTANT,
+    VM_RETURN,
 };
 
 void assembler_run_instruction(instruction*, struct clockwork_vm*);

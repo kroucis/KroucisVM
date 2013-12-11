@@ -14,12 +14,16 @@
 #include "primitive_table.h"
 #include "block.h"
 
+#pragma mark Numeric
+
 struct numeric
 {
     class* isa;
     object* super;
     primitive_table* ivars;
 };
+
+#pragma mark Integer
 
 struct integer
 {
@@ -29,6 +33,8 @@ struct integer
 
     int64_t data;
 };
+
+#pragma mark - Bound Methods
 
 static void integer_add_native(object* instance, clockwork_vm* vm)
 {
@@ -40,12 +46,15 @@ static void integer_add_native(object* instance, clockwork_vm* vm)
         int64_t result = integer_toInt64(self_i, vm) + integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         vm_push(vm, result_obj);
+        vm_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
 }
+
+#pragma mark - Native Methods
 
 class* numeric_class(clockwork_vm* vm)
 {
