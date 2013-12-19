@@ -29,21 +29,10 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     vm_pushTrue(vm);
 }
 
-static void test_init_with_args_method(object* instance, clockwork_vm* vm)
-{
-    vm_pushSuper(vm);
-    vm_dispatch(vm, "init", 0);
-
-    vm_pushSelf(vm);
-}
-
 @implementation OVMAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    [self testInitObject];
-    [self testNewObject];
-    [self testNewWithArgs];
     [self testNilObject];
     [self testNativeArray];
     [self testClockworkArray];
@@ -291,99 +280,6 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
 
     assert(vm_pop(vm) == trueObj);
 
-    vm_dealloc(vm);
-}
-
-- (void) testInitObject
-{
-    clockwork_vm* vm = vm_init();
-    vm_pushConst(vm, "Object");
-
-    vm_dispatch(vm, "alloc", 0);
-    vm_dispatch(vm, "init", 0);
-
-    object* obj = vm_pop(vm);
-
-    assert(obj);
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "hash", 0);
-
-    object* hashVal = vm_pop(vm);
-
-    assert(hashVal);
-    assert(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
-    assert(integer_toInt64((integer*)hashVal, vm) == (int64_t)obj);
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "release", 0);
-
-    vm_dealloc(vm);
-}
-
-- (void) testNewObject
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_pushConst(vm, "Object");
-    vm_dispatch(vm, "new", 0);
-
-    object* obj = vm_pop(vm);
-
-    assert(obj);
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "hash", 0);
-
-    object* hashVal = vm_pop(vm);
-
-    assert(hashVal);
-    assert(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
-    assert(integer_toInt64((integer*)hashVal, vm) == (int64_t)obj);
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "release", 0);
-
-    vm_dealloc(vm);
-}
-
-- (void) testNewWithArgs
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_openClass(vm, "Foo", "Object");
-
-    local_scope* iwa_ls = local_scope_init(vm);
-    local_scope_addLocal(iwa_ls, vm, "x");
-    block* blk = block_init_native(vm, iwa_ls, &test_init_with_args_method);
-    vm_push(vm, (object*)blk);
-
-    vm_makeStringCstr(vm, "initWithArgs:");
-
-    vm_dispatch(vm, "addInstanceMethod:withImpl:", 2);
-
-    vm_pushTrue(vm);
-    vm_dispatch(vm, "newWithArgs:", 1);
-
-    object* obj = vm_pop(vm);
-
-    assert(obj);
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "hash", 0);
-
-    object* hashVal = vm_pop(vm);
-
-    assert(hashVal);
-    assert(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
-    assert(integer_toInt64((integer*)hashVal, vm) == (int64_t)obj);
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "release", 0);
-    
     vm_dealloc(vm);
 }
 
