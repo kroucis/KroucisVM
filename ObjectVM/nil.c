@@ -16,6 +16,7 @@
 #include "object_table.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #pragma mark Nil
 
@@ -57,6 +58,13 @@ static void nil_release_native(object* obj, clockwork_vm* vm)
     vm_return(vm);
 }
 
+static void nil_forwardMessage_withArguments_native(object* obj, clockwork_vm* vm)
+{
+    printf("DEBUG: nil was messaged. Ignoring.\n");
+    vm_pushNil(vm);
+    vm_return(vm);
+}
+
 #pragma mark - Native Methods
 
 class* nil_class(struct clockwork_vm* vm)
@@ -92,7 +100,15 @@ class* nil_class(struct clockwork_vm* vm)
         class_addInstanceMethod(nilClass, vm, "release", block_init_native(vm, NULL, &nil_release_native));
     }
 
-#warning ADD forwardInvocation: TO DO NOTHING (IT IS SAFE TO MESSAGE nil/Nil).
+    {
+        local_scope* ls = local_scope_init(vm);
+        local_scope_addLocal(ls, vm, "selector");
+        local_scope_addLocal(ls, vm, "args");
+        block* forwardMethodNative = block_init_native(vm, ls, &nil_forwardMessage_withArguments_native);
+        class_addInstanceMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
+        class_addClassMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
+    }
+
 #warning TODO: PUT IN EXCEPTION THROW ON INSTANCE CREATION
 
     return nilClass;

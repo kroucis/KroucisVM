@@ -153,7 +153,7 @@ static void object_description_native(object* instance, clockwork_vm* vm)
 static void object_forwardMessage_withArguments_native(object*klass, clockwork_vm* vm)
 {
 #warning THROW EXCEPTION
-    signal(SIGKILL, NULL);
+    exit(1);
 }
 
 static void class_alloc_native(object* klass, clockwork_vm* vm)

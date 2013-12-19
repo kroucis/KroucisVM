@@ -110,18 +110,18 @@ static boolean binary_second(char c)
 	return Yes;
 }
 
-static token tokenizer_find_next(tokenizer* tizer)
+static token tokenizer_findNext(tokenizer* tizer)
 {
     token tok;
     char* buffer = tizer->tokenData;
     tok.data = buffer;
     char c = '\0';
-    while (!input_stream_at_end(tizer->input, 0) && (c = input_stream_consume(tizer->input)) && (isspace(c) || c == '#'))
+    while (!input_stream_atEnd(tizer->input, 0) && (c = input_stream_consume(tizer->input)) && (isspace(c) || c == '#'))
     {
         if (c == '#') {
 			/* read comment */
 			while ((c = input_stream_consume(tizer->input)) && (c != '\n')) { }
-			if (input_stream_at_end(tizer->input, 0)){
+			if (input_stream_atEnd(tizer->input, 0)){
                 break;	/* break if we run into eof */
             }
         }
@@ -129,7 +129,7 @@ static token tokenizer_find_next(tokenizer* tizer)
         // Stop at the end and process end of input.
     }
 
-    if (input_stream_at_end(tizer->input, 0))      // EOF
+    if (input_stream_atEnd(tizer->input, 0))      // EOF
     {
         tok.type = T_END;
         return tok;
@@ -313,15 +313,15 @@ void tokenizer_dealloc(tokenizer* tizer)
 
 token tokenizer_next(tokenizer* tizer)
 {
-    input_stream_take_snapshot(tizer->input);
+    input_stream_takeSnapshot(tizer->input);
     token t = tokenizer_consume(tizer);
-    input_stream_resume_snapshot(tizer->input);
+    input_stream_resumeSnapshot(tizer->input);
     return t;
 }
 
 token tokenizer_consume(tokenizer* tizer)
 {
-    return tokenizer_find_next(tizer);
+    return tokenizer_findNext(tizer);
 }
 
 void tokenizer_error(tokenizer* tizer)

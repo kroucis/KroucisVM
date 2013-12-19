@@ -54,8 +54,14 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     [self testAddInstanceMethod];
     [self testAddClassMethod];
     [self testIntAdd];
+    [self testIntSub];
+    [self testIntMul];
+    [self testIntDiv];
     [self testInputStream];
     [self testTokenizer];
+    [self testNilMessage];
+
+    //    [self testForwardCrash];
 }
 
 - (void) testSimpleAST
@@ -205,37 +211,37 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
 
     input_stream* inputStream = input_stream_init_cstr(input, strlen(input));
 
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
     char f = input_stream_consume(inputStream);
     assert(f == 'f');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
     char o = input_stream_next(inputStream);
     assert(o == 'o');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
     char la = input_stream_peek(inputStream, 5);
     assert(la == 'r');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
     o = input_stream_consume(inputStream);
     assert(o == 'o');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
-    input_stream_take_snapshot(inputStream);
+    input_stream_takeSnapshot(inputStream);
     for (int i = 0; i < 3; i++)
 	{
         input_stream_consume(inputStream);
 	}
     char a = input_stream_consume(inputStream);
     assert(a == 'a');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
-    input_stream_resume_snapshot(inputStream);
+    input_stream_resumeSnapshot(inputStream);
     o = input_stream_consume(inputStream);
     assert(o == 'o');
-    assert(!input_stream_at_end(inputStream, 0));
+    assert(!input_stream_atEnd(inputStream, 0));
 
     input_stream_dealloc(inputStream);
 }
@@ -245,6 +251,13 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     clockwork_vm* vm = vm_init();
 
     integer* i = integer_init(vm, 42);
+    vm_push(vm, (object*)i);
+    vm_makeStringCstr(vm, "add:");
+    vm_dispatch(vm, "respondsToSelector:", 1);
+
+    object* torf = vm_pop(vm);
+    assert(object_isTrue(torf, vm));
+
     vm_push(vm, (object*)i);
 
     integer* x = integer_init(vm, 33);
@@ -256,6 +269,87 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
     integer* ri = (integer*)r;
     assert(integer_toInt64(ri, vm) == (42 + 33));
+
+    vm_dealloc(vm);
+}
+
+- (void) testIntSub
+{
+    clockwork_vm* vm = vm_init();
+
+    integer* i = integer_init(vm, 42);
+    vm_push(vm, (object*)i);
+    vm_makeStringCstr(vm, "sub:");
+    vm_dispatch(vm, "respondsToSelector:", 1);
+
+    object* torf = vm_pop(vm);
+    assert(object_isTrue(torf, vm));
+
+    vm_push(vm, (object*)i);
+
+    integer* x = integer_init(vm, 33);
+    vm_push(vm, (object*)x);
+
+    vm_dispatch(vm, "sub:", 1);
+
+    object* r = vm_pop(vm);
+    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
+    integer* ri = (integer*)r;
+    assert(integer_toInt64(ri, vm) == (42 - 33));
+    
+    vm_dealloc(vm);
+}
+
+- (void) testIntMul
+{
+    clockwork_vm* vm = vm_init();
+
+    integer* i = integer_init(vm, 42);
+    vm_push(vm, (object*)i);
+    vm_makeStringCstr(vm, "mul:");
+    vm_dispatch(vm, "respondsToSelector:", 1);
+
+    object* torf = vm_pop(vm);
+    assert(object_isTrue(torf, vm));
+
+    vm_push(vm, (object*)i);
+
+    integer* x = integer_init(vm, 33);
+    vm_push(vm, (object*)x);
+
+    vm_dispatch(vm, "mul:", 1);
+
+    object* r = vm_pop(vm);
+    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
+    integer* ri = (integer*)r;
+    assert(integer_toInt64(ri, vm) == (42 * 33));
+
+    vm_dealloc(vm);
+}
+
+- (void) testIntDiv
+{
+    clockwork_vm* vm = vm_init();
+
+    integer* i = integer_init(vm, 42);
+    vm_push(vm, (object*)i);
+    vm_makeStringCstr(vm, "div:");
+    vm_dispatch(vm, "respondsToSelector:", 1);
+
+    object* torf = vm_pop(vm);
+    assert(object_isTrue(torf, vm));
+
+    vm_push(vm, (object*)i);
+
+    integer* x = integer_init(vm, 33);
+    vm_push(vm, (object*)x);
+
+    vm_dispatch(vm, "div:", 1);
+
+    object* r = vm_pop(vm);
+    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
+    integer* ri = (integer*)r;
+    assert(integer_toInt64(ri, vm) == (42 / 33));
 
     vm_dealloc(vm);
 }
@@ -512,7 +606,41 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     vm_dispatch(vm, "indexOf:", 1);
 
     idx = (integer*)vm_pop(vm);
-    assert(object_isNil(idx, vm));
+    assert(object_isNil((object*)idx, vm));
+
+    vm_dealloc(vm);
+}
+
+- (void) testForwardCrash
+{
+    clockwork_vm* vm = vm_init();
+
+    vm_pushConst(vm, "Object");
+    vm_dispatch(vm, "new", 0);
+
+    object* obj = vm_pop(vm);
+
+    assert(obj);
+    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
+
+    vm_push(vm, obj);
+    vm_dispatch(vm, "thisShouldCrash", 0);
+
+    vm_push(vm, obj);
+    vm_dispatch(vm, "release", 0);
+    
+    vm_dealloc(vm);
+}
+
+- (void) testNilMessage
+{
+    clockwork_vm* vm = vm_init();
+
+    vm_pushNil(vm);
+    vm_dispatch(vm, "anything", 0);
+    vm_pop(vm);
+    vm_pushConst(vm, "Nil");
+    vm_dispatch(vm, "anything", 0);
 
     vm_dealloc(vm);
 }

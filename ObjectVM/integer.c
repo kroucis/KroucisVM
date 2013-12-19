@@ -36,14 +36,68 @@ struct integer
 
 #pragma mark - Bound Methods
 
-static void integer_add_native(object* instance, clockwork_vm* vm)
+static void integer_add_native(object* self, clockwork_vm* vm)
 {
     object* other = vm_getLocal(vm, "other");
     if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
     {
         integer* other_i = (integer*)other;
-        integer* self_i = (integer*)instance;
+        integer* self_i = (integer*)self;
         int64_t result = integer_toInt64(self_i, vm) + integer_toInt64(other_i, vm);
+        object* result_obj = (object*)integer_init(vm, result);
+        vm_push(vm, result_obj);
+        vm_return(vm);
+    }
+    else
+    {
+#warning THROW EXCEPTION!
+    }
+}
+
+static void integer_sub_native(object* self, clockwork_vm* vm)
+{
+    object* other = vm_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    {
+        integer* other_i = (integer*)other;
+        integer* self_i = (integer*)self;
+        int64_t result = integer_toInt64(self_i, vm) - integer_toInt64(other_i, vm);
+        object* result_obj = (object*)integer_init(vm, result);
+        vm_push(vm, result_obj);
+        vm_return(vm);
+    }
+    else
+    {
+#warning THROW EXCEPTION!
+    }
+}
+
+static void integer_mul_native(object* self, clockwork_vm* vm)
+{
+    object* other = vm_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    {
+        integer* other_i = (integer*)other;
+        integer* self_i = (integer*)self;
+        int64_t result = integer_toInt64(self_i, vm) * integer_toInt64(other_i, vm);
+        object* result_obj = (object*)integer_init(vm, result);
+        vm_push(vm, result_obj);
+        vm_return(vm);
+    }
+    else
+    {
+#warning THROW EXCEPTION!
+    }
+}
+
+static void integer_div_native(object* self, clockwork_vm* vm)
+{
+    object* other = vm_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    {
+        integer* other_i = (integer*)other;
+        integer* self_i = (integer*)self;
+        int64_t result = integer_toInt64(self_i, vm) / integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         vm_push(vm, result_obj);
         vm_return(vm);
@@ -91,6 +145,28 @@ class* integer_class(clockwork_vm* vm)
         block* addMethod = block_init_native(vm, add_ls, &integer_add_native);
         class_addInstanceMethod(integerClass, vm, "add:", addMethod);
     }
+
+    {
+        local_scope* sub_ls = local_scope_init(vm);
+        local_scope_addLocal(sub_ls, vm, "other");
+        block* subMethod = block_init_native(vm, sub_ls, &integer_sub_native);
+        class_addInstanceMethod(integerClass, vm, "sub:", subMethod);
+    }
+
+    {
+        local_scope* mul_ls = local_scope_init(vm);
+        local_scope_addLocal(mul_ls, vm, "other");
+        block* mulMethod = block_init_native(vm, mul_ls, &integer_mul_native);
+        class_addInstanceMethod(integerClass, vm, "mul:", mulMethod);
+    }
+
+    {
+        local_scope* div_ls = local_scope_init(vm);
+        local_scope_addLocal(div_ls, vm, "other");
+        block* divMethod = block_init_native(vm, div_ls, &integer_div_native);
+        class_addInstanceMethod(integerClass, vm, "div:", divMethod);
+    }
+
     //
     //    {
     //        block* isTrueMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_true_native);

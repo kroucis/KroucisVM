@@ -53,7 +53,7 @@ char input_stream_consume(input_stream* stream)
     return stream->stream[stream->index++];
 }
 
-int input_stream_at_end(input_stream* stream, uint64_t lookahead)
+int input_stream_atEnd(input_stream* stream, uint64_t lookahead)
 {
     if (stream->index + lookahead > stream->length)
     {
@@ -67,7 +67,7 @@ int input_stream_at_end(input_stream* stream, uint64_t lookahead)
 
 char input_stream_peek(input_stream* stream, uint64_t lookahead)
 {
-    if (input_stream_at_end(stream, lookahead))
+    if (input_stream_atEnd(stream, lookahead))
     {
         return '\0';
     }
@@ -77,17 +77,17 @@ char input_stream_peek(input_stream* stream, uint64_t lookahead)
     }
 }
 
-void input_stream_take_snapshot(input_stream* stream)
+void input_stream_takeSnapshot(input_stream* stream)
 {
     stream->snapshots[stream->snapshotIndex++] = stream->index;
 }
 
-void input_stream_resume_snapshot(input_stream* stream)
+void input_stream_resumeSnapshot(input_stream* stream)
 {
     stream->index = stream->snapshots[--stream->snapshotIndex];
 }
 
-void input_stream_discard_snapshot(input_stream* stream)
+void input_stream_discardSnapshot(input_stream* stream)
 {
     stream->snapshotIndex--;
 }
