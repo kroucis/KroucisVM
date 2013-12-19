@@ -45,7 +45,6 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     [self testNewObject];
     [self testNewWithArgs];
     [self testNilObject];
-    [self testCreateInt];
     [self testNativeArray];
     [self testClockworkArray];
     [self testCreateString];
@@ -53,10 +52,6 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     [self testOpenClass];
     [self testAddInstanceMethod];
     [self testAddClassMethod];
-    [self testIntAdd];
-    [self testIntSub];
-    [self testIntMul];
-    [self testIntDiv];
     [self testInputStream];
     [self testTokenizer];
     [self testNilMessage];
@@ -244,137 +239,6 @@ static void test_init_with_args_method(object* instance, clockwork_vm* vm)
     assert(!input_stream_atEnd(inputStream, 0));
 
     input_stream_dealloc(inputStream);
-}
-
-- (void) testIntAdd
-{
-    clockwork_vm* vm = vm_init();
-
-    integer* i = integer_init(vm, 42);
-    vm_push(vm, (object*)i);
-    vm_makeStringCstr(vm, "add:");
-    vm_dispatch(vm, "respondsToSelector:", 1);
-
-    object* torf = vm_pop(vm);
-    assert(object_isTrue(torf, vm));
-
-    vm_push(vm, (object*)i);
-
-    integer* x = integer_init(vm, 33);
-    vm_push(vm, (object*)x);
-
-    vm_dispatch(vm, "add:", 1);
-
-    object* r = vm_pop(vm);
-    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
-    integer* ri = (integer*)r;
-    assert(integer_toInt64(ri, vm) == (42 + 33));
-
-    vm_dealloc(vm);
-}
-
-- (void) testIntSub
-{
-    clockwork_vm* vm = vm_init();
-
-    integer* i = integer_init(vm, 42);
-    vm_push(vm, (object*)i);
-    vm_makeStringCstr(vm, "sub:");
-    vm_dispatch(vm, "respondsToSelector:", 1);
-
-    object* torf = vm_pop(vm);
-    assert(object_isTrue(torf, vm));
-
-    vm_push(vm, (object*)i);
-
-    integer* x = integer_init(vm, 33);
-    vm_push(vm, (object*)x);
-
-    vm_dispatch(vm, "sub:", 1);
-
-    object* r = vm_pop(vm);
-    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
-    integer* ri = (integer*)r;
-    assert(integer_toInt64(ri, vm) == (42 - 33));
-    
-    vm_dealloc(vm);
-}
-
-- (void) testIntMul
-{
-    clockwork_vm* vm = vm_init();
-
-    integer* i = integer_init(vm, 42);
-    vm_push(vm, (object*)i);
-    vm_makeStringCstr(vm, "mul:");
-    vm_dispatch(vm, "respondsToSelector:", 1);
-
-    object* torf = vm_pop(vm);
-    assert(object_isTrue(torf, vm));
-
-    vm_push(vm, (object*)i);
-
-    integer* x = integer_init(vm, 33);
-    vm_push(vm, (object*)x);
-
-    vm_dispatch(vm, "mul:", 1);
-
-    object* r = vm_pop(vm);
-    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
-    integer* ri = (integer*)r;
-    assert(integer_toInt64(ri, vm) == (42 * 33));
-
-    vm_dealloc(vm);
-}
-
-- (void) testIntDiv
-{
-    clockwork_vm* vm = vm_init();
-
-    integer* i = integer_init(vm, 42);
-    vm_push(vm, (object*)i);
-    vm_makeStringCstr(vm, "div:");
-    vm_dispatch(vm, "respondsToSelector:", 1);
-
-    object* torf = vm_pop(vm);
-    assert(object_isTrue(torf, vm));
-
-    vm_push(vm, (object*)i);
-
-    integer* x = integer_init(vm, 33);
-    vm_push(vm, (object*)x);
-
-    vm_dispatch(vm, "div:", 1);
-
-    object* r = vm_pop(vm);
-    assert(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(vm, "Integer")));
-    integer* ri = (integer*)r;
-    assert(integer_toInt64(ri, vm) == (42 / 33));
-
-    vm_dealloc(vm);
-}
-
-- (void) testCreateInt
-{
-    clockwork_vm* vm = vm_init();
-
-    integer* i = integer_init(vm, 42);
-
-    assert(i);
-    assert(object_isKindOfClass_native((object*)i, (class*)vm_getConstant(vm, "Integer")));
-    assert(integer_toInt64(i, vm) == 42);
-
-    instruction inst = (instruction){ .op = VM_PUSH_INT, .param_count = 1, .params[0] = "42" };
-    assembler_run_instruction(&inst, vm);
-
-    integer* oi = (integer*)vm_pop(vm);
-
-    assert(oi);
-    assert(object_isKindOfClass_native((object*)oi, (class*)vm_getConstant(vm, "Integer")));
-    assert(integer_toInt64(i, vm) == integer_toInt64(oi, vm));
-    assert(integer_toInt64(oi, vm) == 42);
-
-    vm_dealloc(vm);
 }
 
 - (void) testCreateString

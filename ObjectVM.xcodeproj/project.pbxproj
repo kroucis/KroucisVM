@@ -13,6 +13,7 @@
 		7541EAA4183727890082A78F /* object_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA3183727890082A78F /* object_table.c */; };
 		7541EAA918383C800082A78F /* assembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA818383C800082A78F /* assembler.c */; };
 		7541EAAD1839A07C0082A78F /* block.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAAC1839A07C0082A78F /* block.c */; };
+		755178941862D73800168532 /* OVMIntegerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 755178931862D73800168532 /* OVMIntegerTests.m */; };
 		7574404B183044D10008416B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7574404A183044D10008416B /* Cocoa.framework */; };
 		75744055183044D10008416B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75744053183044D10008416B /* InfoPlist.strings */; };
 		75744057183044D10008416B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75744056183044D10008416B /* main.m */; };
@@ -23,7 +24,6 @@
 		7574406A183044D10008416B /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75744069183044D10008416B /* XCTest.framework */; };
 		7574406B183044D10008416B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7574404A183044D10008416B /* Cocoa.framework */; };
 		75744073183044D10008416B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75744071183044D10008416B /* InfoPlist.strings */; };
-		75744075183044D10008416B /* ObjectVMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75744074183044D10008416B /* ObjectVMTests.m */; };
 		757440801830450B0008416B /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 7574407F1830450B0008416B /* object.c */; };
 		75744083183046E90008416B /* vm.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744082183046E90008416B /* vm.c */; };
 		75744088183048F50008416B /* stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 75744087183048F50008416B /* stack.c */; };
@@ -60,6 +60,7 @@
 		7541EAA818383C800082A78F /* assembler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = assembler.c; sourceTree = "<group>"; };
 		7541EAAB1839A0430082A78F /* block.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
 		7541EAAC1839A07C0082A78F /* block.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = block.c; sourceTree = "<group>"; };
+		755178931862D73800168532 /* OVMIntegerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OVMIntegerTests.m; sourceTree = "<group>"; };
 		75744047183044D10008416B /* ObjectVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectVM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7574404A183044D10008416B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		7574404D183044D10008416B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -78,7 +79,6 @@
 		75744069183044D10008416B /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		75744070183044D10008416B /* ObjectVMTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ObjectVMTests-Info.plist"; sourceTree = "<group>"; };
 		75744072183044D10008416B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		75744074183044D10008416B /* ObjectVMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectVMTests.m; sourceTree = "<group>"; };
 		7574407E183045020008416B /* object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object.h; sourceTree = "<group>"; };
 		7574407F1830450B0008416B /* object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object.c; sourceTree = "<group>"; };
 		75744081183046E10008416B /* vm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm.h; sourceTree = "<group>"; };
@@ -192,8 +192,8 @@
 		7574406E183044D10008416B /* ObjectVMTests */ = {
 			isa = PBXGroup;
 			children = (
-				75744074183044D10008416B /* ObjectVMTests.m */,
 				7574406F183044D10008416B /* Supporting Files */,
+				755178931862D73800168532 /* OVMIntegerTests.m */,
 			);
 			path = ObjectVMTests;
 			sourceTree = "<group>";
@@ -398,7 +398,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				75744075183044D10008416B /* ObjectVMTests.m in Sources */,
+				755178941862D73800168532 /* OVMIntegerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
