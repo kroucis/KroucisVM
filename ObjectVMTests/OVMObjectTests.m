@@ -79,57 +79,53 @@ static void foo_initWithArgs_native(object* instance, clockwork_vm* vm)
 
 - (void) testObjectNew
 {
-    clockwork_vm* vm = vm_init();
+    vm_pushConst(_vm, "Object");
+    vm_dispatch(_vm, "new", 0);
 
-    vm_pushConst(vm, "Object");
-    vm_dispatch(vm, "new", 0);
-
-    _obj = vm_pop(vm);
+    _obj = vm_pop(_vm);
 
     XCTAssertTrue(_obj);
-    XCTAssertTrue(object_isKindOfClass_native(_obj, (class*)vm_getConstant(vm, "Object")));
+    XCTAssertTrue(object_isKindOfClass_native(_obj, (class*)vm_getConstant(_vm, "Object")));
 
-    vm_push(vm, _obj);
-    vm_dispatch(vm, "hash", 0);
+    vm_push(_vm, _obj);
+    vm_dispatch(_vm, "hash", 0);
 
-    object* hashVal = vm_pop(vm);
+    object* hashVal = vm_pop(_vm);
 
     XCTAssertTrue(hashVal);
-    XCTAssertTrue(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
-    XCTAssertEqual((int64_t)integer_toInt64((integer*)hashVal, vm), (int64_t)_obj);
+    XCTAssertTrue(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(_vm, "Integer")));
+    XCTAssertEqual((int64_t)integer_toInt64((integer*)hashVal, _vm), (int64_t)_obj);
 }
 
 - (void) testObjectNewWithArgs
 {
-    clockwork_vm* vm = vm_init();
+    vm_openClass(_vm, "Foo", "Object");
 
-    vm_openClass(vm, "Foo", "Object");
+    local_scope* iwa_ls = local_scope_init(_vm);
+    local_scope_addLocal(iwa_ls, _vm, "x");
+    block* blk = block_init_native(_vm, iwa_ls, &foo_initWithArgs_native);
+    vm_push(_vm, (object*)blk);
 
-    local_scope* iwa_ls = local_scope_init(vm);
-    local_scope_addLocal(iwa_ls, vm, "x");
-    block* blk = block_init_native(vm, iwa_ls, &foo_initWithArgs_native);
-    vm_push(vm, (object*)blk);
+    vm_makeStringCstr(_vm, "initWithArgs:");
 
-    vm_makeStringCstr(vm, "initWithArgs:");
+    vm_dispatch(_vm, "addInstanceMethod:withImpl:", 2);
 
-    vm_dispatch(vm, "addInstanceMethod:withImpl:", 2);
+    vm_pushTrue(_vm);
+    vm_dispatch(_vm, "newWithArgs:", 1);
 
-    vm_pushTrue(vm);
-    vm_dispatch(vm, "newWithArgs:", 1);
-
-    _obj = vm_pop(vm);
+    _obj = vm_pop(_vm);
 
     XCTAssertTrue(_obj);
-    XCTAssertTrue(object_isKindOfClass_native(_obj, (class*)vm_getConstant(vm, "Object")));
+    XCTAssertTrue(object_isKindOfClass_native(_obj, (class*)vm_getConstant(_vm, "Object")));
 
-    vm_push(vm, _obj);
-    vm_dispatch(vm, "hash", 0);
+    vm_push(_vm, _obj);
+    vm_dispatch(_vm, "hash", 0);
 
-    object* hashVal = vm_pop(vm);
+    object* hashVal = vm_pop(_vm);
 
     XCTAssertTrue(hashVal);
-    XCTAssertTrue(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(vm, "Integer")));
-    XCTAssertEqual((int64_t)integer_toInt64((integer*)hashVal, vm), (int64_t)_obj);
+    XCTAssertTrue(object_isKindOfClass_native((object*)hashVal, (class*)vm_getConstant(_vm, "Integer")));
+    XCTAssertEqual((int64_t)integer_toInt64((integer*)hashVal, _vm), (int64_t)_obj);
 }
 
 @end
