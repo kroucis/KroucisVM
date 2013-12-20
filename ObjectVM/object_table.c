@@ -67,8 +67,8 @@ object_table* object_table_init(clockwork_vm* vm, unsigned int size)
 void object_table_dealloc(object_table* table, clockwork_vm* vm)
 {
     object_table_purge(table, vm);
-    vm_free(vm, table->entries);
-    vm_free(vm, table);
+    vm_freeSize(vm, table->entries, sizeof(struct object_table_entry*) * table->capacity);
+    vm_freeSize(vm, table, sizeof(object_table));
 }
 
 void object_table_set(object_table* table, clockwork_vm* vm, str* key, object* value)
@@ -156,7 +156,7 @@ void object_table_remove(object_table* table, clockwork_vm* vm, str* key)
         {
             previous->next = entry->next;
         }
-        vm_free(vm, entry);
+        vm_freeSize(vm, entry, sizeof(struct object_table_entry));
         table->count--;
 	}
 }
@@ -172,9 +172,9 @@ void object_table_purge(object_table* table, clockwork_vm* vm)
             {
                 object_release(table->entries[i]->value, vm);
                 entry = entry->next;
-                vm_free(vm, entry);
+                vm_freeSize(vm, entry, sizeof(struct object_table_entry));
             }
-            vm_free(vm, table->entries[i]);
+            vm_freeSize(vm, table->entries[i], sizeof(struct object_table_entry));
             table->entries[i] = NULL;
         }
 	}

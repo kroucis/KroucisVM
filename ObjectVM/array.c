@@ -34,6 +34,7 @@ struct array
     class* isa;
     object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     object** contents;
     uint64_t count;
@@ -60,11 +61,11 @@ static void array_dealloc_native(object* instance, clockwork_vm* vm)
             vm_pop(vm);
         }
 
-        vm_free(vm, ary->contents);
+        vm_freeSize(vm, ary->contents, sizeof(object*) * count);
     }
     vm_pushSuper(vm);
     vm_dispatch(vm, "dealloc", 0);
-    vm_free(vm, ary);
+    vm_free(vm, instance);
     vm_pop(vm);
     vm_pushNil(vm);
     vm_return(vm);
@@ -249,6 +250,7 @@ array* array_init(clockwork_vm* vm)
 {
     object* arraySuper = object_init(vm);
     array* ary = (array*)object_create_super(vm, arraySuper, (class*)vm_getConstant(vm, "Array"), sizeof(array));
+    ary->size = sizeof(array);
     return ary;
 }
 

@@ -25,6 +25,7 @@ struct str
     class* isa;
     object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     uint32_t length;
     char* data;
@@ -51,11 +52,11 @@ static void string_dealloc_native(object* instance, clockwork_vm* vm)
     str* string = (str*)instance;
     if (str_length(string, vm) > 0)
     {
-        vm_free(vm, string->data);
+        vm_freeSize(vm, string->data, string->length);
     }
     vm_pushSuper(vm);
     vm_dispatch(vm, "dealloc", 0);
-    vm_free(vm, string);
+    vm_free(vm, instance);
     vm_pop(vm);
     vm_pushNil(vm);
     vm_return(vm);
@@ -90,6 +91,8 @@ str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
         memcpy(string->data, (void*)data, len);
     }
     string->length = len;
+    string->size = sizeof(str);
+    
     return string;
 }
 
@@ -97,9 +100,9 @@ void str_dealloc(str* string, clockwork_vm* vm)
 {
     if (str_length(string, vm) > 0)
     {
-        vm_free(vm, string->data);
+        vm_freeSize(vm, string->data, string->length);
     }
-    vm_free(vm, string);
+    vm_free(vm, (object*)string);
 }
 
 uint32_t str_length(str* string, clockwork_vm* vm)

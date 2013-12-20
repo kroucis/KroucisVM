@@ -26,11 +26,12 @@ boolean         object_isKindOfClass_native(object*, struct class*);
 boolean         object_isMemberOfClass_native(object*, struct class*);
 
 struct class*   object_class(struct clockwork_vm* vm);
+uint32_t        object_instanceSize(void);
 
 object*         object_init(struct clockwork_vm*);
-object*         object_create_super(struct clockwork_vm*, object*, struct class*, unsigned long);
+object*         object_create_super(struct clockwork_vm*, object*, struct class*, uint32_t);
 
-uint32_t        object_size(void);
+uint32_t        object_size(object* instance);
 
 void            object_dealloc(object* instance, struct clockwork_vm*);
 void            object_setIvar(object* instance, struct clockwork_vm*, char*, object*);

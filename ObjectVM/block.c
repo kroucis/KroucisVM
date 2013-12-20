@@ -33,6 +33,7 @@ struct block
     class* isa;
     object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     local_scope* locals;
     instruction_sequence* instructions;
@@ -51,11 +52,11 @@ void local_scope_dealloc(local_scope* scope, clockwork_vm* vm)
     {
         for (int i = 0; i < scope->count; i++)
         {
-            vm_free(vm, scope->locals[i]);
+            vm_freeSize(vm, scope->locals[i], strlen(scope->locals[i]));
         }
-        vm_free(vm, scope->locals);
+        vm_freeSize(vm, scope->locals, sizeof(char*) * scope->count);
     }
-    vm_free(vm, scope);
+    vm_freeSize(vm, scope, sizeof(local_scope));
 }
 
 void local_scope_addLocal(local_scope* scope, clockwork_vm* vm, char* localName)
@@ -112,6 +113,7 @@ block* block_init_native(clockwork_vm* vm, local_scope* locals, native_block fun
     m->locals = locals;
     m->instructions = NULL;
     m->nativeFunc = func;
+    m->size = sizeof(block);
 
     return m;
 }
@@ -120,16 +122,16 @@ void block_dealloc(block* instance, clockwork_vm* vm)
 {
     if (instance->locals)
     {
-        vm_free(vm, instance->locals);
+        local_scope_dealloc(instance->locals, vm);
     }
 
     if (!instance->nativeFunc)
     {
-        vm_free(vm, instance->instructions->instructions);
-        vm_free(vm, instance->instructions);
+        vm_freeSize(vm, instance->instructions->instructions, sizeof(instruction) * instance->instructions->inst_count);
+        vm_freeSize(vm, instance->instructions, sizeof(instruction_sequence));
     }
 
-    vm_free(vm, instance);
+    vm_free(vm, (object*)instance);
 }
 
 instruction_sequence* block_instructions(block* instance, clockwork_vm* vm)

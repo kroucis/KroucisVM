@@ -27,6 +27,7 @@ struct object
     class* isa;
     struct object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     int32_t retainCount;
 };
@@ -171,7 +172,7 @@ static void class_alloc_native(object* klass, clockwork_vm* vm)
         vm_push(vm, obj);
         return;
     }
-    object* allocd = object_create_super(vm, super, (class*)klass, object_size());
+    object* allocd = object_create_super(vm, super, (class*)klass, object_instanceSize());
     vm_push(vm, allocd);
     vm_return(vm);
 }
@@ -191,9 +192,7 @@ static void class_dealloc_native(object* klass, clockwork_vm* vm)
 //        primitive_table_dealloc(klazz->classMethods, vm);
 //    }
 
-    vm_free(vm, class_name(klazz, vm));
-
-    vm_free(vm, klazz);
+    class_dealloc(klazz, vm);
 
     vm_pushNil(vm);
     vm_return(vm);
@@ -216,7 +215,7 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
         else
         {
 #warning THROW EXCEPTION
-            signal(SIGKILL, NULL);
+            exit(EXIT_FAILURE);
         }
     }
     else
@@ -406,6 +405,11 @@ class* object_class(clockwork_vm* vm)
     return objectClass;
 }
 
+uint32_t object_instanceSize(void)
+{
+    return sizeof(object);
+}
+
 boolean object_isKindOfClass_native(object* obj, class* klass)
 {
     if (obj == NULL)
@@ -433,21 +437,23 @@ object* object_init(clockwork_vm* vm)
     obj->retainCount = 1;
     obj->isa = (class*)vm_getConstant(vm, "Object");
     obj->super = NULL;
+    obj->size = sizeof(object);
 
     return obj;
 }
 
-object* object_create_super(struct clockwork_vm* vm, object* sup, struct class* klass, unsigned long bytes)
+object* object_create_super(struct clockwork_vm* vm, object* sup, struct class* klass, uint32_t bytes)
 {
     object* obj = vm_allocate(vm, bytes);
     obj->isa = klass;
     obj->super = sup;
+    obj->size = bytes;
     return obj;
 }
 
-uint32_t object_size(void)
+uint32_t object_size(object* instance)
 {
-    return sizeof(object);
+    return instance->size;
 }
 
 void object_dealloc(object* instance, clockwork_vm* vm)

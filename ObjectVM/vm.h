@@ -28,8 +28,8 @@ struct object* vm_currentSelf(clockwork_vm*);
 
 // MEMORY MANAGEMENT
 void* vm_allocate(clockwork_vm*, uint64_t);
-void vm_free(clockwork_vm*, void*);
-//void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
+void vm_free(clockwork_vm*, struct object*);
+void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
 
 // INSTRUCTIONS
 

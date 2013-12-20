@@ -49,8 +49,7 @@ struct clockwork_vm
 
     // TODO: Internal memory for the VM?
 //    void* memoryPage;
-    // TODO: Track allocations?
-//    uint64_t allocatedMemory;
+    uint64_t allocatedMemory;
 };
 
 #pragma mark - Bound Methods
@@ -66,12 +65,9 @@ class* clockwork_class(clockwork_vm* vm)
 clockwork_vm* vm_init(void)
 {
     clockwork_vm* vm = (clockwork_vm*)calloc(1, sizeof(clockwork_vm));
-//    vm->allocatedMemory = 0;
     vm->stack = stack_init();
     vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
-
-    vm->frameStack.idx = 0;
 
 //    vm->memoryPage = malloc(kVMMemorySize);
 
@@ -173,20 +169,25 @@ void* vm_allocate(clockwork_vm* vm, uint64_t bytes)
         printf("calloc FAILED TO RETURN VIABLE MEMORY!");
     }
 
+    vm->allocatedMemory += bytes;
+
+    printf("Was %llu. Allocating %llu bytes. Total %llu\n", vm->allocatedMemory - bytes, bytes, vm->allocatedMemory);
+
     return value;
 }
 
-void vm_free(clockwork_vm* vm, void* memory)
+void vm_free(clockwork_vm* vm, object* obj)
 {
-    free(memory);
+    vm_freeSize(vm, obj, object_size(obj));
 }
 
-// UNUSED
-//void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
-//{
-//    vm->allocatedMemory -= bytes;
-//    free(memory);
-//}
+void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
+{
+    vm->allocatedMemory -= bytes;
+    free(memory);
+
+    printf("Was %llu. Freeing %llu bytes. Total %llu\n", vm->allocatedMemory + bytes, bytes, vm->allocatedMemory);
+}
 
 #pragma mark - PROGRAM COUNTER
 

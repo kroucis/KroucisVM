@@ -15,6 +15,7 @@ struct block;
 typedef struct class class;
 
 class* class_init(struct clockwork_vm* vm, char* name, char* superclass);
+void class_dealloc(class* klass, struct clockwork_vm* vm);
 
 void class_addInstanceMethod(class*, struct clockwork_vm*, char*, struct block*);
 void class_addClassMethod(class*, struct clockwork_vm*, char*, struct block*);

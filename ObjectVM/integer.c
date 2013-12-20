@@ -30,6 +30,7 @@ struct integer
     class* isa;
     object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     int64_t data;
 };
@@ -189,6 +190,7 @@ integer* integer_init(clockwork_vm* vm, int64_t i)
     object* numericSuper = object_create_super(vm, objSuper, (class*)vm_getConstant(vm, "Numeric"), sizeof(numeric));
     integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)vm_getConstant(vm, "Integer"), sizeof(integer));
     intObj->data = i;
+    intObj->size = sizeof(integer);
     return intObj;
 }
 

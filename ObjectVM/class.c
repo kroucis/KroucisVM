@@ -25,10 +25,12 @@ struct class
     struct class* isa;
     object* super;
     primitive_table* ivars;
+    uint32_t size;
 
     primitive_table* instanceMethods;
     primitive_table* classMethods;
     char* name;
+    uint16_t nameLength;
 };
 
 #pragma mark - Native Methods
@@ -44,10 +46,18 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
     }
 
     klass->isa = klass;
-    klass->name = vm_allocate(vm, strlen(name));
+    klass->nameLength = strlen(name);
+    klass->name = vm_allocate(vm, klass->nameLength);
     strcpy(klass->name, name);
+    klass->size = sizeof(class);
 
     return klass;
+}
+
+void class_dealloc(class* klass, struct clockwork_vm* vm)
+{
+    vm_freeSize(vm, klass->name, klass->nameLength);
+    vm_free(vm, (object*)klass);
 }
 
 void class_addInstanceMethod(class* klass, clockwork_vm* vm, char* name, block* meth)
