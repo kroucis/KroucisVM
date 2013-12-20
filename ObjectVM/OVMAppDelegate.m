@@ -34,11 +34,8 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [self testNilObject];
-    [self testNativeArray];
-    [self testClockworkArray];
     [self testCreateString];
     [self testPrints];
-    [self testOpenClass];
     [self testAddInstanceMethod];
     [self testAddClassMethod];
     [self testInputStream];
@@ -113,35 +110,6 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     object* tru = vm_pop(vm);
     assert(object_isTrue(tru, vm));
-
-    vm_dealloc(vm);
-}
-
-- (void) testOpenClass
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_openClass(vm, "Foo", "Object");
-
-    class* newClass = (class*)vm_pop(vm);
-    assert(newClass);
-
-    class* classObj = (class*)vm_getConstant(vm, "Foo");
-    assert(classObj);
-    assert(classObj == newClass);
-
-    vm_push(vm, vm_getConstant(vm, "Foo"));
-    vm_dispatch(vm, "alloc", 0);
-    vm_dispatch(vm, "init", 0);
-
-    object* obj = vm_pop(vm);
-
-    assert(obj);
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Foo")));
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
-
-    vm_push(vm, obj);
-    vm_dispatch(vm, "release", 0);
 
     vm_dealloc(vm);
 }
@@ -279,94 +247,6 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     vm_dispatch(vm, "isTrue", 0);
 
     assert(vm_pop(vm) == trueObj);
-
-    vm_dealloc(vm);
-}
-
-- (void) testNativeArray
-{
-    clockwork_vm* vm = vm_init();
-
-    array* a = array_init(vm);
-
-    assert(a);
-    assert(array_count(a, vm) == 0);
-
-    vm_pushNil(vm);
-    object* nilObj = vm_pop(vm);
-
-    array_add(a, vm, nilObj);
-
-    assert(array_count(a, vm) == 1);
-    assert(array_objectAtIndex(a, vm, 0) == nilObj);
-
-    array_removeAtIndex(a, vm, 0);
-
-    assert(array_count(a, vm) == 0);
-
-
-    vm_dealloc(vm);
-}
-
-- (void) testClockworkArray
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_pushConst(vm, "Array");
-    vm_dispatch(vm, "new", 0);
-
-    array* ary = (array*)vm_pop(vm);
-
-    assert(ary);
-    assert(object_isKindOfClass_native((object*)ary, (class*)vm_getConstant(vm, "Array")));
-
-    vm_push(vm, (object*)ary);
-    vm_dispatch(vm, "count", 0);
-
-    integer* count = (integer*)vm_pop(vm);
-
-    assert(integer_toInt64(count, vm) == 0);
-
-    vm_push(vm, (object*)ary);
-    vm_dispatch(vm, "isEmpty", 0);
-
-    assert(object_isTrue(vm_pop(vm), vm));
-
-    vm_push(vm, (object*)ary);
-    vm_pushNil(vm);
-    vm_dispatch(vm, "add:", 1);
-
-    vm_dispatch(vm, "count", 0);
-
-    count = (integer*)vm_pop(vm);
-
-    assert(integer_toInt64(count, vm) == 1);
-
-    vm_push(vm, (object*)ary);
-    vm_dispatch(vm, "isEmpty", 0);
-
-    assert(object_isFalse(vm_pop(vm), vm));
-
-    vm_push(vm, (object*)ary);
-    vm_pushNil(vm);
-    vm_dispatch(vm, "contains:", 1);
-
-    object* contains = vm_pop(vm);
-    assert(object_isTrue(contains, vm));
-
-    vm_push(vm, (object*)ary);
-    vm_pushNil(vm);
-    vm_dispatch(vm, "indexOf:", 1);
-
-    integer* idx = (integer*)vm_pop(vm);
-    assert(integer_toInt64(idx, vm) == 0);
-
-    vm_push(vm, (object*)ary);
-    vm_pushTrue(vm);
-    vm_dispatch(vm, "indexOf:", 1);
-
-    idx = (integer*)vm_pop(vm);
-    assert(object_isNil((object*)idx, vm));
 
     vm_dealloc(vm);
 }

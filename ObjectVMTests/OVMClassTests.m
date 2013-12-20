@@ -34,9 +34,35 @@
 
 - (void)tearDown
 {
+    class_dealloc(_class, _vm);
     vm_dealloc(_vm);
 
     [super tearDown];
+}
+
+- (void) testClassOpen
+{
+    vm_openClass(_vm, "Foo", "Object");
+
+    _class = (class*)vm_pop(_vm);
+    XCTAssert(_class);
+
+    class* classObj = (class*)vm_getConstant(_vm, "Foo");
+    XCTAssert(classObj);
+    XCTAssertTrue(classObj == _class);
+
+    vm_push(_vm, vm_getConstant(_vm, "Foo"));
+    vm_dispatch(_vm, "alloc", 0);
+    vm_dispatch(_vm, "init", 0);
+
+    object* obj = vm_pop(_vm);
+
+    assert(obj);
+    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(_vm, "Foo")));
+    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(_vm, "Object")));
+
+    vm_push(_vm, obj);
+    vm_dispatch(_vm, "release", 0);
 }
 
 @end
