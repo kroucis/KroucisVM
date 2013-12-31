@@ -36,51 +36,51 @@ struct object
 
 static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)vm_getLocal(vm, "selector");
-    block* impl = (block*)vm_getLocal(vm, "impl");
+    str* name = (str*)clkwk_getLocal(vm, "selector");
+    block* impl = (block*)clkwk_getLocal(vm, "impl");
     class_addInstanceMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
-    vm_push(vm, klass);
-    vm_return(vm);
+    clkwk_push(vm, klass);
+    clkwk_return(vm);
 }
 
 static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)vm_getLocal(vm, "selector");
-    block* impl = (block*)vm_getLocal(vm, "impl");
+    str* name = (str*)clkwk_getLocal(vm, "selector");
+    block* impl = (block*)clkwk_getLocal(vm, "impl");
     class_addClassMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
-    vm_push(vm, klass);
-    vm_return(vm);
+    clkwk_push(vm, klass);
+    clkwk_return(vm);
 }
 
 static void class_release_native(object* klass, clockwork_vm* vm)
 {
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 static void class_retain_native(object* klass, clockwork_vm* vm)
 {
-    vm_pushSelf(vm);
-    vm_return(vm);
+    clkwk_pushSelf(vm);
+    clkwk_return(vm);
 }
 
 static void object_init_native(object* instance, clockwork_vm* vm)
 {
     if (instance->super)
     {
-        vm_pushSuper(vm);
-        vm_dispatch(vm, "init", 0);
-        vm_pop(vm);
-        vm_push(vm, instance);
+        clkwk_pushSuper(vm);
+        clkwk_dispatch(vm, "init", 0);
+        clkwk_pop(vm);
+        clkwk_push(vm, instance);
     }
     else
     {
         instance->retainCount = 1;
 
-        vm_push(vm, instance);
+        clkwk_push(vm, instance);
     }
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_dealloc_native(object* obj, clockwork_vm* vm)
@@ -91,50 +91,50 @@ static void object_dealloc_native(object* obj, clockwork_vm* vm)
     {
         primitive_table_dealloc(obj->ivars, vm, Yes);
     }
-    vm_free(vm, obj);
+    clkwk_free(vm, obj);
 
-    vm_pushNil(vm);
+    clkwk_pushNil(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_retain_native(object* instance, clockwork_vm* vm)
 {
     object_retain(instance, vm);
 
-    vm_pushSelf(vm);
+    clkwk_pushSelf(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_release_native(object* instance, clockwork_vm* vm)
 {
     object_release(instance, vm);
 
-    vm_pushNil(vm);
+    clkwk_pushNil(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_isNil_native(object* klass, clockwork_vm* vm)
 {
-    vm_pushFalse(vm);
+    clkwk_pushFalse(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_isTrue_native(object* klass, clockwork_vm* vm)
 {
-    vm_pushTrue(vm);
+    clkwk_pushTrue(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_isFalse_native(object* klass, clockwork_vm* vm)
 {
-    vm_pushFalse(vm);
+    clkwk_pushFalse(vm);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_description_native(object* instance, clockwork_vm* vm)
@@ -146,8 +146,8 @@ static void object_description_native(object* instance, clockwork_vm* vm)
     }
     else
     {
-        vm_makeStringCstr(vm, class_name(instance->isa, vm));
-        vm_return(vm);
+        clkwk_makeStringCstr(vm, class_name(instance->isa, vm));
+        clkwk_return(vm);
     }
 }
 
@@ -162,19 +162,19 @@ static void class_alloc_native(object* klass, clockwork_vm* vm)
     object* super = NULL;
     if (klass->super)
     {
-        vm_pushSuper(vm);
-        vm_dispatch(vm, "alloc", 0);
-        super = vm_pop(vm);
+        clkwk_pushSuper(vm);
+        clkwk_dispatch(vm, "alloc", 0);
+        super = clkwk_pop(vm);
     }
     else
     {
         object* obj = object_init(vm);
-        vm_push(vm, obj);
+        clkwk_push(vm, obj);
         return;
     }
     object* allocd = object_create_super(vm, super, (class*)klass, object_instanceSize());
-    vm_push(vm, allocd);
-    vm_return(vm);
+    clkwk_push(vm, allocd);
+    clkwk_return(vm);
 }
 
 static void class_dealloc_native(object* klass, clockwork_vm* vm)
@@ -194,23 +194,23 @@ static void class_dealloc_native(object* klass, clockwork_vm* vm)
 
     class_dealloc(klazz, vm);
 
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 static void class_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
 {
-    str* message = (str*)vm_getLocal(vm, "message");
-    array* argsArray = (array*)vm_getLocal(vm, "args");
+    str* message = (str*)clkwk_getLocal(vm, "message");
+    array* argsArray = (array*)clkwk_getLocal(vm, "args");
     char* msgBytes = str_raw_bytes(message, vm);
     if (strncmp(msgBytes, "new", 3) != 0)
     {
         if (klass->super)
         {
-            vm_pushSuper(vm);
-            vm_push(vm, (object*)argsArray);
-            vm_push(vm, (object*)message);
-            vm_dispatch(vm, "forwardMessage:withArguments:", 2);
+            clkwk_pushSuper(vm);
+            clkwk_push(vm, (object*)argsArray);
+            clkwk_push(vm, (object*)message);
+            clkwk_dispatch(vm, "forwardMessage:withArguments:", 2);
         }
         else
         {
@@ -220,9 +220,9 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
     }
     else
     {
-        vm_pushSelf(vm);
+        clkwk_pushSelf(vm);
 
-        vm_dispatch(vm, "alloc", 0);
+        clkwk_dispatch(vm, "alloc", 0);
 
         uint32_t len = str_length(message, vm);
         uint64_t argCount = 0;
@@ -234,55 +234,55 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
             argCount = array_count(argsArray, vm);
             for (uint64_t i = 0; i < argCount; i++)
             {
-                vm_push(vm, array_objectAtIndex(argsArray, vm, i));
+                clkwk_push(vm, array_objectAtIndex(argsArray, vm, i));
             }
 #warning ITERATE OVER argsArray AND PUSH EACH VALUE ONTO THE STACK.
         }
 
         initMessage[len + 1] = '\0';
 
-        vm_dispatch(vm, initMessage, argCount);
+        clkwk_dispatch(vm, initMessage, argCount);
     }
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_respondsToSelector_native(object* instance, clockwork_vm* vm)
 {
-    sel* selector = (sel*)vm_getLocal(vm, "selector");
+    sel* selector = (sel*)clkwk_getLocal(vm, "selector");
     if (object_respondsToSelector(instance, vm, str_raw_bytes(selector, vm)))
     {
-        vm_pushTrue(vm);
+        clkwk_pushTrue(vm);
     }
     else
     {
-        vm_pushFalse(vm);
+        clkwk_pushFalse(vm);
     }
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_hash_native(object* instance, clockwork_vm* vm)
 {
     integer* hash = integer_init(vm, (int64_t)instance);
-    vm_push(vm, (object*)hash);
+    clkwk_push(vm, (object*)hash);
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void object_isEqual_native(object* instance, clockwork_vm* vm)
 {
-    object* other = vm_getLocal(vm, "obj");
+    object* other = clkwk_getLocal(vm, "obj");
     if (other == instance)  // Direct pointer compare
     {
-        vm_pushTrue(vm);
+        clkwk_pushTrue(vm);
     }
     else
     {
-        vm_pushFalse(vm);
+        clkwk_pushFalse(vm);
     }
 
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 #pragma mark - Native Methods
@@ -433,9 +433,9 @@ boolean object_isMemberOfClass_native(object* obj, class* klass)
 
 object* object_init(clockwork_vm* vm)
 {
-    object* obj = vm_allocate(vm, sizeof(object));
+    object* obj = clkwk_allocate(vm, sizeof(object));
     obj->retainCount = 1;
-    obj->isa = (class*)vm_getConstant(vm, "Object");
+    obj->isa = (class*)clkwk_getConstant(vm, "Object");
     obj->super = NULL;
     obj->size = sizeof(object);
 
@@ -444,7 +444,7 @@ object* object_init(clockwork_vm* vm)
 
 object* object_create_super(struct clockwork_vm* vm, object* sup, struct class* klass, uint32_t bytes)
 {
-    object* obj = vm_allocate(vm, bytes);
+    object* obj = clkwk_allocate(vm, bytes);
     obj->isa = klass;
     obj->super = sup;
     obj->size = bytes;
@@ -463,7 +463,7 @@ void object_dealloc(object* instance, clockwork_vm* vm)
     {
         primitive_table_dealloc(instance->ivars, vm, Yes);
     }
-    vm_free(vm, instance);
+    clkwk_free(vm, instance);
 }
 
 void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* value)
@@ -521,9 +521,9 @@ void object_release(object* instance, clockwork_vm* vm)
 
     if (instance->retainCount == 0)
     {
-        vm_push(vm, instance);
-        vm_dispatch(vm, "dealloc", 0);
-        vm_pop(vm);
+        clkwk_push(vm, instance);
+        clkwk_dispatch(vm, "dealloc", 0);
+        clkwk_pop(vm);
     }
     else if (instance->retainCount < 0)
     {

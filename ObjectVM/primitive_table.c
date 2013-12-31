@@ -46,8 +46,8 @@ static uint32_t hash_string(char* string)
 
 static struct primitive_table_entry* new_entry(clockwork_vm* vm, char* key, object* obj)
 {
-    struct primitive_table_entry* entry = vm_allocate(vm, sizeof(struct primitive_table_entry));
-    entry->key = vm_allocate(vm, strlen(key));
+    struct primitive_table_entry* entry = clkwk_allocate(vm, sizeof(struct primitive_table_entry));
+    entry->key = clkwk_allocate(vm, strlen(key));
     strcpy(entry->key, key);
     entry->value = obj;
     entry->next = NULL;
@@ -57,9 +57,9 @@ static struct primitive_table_entry* new_entry(clockwork_vm* vm, char* key, obje
 
 primitive_table* primitive_table_init(clockwork_vm* vm, uint32_t capacity)
 {
-    primitive_table* table = vm_allocate(vm, sizeof(primitive_table));
+    primitive_table* table = clkwk_allocate(vm, sizeof(primitive_table));
     table->capacity = capacity;
-    table->entries = (struct primitive_table_entry**)vm_allocate(vm, sizeof(struct primitive_table_entry*) * table->capacity);
+    table->entries = (struct primitive_table_entry**)clkwk_allocate(vm, sizeof(struct primitive_table_entry*) * table->capacity);
 
     return table;
 }
@@ -71,8 +71,8 @@ void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean
         primitive_table_purge(m_table, vm);
     }
     
-    vm_freeSize(vm, m_table->entries, sizeof(struct primitive_table_entry*) * m_table->capacity);
-    vm_freeSize(vm, m_table, sizeof(primitive_table));
+    clkwk_freeSize(vm, m_table->entries, sizeof(struct primitive_table_entry*) * m_table->capacity);
+    clkwk_freeSize(vm, m_table, sizeof(primitive_table));
 }
 
 void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, object* obj)
@@ -90,12 +90,12 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
     // Already a value at this location, replace it.
     if (next != NULL && next->key != NULL && strcmp(key, next->key) == 0)
     {
-        vm_push(vm, obj);
-        vm_dispatch(vm, "retain", 0);
-        vm_pop(vm);
-        vm_push(vm, next->value);
-        vm_dispatch(vm, "release", 0);
-        vm_pop(vm);
+        clkwk_push(vm, obj);
+        clkwk_dispatch(vm, "retain", 0);
+        clkwk_pop(vm);
+        clkwk_push(vm, next->value);
+        clkwk_dispatch(vm, "release", 0);
+        clkwk_pop(vm);
         
         next->value = obj;
     }
@@ -160,15 +160,15 @@ void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
                 while (entry)
                 {
 //                    struct primitive_table_entry* old = entry;
-//                    vm_free(vm, entry->value);
+//                    clkwk_free(vm, entry->value);
 //                    entry = entry->next;
-//                    vm_free(vm, old);
+//                    clkwk_free(vm, old);
 
-                    vm_push(vm, entry->value);
-                    vm_dispatch(vm, "release", 0);
+                    clkwk_push(vm, entry->value);
+                    clkwk_dispatch(vm, "release", 0);
                     struct primitive_table_entry* old = entry;
                     entry = entry->next;
-                    vm_freeSize(vm, old, sizeof(struct primitive_table_entry));
+                    clkwk_freeSize(vm, old, sizeof(struct primitive_table_entry));
                 }
                 table->entries[i] = NULL;
             }

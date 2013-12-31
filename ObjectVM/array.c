@@ -45,7 +45,7 @@ struct array
 
 static void array_alloc_native(object* klass, clockwork_vm* vm)
 {
-    vm_push(vm, (object*)array_init(vm));
+    clkwk_push(vm, (object*)array_init(vm));
 }
 
 static void array_dealloc_native(object* instance, clockwork_vm* vm)
@@ -56,72 +56,72 @@ static void array_dealloc_native(object* instance, clockwork_vm* vm)
     {
         for (uint64_t i = 0; i < count; i++)
         {
-            vm_push(vm, ary->contents[i]);
-            vm_dispatch(vm, "release", 0);
-            vm_pop(vm);
+            clkwk_push(vm, ary->contents[i]);
+            clkwk_dispatch(vm, "release", 0);
+            clkwk_pop(vm);
         }
 
-        vm_freeSize(vm, ary->contents, sizeof(object*) * count);
+        clkwk_freeSize(vm, ary->contents, sizeof(object*) * count);
     }
-    vm_pushSuper(vm);
-    vm_dispatch(vm, "dealloc", 0);
-    vm_free(vm, instance);
-    vm_pop(vm);
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushSuper(vm);
+    clkwk_dispatch(vm, "dealloc", 0);
+    clkwk_free(vm, instance);
+    clkwk_pop(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 static void array_count_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    vm_push(vm, (object*)integer_init(vm, array_count(ary, vm)));
-    vm_return(vm);
+    clkwk_push(vm, (object*)integer_init(vm, array_count(ary, vm)));
+    clkwk_return(vm);
 }
 
 static void array_objectAtIndex_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = vm_getLocal(vm, "idx");
+    object* obj = clkwk_getLocal(vm, "idx");
     integer* idx = (integer*)obj;
-    if (!object_isMemberOfClass_native(obj, (class*)vm_getConstant(vm, "Integer")))     // Not super sure if I actually want type coercion.
+    if (!object_isMemberOfClass_native(obj, (class*)clkwk_getConstant(vm, "Integer")))     // Not super sure if I actually want type coercion.
     {
-        vm_push(vm, obj);
-        vm_dispatch(vm, "toInt", 0);
-        idx = (integer*)vm_pop(vm);
+        clkwk_push(vm, obj);
+        clkwk_dispatch(vm, "toInt", 0);
+        idx = (integer*)clkwk_pop(vm);
 #warning CONFIRM idx IS ACTUALLY AN INTEGER?
     }
     object* result = array_objectAtIndex(ary, vm, integer_toInt64(idx, vm));
     if (result)
     {
-        vm_push(vm, result);
+        clkwk_push(vm, result);
     }
     else
     {
-        vm_pushNil(vm);
+        clkwk_pushNil(vm);
     }
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void array_add_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = vm_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, "obj");
     array_add(ary, vm, obj);
-    vm_push(vm, instance);
-    vm_return(vm);
+    clkwk_push(vm, instance);
+    clkwk_return(vm);
 }
 
 static void array_remove_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = vm_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, "obj");
     boolean removed = No;
     for (uint64_t i = 0; i < array_count(ary, vm); i++)
 	{
-		vm_push(vm, array_objectAtIndex(ary, vm, i));
-        vm_push(vm, obj);
-        vm_dispatch(vm, "isEqual:", 1);
-        if (object_isTrue(vm_pop(vm), vm))
+		clkwk_push(vm, array_objectAtIndex(ary, vm, i));
+        clkwk_push(vm, obj);
+        clkwk_dispatch(vm, "isEqual:", 1);
+        if (object_isTrue(clkwk_pop(vm), vm))
         {
             array_remove(ary, vm, obj);
             removed = Yes;
@@ -130,13 +130,13 @@ static void array_remove_native(object* instance, clockwork_vm* vm)
 
     if (removed)
     {
-        vm_push(vm, obj);
+        clkwk_push(vm, obj);
     }
     else
     {
-        vm_pushNil(vm);
+        clkwk_pushNil(vm);
     }
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void array_isEmpty_native(object* instance, clockwork_vm* vm)
@@ -144,26 +144,26 @@ static void array_isEmpty_native(object* instance, clockwork_vm* vm)
     array* ary = (array*)instance;
     if (array_count(ary, vm) == 0)
     {
-        vm_pushTrue(vm);
+        clkwk_pushTrue(vm);
     }
     else
     {
-        vm_pushFalse(vm);
+        clkwk_pushFalse(vm);
     }
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void array_contains_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = vm_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, "obj");
     boolean found = No;
     for (int i = 0; i < array_count(ary, vm); i++)
 	{
-		vm_push(vm, array_objectAtIndex(ary, vm, i));
-        vm_push(vm, obj);
-        vm_dispatch(vm, "isEqual:", 1);
-        if (object_isTrue(vm_pop(vm), vm))
+		clkwk_push(vm, array_objectAtIndex(ary, vm, i));
+        clkwk_push(vm, obj);
+        clkwk_dispatch(vm, "isEqual:", 1);
+        if (object_isTrue(clkwk_pop(vm), vm))
         {
             found = Yes;
             break;
@@ -172,33 +172,33 @@ static void array_contains_native(object* instance, clockwork_vm* vm)
 
     if (found)
     {
-        vm_pushTrue(vm);
+        clkwk_pushTrue(vm);
     }
     else
     {
-        vm_pushFalse(vm);
+        clkwk_pushFalse(vm);
     }
-    vm_return(vm);
+    clkwk_return(vm);
 }
 
 static void array_indexOf_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = vm_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, "obj");
     for (uint64_t i = 0; i < array_count(ary, vm); i++)
 	{
-		vm_push(vm, array_objectAtIndex(ary, vm, i));
-        vm_push(vm, obj);
-        vm_dispatch(vm, "isEqual:", 1);
-        if (object_isTrue(vm_pop(vm), vm))
+		clkwk_push(vm, array_objectAtIndex(ary, vm, i));
+        clkwk_push(vm, obj);
+        clkwk_dispatch(vm, "isEqual:", 1);
+        if (object_isTrue(clkwk_pop(vm), vm))
         {
-            vm_push(vm, (object*)integer_init(vm, i));
+            clkwk_push(vm, (object*)integer_init(vm, i));
             return;
         }
 	}
 
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 #pragma mark - Native Methods
@@ -249,7 +249,7 @@ class* array_class(clockwork_vm* vm)
 array* array_init(clockwork_vm* vm)
 {
     object* arraySuper = object_init(vm);
-    array* ary = (array*)object_create_super(vm, arraySuper, (class*)vm_getConstant(vm, "Array"), sizeof(array));
+    array* ary = (array*)object_create_super(vm, arraySuper, (class*)clkwk_getConstant(vm, "Array"), sizeof(array));
     ary->size = sizeof(array);
     return ary;
 }
@@ -288,7 +288,7 @@ void array_add(array* ary, clockwork_vm* vm, object* obj)
 {
     if (ary->contents == NULL)
     {
-        ary->contents = vm_allocate(vm, sizeof(object*) * c_array_baseStorage);
+        ary->contents = clkwk_allocate(vm, sizeof(object*) * c_array_baseStorage);
         ary->capacity = c_array_baseStorage;
     }
     else if (ary->count + 1 > ary->capacity)
@@ -296,9 +296,9 @@ void array_add(array* ary, clockwork_vm* vm, object* obj)
 #warning GROW ARRAY
     }
 
-    vm_push(vm, obj);
-    vm_dispatch(vm, "retain", 0);
-    ary->contents[ary->count++] = vm_pop(vm);
+    clkwk_push(vm, obj);
+    clkwk_dispatch(vm, "retain", 0);
+    ary->contents[ary->count++] = clkwk_pop(vm);
 }
 
 void array_remove(array* ary, clockwork_vm* vm, object* obj)
@@ -314,9 +314,9 @@ void array_remove(array* ary, clockwork_vm* vm, object* obj)
 
 void array_removeAtIndex(array* ary, clockwork_vm* vm, uint64_t idx)
 {
-    vm_push(vm, ary->contents[idx]);
-    vm_dispatch(vm, "release", 0);
-    vm_pop(vm);
+    clkwk_push(vm, ary->contents[idx]);
+    clkwk_dispatch(vm, "release", 0);
+    clkwk_pop(vm);
 
     for (uint64_t i = idx + 1; i < ary->count; i++)
 	{

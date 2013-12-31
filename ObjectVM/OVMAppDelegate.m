@@ -26,21 +26,17 @@
 
 static void test_class_method(object* instance, clockwork_vm* vm)
 {
-    vm_pushTrue(vm);
+    clkwk_pushTrue(vm);
 }
 
 @implementation OVMAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    [self testNilObject];
-    [self testCreateString];
     [self testPrints];
-    [self testAddInstanceMethod];
     [self testAddClassMethod];
     [self testInputStream];
     [self testTokenizer];
-    [self testNilMessage];
 
     //    [self testForwardCrash];
 }
@@ -70,64 +66,64 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 - (void) testAddInstanceMethod
 {
-    clockwork_vm* vm = vm_init();
+    clockwork_vm* vm = clkwk_init();
 
-    vm_openClass(vm, "Foo", "Object");
+    clkwk_openClass(vm, "Foo", "Object");
 
     block* blk = block_init_native(vm, NULL, &test_class_method);
-    vm_push(vm, (object*)blk);
+    clkwk_push(vm, (object*)blk);
 
-    vm_makeStringCstr(vm, "bar");
+    clkwk_makeStringCstr(vm, "bar");
 
-    vm_dispatch(vm, "addInstanceMethod:withImpl:", 2);
+    clkwk_dispatch(vm, "addInstanceMethod:withImpl:", 2);
 
-    vm_dispatch(vm, "alloc", 0);
-    vm_dispatch(vm, "init", 0);
+    clkwk_dispatch(vm, "alloc", 0);
+    clkwk_dispatch(vm, "init", 0);
 
-    vm_dispatch(vm, "bar", 0);
+    clkwk_dispatch(vm, "bar", 0);
 
-    object* tru = vm_pop(vm);
+    object* tru = clkwk_pop(vm);
     assert(object_isTrue(tru, vm));
     
-    vm_dealloc(vm);
+    clkwk_dealloc(vm);
 }
 
 - (void) testAddClassMethod
 {
-    clockwork_vm* vm = vm_init();
+    clockwork_vm* vm = clkwk_init();
 
-    vm_openClass(vm, "Foo", "Object");
+    clkwk_openClass(vm, "Foo", "Object");
 
     block* blk = block_init_native(vm, NULL, &test_class_method);
-    vm_push(vm, (object*)blk);
+    clkwk_push(vm, (object*)blk);
 
-    vm_makeStringCstr(vm, "bar");
+    clkwk_makeStringCstr(vm, "bar");
 
-    vm_dispatch(vm, "addClassMethod:withImpl:", 2);
+    clkwk_dispatch(vm, "addClassMethod:withImpl:", 2);
 
-    vm_push(vm, vm_getConstant(vm, "Foo"));
-    vm_dispatch(vm, "bar", 0);
+    clkwk_push(vm, clkwk_getConstant(vm, "Foo"));
+    clkwk_dispatch(vm, "bar", 0);
 
-    object* tru = vm_pop(vm);
+    object* tru = clkwk_pop(vm);
     assert(object_isTrue(tru, vm));
 
-    vm_dealloc(vm);
+    clkwk_dealloc(vm);
 }
 
 - (void) testPrints
 {
-    clockwork_vm* vm = vm_init();
+    clockwork_vm* vm = clkwk_init();
 
-    instruction inst = (instruction){ .op = VM_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
+    instruction inst = (instruction){ .op = clkwk_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
     assembler_run_instruction(&inst, vm);
 
-    vm_popPrintln(vm);
+    clkwk_popPrintln(vm);
 
-    vm_push(vm, vm_getConstant(vm, "Object"));
-    vm_dispatch(vm, "description", 0);
-    vm_popPrintln(vm);
+    clkwk_push(vm, clkwk_getConstant(vm, "Object"));
+    clkwk_dispatch(vm, "description", 0);
+    clkwk_popPrintln(vm);
     
-    vm_dealloc(vm);
+    clkwk_dealloc(vm);
 }
 
 - (void) testTokenizer
@@ -198,91 +194,25 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     input_stream_dealloc(inputStream);
 }
 
-- (void) testCreateString
-{
-//    clockwork_vm* vm = vm_init();
-//
-//    instruction inst = (instruction){ .op = VM_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
-//    assembler_run_instruction(&inst, vm);
-//
-//    object* obj = vm_pop(vm);
-//
-//    assert(obj);
-//    assert(object_isKindOfClass_native((object*)obj, (class*)vm_getConstant(vm, "String")));
-//
-//    str* s = (str*)obj;
-//
-//    assert(strcmp(str_raw_bytes(s, vm), "Foobar") == 0);
-//
-//    vm_dealloc(vm);
-
-    clockwork_vm* vm = vm_init();
-    vm_pushConst(vm, "String");
-
-    vm_dispatch(vm, "alloc", 0);
-    vm_dispatch(vm, "init", 0);
-
-    str* s = (str*)vm_pop(vm);
-
-    assert(s);
-    assert(object_isKindOfClass_native((object*)s, (class*)vm_getConstant(vm, "String")));
-
-    vm_push(vm, (object*)s);
-    vm_dispatch(vm, "release", 0);
-
-    vm_dealloc(vm);
-}
-
-- (void) testNilObject
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_pushNil(vm);
-
-    vm_dispatch(vm, "isNil", 0);
-
-    object* trueObj = vm_pop(vm);
-    vm_push(vm, trueObj);
-
-    vm_dispatch(vm, "isTrue", 0);
-
-    assert(vm_pop(vm) == trueObj);
-
-    vm_dealloc(vm);
-}
-
 - (void) testForwardCrash
 {
-    clockwork_vm* vm = vm_init();
+    clockwork_vm* vm = clkwk_init();
 
-    vm_pushConst(vm, "Object");
-    vm_dispatch(vm, "new", 0);
+    clkwk_pushConst(vm, "Object");
+    clkwk_dispatch(vm, "new", 0);
 
-    object* obj = vm_pop(vm);
+    object* obj = clkwk_pop(vm);
 
     assert(obj);
-    assert(object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Object")));
+    assert(object_isKindOfClass_native(obj, (class*)clkwk_getConstant(vm, "Object")));
 
-    vm_push(vm, obj);
-    vm_dispatch(vm, "thisShouldCrash", 0);
+    clkwk_push(vm, obj);
+    clkwk_dispatch(vm, "thisShouldCrash", 0);
 
-    vm_push(vm, obj);
-    vm_dispatch(vm, "release", 0);
+    clkwk_push(vm, obj);
+    clkwk_dispatch(vm, "release", 0);
     
-    vm_dealloc(vm);
-}
-
-- (void) testNilMessage
-{
-    clockwork_vm* vm = vm_init();
-
-    vm_pushNil(vm);
-    vm_dispatch(vm, "anything", 0);
-    vm_pop(vm);
-    vm_pushConst(vm, "Nil");
-    vm_dispatch(vm, "anything", 0);
-
-    vm_dealloc(vm);
+    clkwk_dealloc(vm);
 }
 
 @end

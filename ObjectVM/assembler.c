@@ -49,113 +49,113 @@ void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
 {
     switch (inst->op)
     {
-        case VM_NOOP:
+        case clkwk_NOOP:
         {
             break;
         }
-        case VM_GOTO:
-        {
-            uint64_t location = cstr_to_uint64(inst->params[0]);
-            vm_goto(vm, location);
-            break;
-        }
-        case VM_GOTO_IF_FALSE:
+        case clkwk_GOTO:
         {
             uint64_t location = cstr_to_uint64(inst->params[0]);
-            vm_gotoIfFalse(vm, location);
+            clkwk_goto(vm, location);
             break;
         }
-        case VM_GOTO_IF_TRUE:
+        case clkwk_GOTO_IF_FALSE:
         {
             uint64_t location = cstr_to_uint64(inst->params[0]);
-            vm_gotoIfTrue(vm, location);
+            clkwk_gotoIfFalse(vm, location);
             break;
         }
-        case VM_POP:
+        case clkwk_GOTO_IF_TRUE:
         {
-            vm_pop(vm);
+            uint64_t location = cstr_to_uint64(inst->params[0]);
+            clkwk_gotoIfTrue(vm, location);
             break;
         }
-        case VM_PUSH_NIL:
+        case clkwk_POP:
         {
-            vm_pushNil(vm);
+            clkwk_pop(vm);
             break;
         }
-        case VM_PUSH_FALSE:
+        case clkwk_PUSH_NIL:
         {
-            vm_pushFalse(vm);
+            clkwk_pushNil(vm);
             break;
         }
-        case VM_PUSH_TRUE:
+        case clkwk_PUSH_FALSE:
         {
-            vm_pushTrue(vm);
+            clkwk_pushFalse(vm);
             break;
         }
-        case VM_PUSH_LOCAL:
+        case clkwk_PUSH_TRUE:
         {
-            vm_pushLocal(vm, inst->params[0]);
+            clkwk_pushTrue(vm);
             break;
         }
-        case VM_SET_LOCAL:
+        case clkwk_PUSH_LOCAL:
         {
-            vm_setLocal(vm, inst->params[0]);
+            clkwk_pushLocal(vm, inst->params[0]);
             break;
         }
-        case VM_POP_TO_LOCAL:
+        case clkwk_SET_LOCAL:
         {
-            vm_popToLocal(vm, inst->params[0]);
+            clkwk_setLocal(vm, inst->params[0]);
             break;
         }
-        case VM_PUSH_SELF:
+        case clkwk_POP_TO_LOCAL:
         {
-            vm_pushSelf(vm);
+            clkwk_popToLocal(vm, inst->params[0]);
             break;
         }
-        case VM_PUSH_SUPER:
+        case clkwk_PUSH_SELF:
         {
-            vm_pushSuper(vm);
+            clkwk_pushSelf(vm);
             break;
         }
-        case VM_PUSH_IVAR:
+        case clkwk_PUSH_SUPER:
         {
-            vm_pushIvar(vm, inst->params[0]);
+            clkwk_pushSuper(vm);
             break;
         }
-        case VM_SET_IVAR:
+        case clkwk_PUSH_IVAR:
         {
-            vm_setIvar(vm, inst->params[0]);
+            clkwk_pushIvar(vm, inst->params[0]);
             break;
         }
-        case VM_PRINT:
+        case clkwk_SET_IVAR:
         {
-            vm_popPrintln(vm);
+            clkwk_setIvar(vm, inst->params[0]);
             break;
         }
-        case VM_PUSH_STRING:
+        case clkwk_PRINT:
+        {
+            clkwk_popPrintln(vm);
+            break;
+        }
+        case clkwk_PUSH_STRING:
         {
             str* s = str_init(vm, inst->params[0]);
-            vm_push(vm, (object*)s);
+            clkwk_push(vm, (object*)s);
             break;
         }
-        case VM_PUSH_INT:
+        case clkwk_PUSH_INT:
         {
             integer* i = integer_init(vm, cstr_to_int64(inst->params[0]));
-            vm_push(vm, (object*)i);
+            clkwk_push(vm, (object*)i);
             break;
         }
-        case VM_PUSH_NUMBER:
+        case clkwk_PUSH_NUMBER:
         {
 #warning IMPLEMENT
             break;
         }
-        case VM_PUSH_CONSTANT:
+        case clkwk_PUSH_CONSTANT:
         {
 #warning IMPLEMENT
             break;
         }
-        case VM_RETURN:
+        case clkwk_RETURN:
         {
-            vm_return(vm);
+            clkwk_return(vm);
             break;
         }
         default:
@@ -180,7 +180,7 @@ void assembler_run_block(block* block, struct clockwork_vm* vm)
         native_block native = block_native(block, vm);
         if (native != NULL)
         {
-            native(vm_currentSelf(vm), vm);
+            native(clkwk_currentSelf(vm), vm);
         }
         else
         {

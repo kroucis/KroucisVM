@@ -13,7 +13,6 @@
 #include "object.h"
 #include "str.h"
 #include "block.h"
-#include "object_table.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,45 +23,45 @@
 
 static void nil_isNil_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushTrue(vm);
-    vm_return(vm);
+    clkwk_pushTrue(vm);
+    clkwk_return(vm);
 }
 
 static void nil_isTrue_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushFalse(vm);
-    vm_return(vm);
+    clkwk_pushFalse(vm);
+    clkwk_return(vm);
 }
 
 static void nil_isFalse_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushTrue(vm);
-    vm_return(vm);
+    clkwk_pushTrue(vm);
+    clkwk_return(vm);
 }
 
 static void nil_dealloc_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 static void nil_retain_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushSelf(vm);
-    vm_return(vm);
+    clkwk_pushSelf(vm);
+    clkwk_return(vm);
 }
 
 static void nil_release_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 static void nil_forwardMessage_withArguments_native(object* obj, clockwork_vm* vm)
 {
     printf("DEBUG: nil was messaged. Ignoring.\n");
-    vm_pushNil(vm);
-    vm_return(vm);
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
 }
 
 #pragma mark - Native Methods
@@ -117,11 +116,11 @@ class* nil_class(struct clockwork_vm* vm)
 object* nil_instance(clockwork_vm* vm)
 {
     object* nilSuper = object_init(vm);
-    object* nilObj = object_create_super(vm, nilSuper, (class*)vm_getConstant(vm, "Nil"), sizeof(void*) * 3);
+    object* nilObj = object_create_super(vm, nilSuper, (class*)clkwk_getConstant(vm, "Nil"), sizeof(void*) * 3);
     return nilObj;
 }
 
 int object_isNil(object* obj, clockwork_vm* vm)
 {
-    return object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "Nil"));
+    return object_isKindOfClass_native(obj, (class*)clkwk_getConstant(vm, "Nil"));
 }

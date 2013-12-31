@@ -42,7 +42,7 @@ struct block
 
 local_scope* local_scope_init(clockwork_vm* vm)
 {
-    local_scope* ls = vm_allocate(vm, sizeof(local_scope));
+    local_scope* ls = clkwk_allocate(vm, sizeof(local_scope));
     return ls;
 }
 
@@ -52,21 +52,21 @@ void local_scope_dealloc(local_scope* scope, clockwork_vm* vm)
     {
         for (int i = 0; i < scope->count; i++)
         {
-            vm_freeSize(vm, scope->locals[i], strlen(scope->locals[i]));
+            clkwk_freeSize(vm, scope->locals[i], strlen(scope->locals[i]));
         }
-        vm_freeSize(vm, scope->locals, sizeof(char*) * scope->count);
+        clkwk_freeSize(vm, scope->locals, sizeof(char*) * scope->count);
     }
-    vm_freeSize(vm, scope, sizeof(local_scope));
+    clkwk_freeSize(vm, scope, sizeof(local_scope));
 }
 
 void local_scope_addLocal(local_scope* scope, clockwork_vm* vm, char* localName)
 {
     if (scope->locals == NULL)
     {
-        scope->locals = vm_allocate(vm, sizeof(char*) * 5);
+        scope->locals = clkwk_allocate(vm, sizeof(char*) * 5);
     }
 
-    scope->locals[scope->count] = vm_allocate(vm, sizeof(strlen(localName)));
+    scope->locals[scope->count] = clkwk_allocate(vm, sizeof(strlen(localName)));
     strcpy(scope->locals[scope->count], localName);
     scope->count++;
 }
@@ -96,11 +96,11 @@ class* block_class(clockwork_vm* vm)
 
 block* block_initIseq(clockwork_vm* vm, local_scope* locals, instruction_sequence* iseq)
 {
-    block* m = (block*)vm_allocate(vm, sizeof(block));
+    block* m = (block*)clkwk_allocate(vm, sizeof(block));
     m->locals = locals;
-    m->instructions = vm_allocate(vm, sizeof(iseq));
+    m->instructions = clkwk_allocate(vm, sizeof(iseq));
     m->instructions->inst_count = iseq->inst_count;
-    m->instructions->instructions = vm_allocate(vm, sizeof(instruction) * iseq->inst_count);
+    m->instructions->instructions = clkwk_allocate(vm, sizeof(instruction) * iseq->inst_count);
     m->nativeFunc = NULL;
     memcpy(m->instructions->instructions, iseq->instructions, sizeof(instruction) * iseq->inst_count);
 
@@ -109,7 +109,7 @@ block* block_initIseq(clockwork_vm* vm, local_scope* locals, instruction_sequenc
 
 block* block_init_native(clockwork_vm* vm, local_scope* locals, native_block func)
 {
-    block* m = (block*)vm_allocate(vm, sizeof(block));
+    block* m = (block*)clkwk_allocate(vm, sizeof(block));
     m->locals = locals;
     m->instructions = NULL;
     m->nativeFunc = func;
@@ -127,11 +127,11 @@ void block_dealloc(block* instance, clockwork_vm* vm)
 
     if (!instance->nativeFunc)
     {
-        vm_freeSize(vm, instance->instructions->instructions, sizeof(instruction) * instance->instructions->inst_count);
-        vm_freeSize(vm, instance->instructions, sizeof(instruction_sequence));
+        clkwk_freeSize(vm, instance->instructions->instructions, sizeof(instruction) * instance->instructions->inst_count);
+        clkwk_freeSize(vm, instance->instructions, sizeof(instruction_sequence));
     }
 
-    vm_free(vm, (object*)instance);
+    clkwk_free(vm, (object*)instance);
 }
 
 instruction_sequence* block_instructions(block* instance, clockwork_vm* vm)

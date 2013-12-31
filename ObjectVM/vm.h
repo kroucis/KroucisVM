@@ -15,66 +15,153 @@ struct str;
 
 typedef struct clockwork_vm clockwork_vm;
 
-clockwork_vm* vm_init(void);
-void vm_dealloc(clockwork_vm*);
+/**
+ *  Allocate and initialize a new ClockworkVM instance.
+ *  @return A new clockwork_vm instance or NULL if an error occurred.
+ */
+clockwork_vm* clkwk_init(void);
 
-// MISCELLANEOUS
-void vm_print(clockwork_vm*, struct str*);
-void vm_println(clockwork_vm*, struct str*);
-void vm_popPrintln(clockwork_vm*);
-void vm_pushClockwork(clockwork_vm* vm);
+/**
+ *  Deallocate the given clockwork_vm instance. This sends -release to the root object in the VM
+ *  instance, ideally triggering the dealloc chain for all remaining objects within the VM.
+ *
+ *  @param vm The VM instance to deallocate.
+ */
+void clkwk_dealloc(clockwork_vm* vm);
 
-struct object* vm_currentSelf(clockwork_vm*);
+// --- MISCELLANEOUS ---
+/**
+ *  Print the given string object to the VM's output (stdout by default).
+ *
+ *  @param vm The VM instance to work with.
+ *  @param string The string to print.
+ */
+void clkwk_print(clockwork_vm* vm, struct str* string);
 
-// MEMORY MANAGEMENT
-void* vm_allocate(clockwork_vm*, uint64_t);
-void vm_free(clockwork_vm*, struct object*);
-void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
+/**
+ *  Print the given string object followed by a newline char to the VM's output (stdout by default).
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *  @param string The string to print.
+ */
+void clkwk_println(clockwork_vm* vm, struct str* string);
 
-// INSTRUCTIONS
+/**
+ *  Pop the first object from the stack and pass it to clkwk_println(2).
+ *
+ *  BEFORE  [ obj, ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @param vm The VM instance to work with.
+ */
+void clkwk_popPrintln(clockwork_vm* vm);
 
-// PROGRAM COUNTER  -- SHOULD THIS BE HERE? THIS IS A FUNCTION OF THE ASSEMBLER, RIGHT?
-void vm_goto(clockwork_vm* vm, uint64_t location);
-void vm_gotoIfFalse(clockwork_vm* vm, uint64_t location);
-void vm_gotoIfTrue(clockwork_vm* vm, uint64_t location);
+/**
+ *  Push the given clockwork_vm instance onto its own stack.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ vm, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ */
+void clkwk_pushClockwork(clockwork_vm* vm);
 
-// PUSH / POP
-void vm_push(clockwork_vm* vm, struct object* obj);
-struct object* vm_pop(clockwork_vm* vm);
-void vm_pushNil(clockwork_vm* vm);
-void vm_pushTrue(clockwork_vm* vm);
-void vm_pushFalse(clockwork_vm* vm);
+/**
+ *  Get the current self object in the given ClockworkVM instance.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *
+ *  @return The current self object.
+ */
+struct object* clkwk_currentSelf(clockwork_vm* vm);
 
-// LOCALS
-void vm_setLocal(clockwork_vm* vm, char* local);
-void vm_popToLocal(clockwork_vm* vm, char* local);
-void vm_pushLocal(clockwork_vm* vm, char* local);
-struct object* vm_getLocal(clockwork_vm* vm, char* local);
+// --- MEMORY MANAGEMENT ---
+/**
+ *  Ask the given ClockworkVM instance to allocate and manage a chunk of memory.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *  @param bytes Number of bytes to allocate and track.
+ *
+ *  @return An allocated chunk that is at least <bytes> in size.
+ */
+void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes);
 
-// IVARS
-void vm_setIvar(clockwork_vm* vm, char* ivar);
-void vm_pushIvar(clockwork_vm* vm, char* ivar);
+/**
+ *  Deallocates the memory backing <obj>.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @note This does not call -release or -dealloc on any of the object's members, it simply calls
+ *      clkwk_freeSize(3) to deallocate the object's memory.
+ *  @param vm The VM instance to work with.
+ *  @param obj The object to free.
+ */
+void clkwk_free(clockwork_vm* vm, struct object* obj);
 
-// SELF AND SUPER
-void vm_pushSelf(clockwork_vm* vm);
-void vm_pushSuper(clockwork_vm* vm);
+/**
+ *  Deallocates the memory pointed to by <memory>.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *  @param memory Pointer to the memory chunk to be freed.
+ *  @param bytes The number of bytes being freed.
+ */
+void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
 
-// CONSTANTS
-void vm_pushConst(clockwork_vm*, char*);
-void vm_setConst(clockwork_vm*, char*);
-struct object* vm_getConstant(clockwork_vm*, char*);
+// --- PROGRAM COUNTER --- >> SHOULD THIS BE HERE? THIS IS A FUNCTION OF THE ASSEMBLER, RIGHT?
+void clkwk_goto(clockwork_vm* vm, uint64_t location);
+void clkwk_gotoIfFalse(clockwork_vm* vm, uint64_t location);
+void clkwk_gotoIfTrue(clockwork_vm* vm, uint64_t location);
 
-// CLASSES
-void vm_openClass(clockwork_vm*, char*, char*);
-//void vm_openClassWithMixins(clockwork_vm*, char*, char*, char**, uint8_t);
+// --- PUSH / POP ---
+void clkwk_push(clockwork_vm* vm, struct object* obj);
+struct object* clkwk_pop(clockwork_vm* vm);
+void clkwk_pushNil(clockwork_vm* vm);
+void clkwk_pushTrue(clockwork_vm* vm);
+void clkwk_pushFalse(clockwork_vm* vm);
 
-// BLOCKS
-void vm_openBlock(clockwork_vm*);
-void vm_closeBlock(clockwork_vm*);
+// --- LOCALS ---
+void clkwk_setLocal(clockwork_vm* vm, char* local);
+void clkwk_popToLocal(clockwork_vm* vm, char* local);
+void clkwk_pushLocal(clockwork_vm* vm, char* local);
+struct object* clkwk_getLocal(clockwork_vm* vm, char* local);
 
-// DISPATCH
-void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count);
-void vm_return(clockwork_vm* vm);
+// --- IVARS ---
+void clkwk_setIvar(clockwork_vm* vm, char* ivar);
+void clkwk_pushIvar(clockwork_vm* vm, char* ivar);
 
-// HELPERS
-void vm_makeStringCstr(clockwork_vm* vm, const char* const string);
+// --- SELF AND SUPER ---
+void clkwk_pushSelf(clockwork_vm* vm);
+void clkwk_pushSuper(clockwork_vm* vm);
+
+// --- CONSTANTS ---
+void clkwk_pushConst(clockwork_vm* vm, char* name);
+void clkwk_setConst(clockwork_vm* vm, char* name);
+struct object* clkwk_getConstant(clockwork_vm*, char*);
+
+// --- CLASSES ---
+void clkwk_openClass(clockwork_vm* vm, char*, char*);
+//void clkwk_openClassWithMixins(clockwork_vm*, char*, char*, char**, uint8_t);
+
+// --- BLOCKS ---
+void clkwk_openBlock(clockwork_vm* vm);
+void clkwk_closeBlock(clockwork_vm* vm);
+
+// --- DISPATCH ---
+void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count);
+void clkwk_return(clockwork_vm* vm);
+
+// --- HELPERS ---
+void clkwk_makeStringCstr(clockwork_vm* vm, const char* const string);

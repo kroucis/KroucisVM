@@ -13,7 +13,7 @@
 #include "object.h"
 #include "str.h"
 #include "stack.h"
-#include "object_table.h"
+#include "dictionary.h"
 #include "block.h"
 #include "assembler.h"
 #include "nil.h"
@@ -32,7 +32,7 @@ struct clockwork_vm
 {
     class* isa;
     object* super;
-    object_table* ivars;
+    dictionary* ivars;
 
     uint64_t pc;
     stack* stack;
@@ -62,7 +62,7 @@ class* clockwork_class(clockwork_vm* vm)
     return clockworkClass;
 }
 
-clockwork_vm* vm_init(void)
+clockwork_vm* clkwk_init(void)
 {
     clockwork_vm* vm = (clockwork_vm*)calloc(1, sizeof(clockwork_vm));
     vm->stack = stack_init();
@@ -112,7 +112,7 @@ clockwork_vm* vm_init(void)
     return vm;
 }
 
-void vm_dealloc(clockwork_vm* vm)
+void clkwk_dealloc(clockwork_vm* vm)
 {
     for (int i = 0; i < stack_count(vm->stack); i++)
 	{
@@ -132,36 +132,36 @@ void vm_dealloc(clockwork_vm* vm)
 
 #pragma mark - MISCELLANEOUS
 
-void vm_print(clockwork_vm* vm, str* string)
+void clkwk_print(clockwork_vm* vm, str* string)
 {
     printf("%.*s", str_length(string, vm), str_raw_bytes(string, vm));
 }
 
-void vm_println(clockwork_vm* vm, str* string)
+void clkwk_println(clockwork_vm* vm, str* string)
 {
-    vm_print(vm, string);
+    clkwk_print(vm, string);
     printf("\n");
 }
 
-void vm_popPrintln(clockwork_vm* vm)
+void clkwk_popPrintln(clockwork_vm* vm)
 {
-    str* string = (str*)vm_pop(vm);
-    vm_println(vm, string);
+    str* string = (str*)clkwk_pop(vm);
+    clkwk_println(vm, string);
 }
 
-void vm_pushClockwork(clockwork_vm* vm)
+void clkwk_pushClockwork(clockwork_vm* vm)
 {
     stack_push(vm->stack, (object*)vm);
 }
 
-object* vm_currentSelf(clockwork_vm* vm)
+object* clkwk_currentSelf(clockwork_vm* vm)
 {
     return vm->currentSelf;
 }
 
 #pragma mark - MEMORY MANAGEMENT
 
-void* vm_allocate(clockwork_vm* vm, uint64_t bytes)
+void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes)
 {
     void* value = calloc(1, bytes);
     if (!value)
@@ -176,12 +176,12 @@ void* vm_allocate(clockwork_vm* vm, uint64_t bytes)
     return value;
 }
 
-void vm_free(clockwork_vm* vm, object* obj)
+void clkwk_free(clockwork_vm* vm, object* obj)
 {
-    vm_freeSize(vm, obj, object_size(obj));
+    clkwk_freeSize(vm, obj, object_size(obj));
 }
 
-void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
+void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
 {
     vm->allocatedMemory -= bytes;
     free(memory);
@@ -191,12 +191,12 @@ void vm_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
 
 #pragma mark - PROGRAM COUNTER
 
-void vm_goto(clockwork_vm* vm, uint64_t location)
+void clkwk_goto(clockwork_vm* vm, uint64_t location)
 {
     vm->pc = location;
 }
 
-void vm_gotoIfFalse(clockwork_vm* vm, uint64_t location)
+void clkwk_gotoIfFalse(clockwork_vm* vm, uint64_t location)
 {
 //    object* obj = stack_pop(vm->stack);
 //    if (object_is_false(obj))
@@ -205,7 +205,7 @@ void vm_gotoIfFalse(clockwork_vm* vm, uint64_t location)
 //    }
 }
 
-void vm_gotoIfTrue(clockwork_vm* vm, uint64_t location)
+void clkwk_gotoIfTrue(clockwork_vm* vm, uint64_t location)
 {
 //    object* obj = stack_pop(vm->stack);
 //    if (object_is_true(obj))
@@ -216,38 +216,38 @@ void vm_gotoIfTrue(clockwork_vm* vm, uint64_t location)
 
 #pragma mark - PUSH / POP
 
-void vm_push(clockwork_vm* vm, object* obj)
+void clkwk_push(clockwork_vm* vm, object* obj)
 {
 #warning TODO: This was trashing the instanceMethods table in pushed classes. Need to rethink this.
 //    object_retain(obj, vm);
     stack_push(vm->stack, obj);
 }
 
-object* vm_pop(clockwork_vm* vm)
+object* clkwk_pop(clockwork_vm* vm)
 {
 #warning LEAK?
     object* obj = stack_pop(vm->stack);
     return obj;
 }
 
-void vm_pushNil(clockwork_vm* vm)
+void clkwk_pushNil(clockwork_vm* vm)
 {
     stack_push(vm->stack, vm->nilObject);
 }
 
-void vm_pushTrue(clockwork_vm* vm)
+void clkwk_pushTrue(clockwork_vm* vm)
 {
     stack_push(vm->stack, vm->trueObject);
 }
 
-void vm_pushFalse(clockwork_vm* vm)
+void clkwk_pushFalse(clockwork_vm* vm)
 {
     stack_push(vm->stack, vm->falseObject);
 }
 
 #pragma mark - LOCALS
 
-void vm_setLocal(clockwork_vm* vm, char* local)
+void clkwk_setLocal(clockwork_vm* vm, char* local)
 {
     object* obj = stack_pop(vm->stack);
     if (obj == NULL)
@@ -261,7 +261,7 @@ void vm_setLocal(clockwork_vm* vm, char* local)
     stack_push(vm->stack, obj);
 }
 
-void vm_popToLocal(clockwork_vm* vm, char* local)
+void clkwk_popToLocal(clockwork_vm* vm, char* local)
 {
     object* obj = stack_pop(vm->stack);
     if (obj == NULL)
@@ -271,7 +271,7 @@ void vm_popToLocal(clockwork_vm* vm, char* local)
     primitive_table_set(vm->locals, vm, local, obj);
 }
 
-void vm_pushLocal(clockwork_vm* vm, char* local)
+void clkwk_pushLocal(clockwork_vm* vm, char* local)
 {
     object* obj = primitive_table_get(vm->locals, vm, local);
     if (obj == NULL)
@@ -281,21 +281,21 @@ void vm_pushLocal(clockwork_vm* vm, char* local)
     stack_push(vm->stack, obj);
 }
 
-object* vm_getLocal(clockwork_vm* vm, char* local)
+object* clkwk_getLocal(clockwork_vm* vm, char* local)
 {
     return primitive_table_get(vm->locals, vm, local);
 }
 
 #pragma mark - IVARS
 
-void vm_setIvar(clockwork_vm* vm, char* ivar)
+void clkwk_setIvar(clockwork_vm* vm, char* ivar)
 {
     object* obj = stack_pop(vm->stack);
     object_setIvar(vm->currentSelf, vm, ivar, obj);
     stack_push(vm->stack, obj);
 }
 
-void vm_pushIvar(clockwork_vm* vm, char* ivar)
+void clkwk_pushIvar(clockwork_vm* vm, char* ivar)
 {
     object* obj = object_getIvar(vm->currentSelf, vm, ivar);
     stack_push(vm->stack, obj);
@@ -303,24 +303,24 @@ void vm_pushIvar(clockwork_vm* vm, char* ivar)
 
 #pragma mark - SELF AND SUPER
 
-void vm_pushSelf(clockwork_vm* vm)
+void clkwk_pushSelf(clockwork_vm* vm)
 {
     stack_push(vm->stack, vm->currentSelf);
 }
 
-void vm_pushSuper(clockwork_vm* vm)
+void clkwk_pushSuper(clockwork_vm* vm)
 {
     stack_push(vm->stack, object_super(vm->currentSelf, vm));
 }
 
 #pragma mark - CONSTANT ACCESS
 
-void vm_pushConst(clockwork_vm* vm, char* cnst)
+void clkwk_pushConst(clockwork_vm* vm, char* cnst)
 {
     object* value = primitive_table_get(vm->constants, vm, cnst);
     if (value)
     {
-        vm_push(vm, value);
+        clkwk_push(vm, value);
     }
     else
     {
@@ -328,9 +328,9 @@ void vm_pushConst(clockwork_vm* vm, char* cnst)
     }
 }
 
-void vm_setConst(clockwork_vm* vm, char* cnst)
+void clkwk_setConst(clockwork_vm* vm, char* cnst)
 {
-    object* value = vm_pop(vm);
+    object* value = clkwk_pop(vm);
     if (value)
     {
         primitive_table_set(vm->constants, vm, cnst, value);
@@ -341,7 +341,7 @@ void vm_setConst(clockwork_vm* vm, char* cnst)
     }
 }
 
-struct object* vm_getConstant(clockwork_vm* vm, char* name)
+struct object* clkwk_getConstant(clockwork_vm* vm, char* name)
 {
     object* c = primitive_table_get(vm->constants, vm, name);
     return c;
@@ -349,16 +349,16 @@ struct object* vm_getConstant(clockwork_vm* vm, char* name)
 
 #pragma mark - CLASSES
 
-void vm_openClass(clockwork_vm* vm, char* newName, char* superName)
+void clkwk_openClass(clockwork_vm* vm, char* newName, char* superName)
 {
     class* newClass = class_init(vm, newName, superName);
     primitive_table_set(vm->constants, vm, newName, (object*)newClass);
-    vm_push(vm, (object*)newClass);
+    clkwk_push(vm, (object*)newClass);
 }
 
 #pragma mark - DISPATCH
 
-void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, uint8_t arg_count)
+void clkwk_forward(clockwork_vm* vm, object* target, char* message, object** args, uint8_t arg_count)
 {
     block* m = object_findMethod(target, vm, "forwardMessage:withArguments:");
     if (m == NULL)
@@ -383,7 +383,7 @@ void vm_forward(clockwork_vm* vm, object* target, char* message, object** args, 
     assembler_run_block(m, vm);
 }
 
-void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
+void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
 {
     if (stack_count(vm->stack) < arg_count + 1)
     {
@@ -394,9 +394,9 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     object* args[arg_count];
     for (uint8_t i = 0; i < arg_count; i++)
 	{
-		args[i] = vm_pop(vm);
+		args[i] = clkwk_pop(vm);
 	}
-    object* target = vm_pop(vm);
+    object* target = clkwk_pop(vm);
     if (!target)
     {
         printf("Could not find target on stack... wtf?");
@@ -405,7 +405,7 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     vm->frameStack.frames[vm->frameStack.idx++].frameSelf = vm->currentSelf;
     if (m == NULL)
     {
-        vm_forward(vm, target, selector, args, arg_count);
+        clkwk_forward(vm, target, selector, args, arg_count);
         return;
     }
     local_scope* locals = block_locals(m, vm);
@@ -422,15 +422,15 @@ void vm_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     assembler_run_block(m, vm);
 }
 
-void vm_return(clockwork_vm* vm)
+void clkwk_return(clockwork_vm* vm)
 {
     vm->currentSelf = vm->frameStack.frames[--vm->frameStack.idx].frameSelf;
 }
 
 #pragma mark - HELPERS
 
-void vm_makeStringCstr(clockwork_vm* vm, const char* const string)
+void clkwk_makeStringCstr(clockwork_vm* vm, const char* const string)
 {
     str* s = str_init(vm, string);
-    vm_push(vm, (object*)s);
+    clkwk_push(vm, (object*)s);
 }

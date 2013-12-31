@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Kyle Roucis. All rights reserved.
 //
 
-#include "object_table.h"
+#include "dictionary.h"
 
 #include "object.h"
 #include "vm.h"
@@ -17,18 +17,18 @@
 #include <string.h>
 #include <limits.h>
 
-struct object_table_entry
+struct dictionary_entry
 {
     str* key;
     object* value;
-    struct object_table_entry* next;
+    struct dictionary_entry* next;
 };
 
-struct object_table
+struct dictionary
 {
     uint32_t capacity;
     uint32_t count;
-    struct object_table_entry** entries;
+    struct dictionary_entry** entries;
 };
 
 static uint32_t _hash_string(str* string, clockwork_vm* vm)
@@ -46,36 +46,36 @@ static uint32_t _hash_string(str* string, clockwork_vm* vm)
 	return hashval;
 }
 
-static struct object_table_entry* _new_entry(clockwork_vm* vm, str* key, object* value)
+static struct dictionary_entry* _new_entry(clockwork_vm* vm, str* key, object* value)
 {
-    struct object_table_entry* entry = vm_allocate(vm, sizeof(struct object_table_entry));
+    struct dictionary_entry* entry = clkwk_allocate(vm, sizeof(struct dictionary_entry));
     entry->key = str_init_len(vm, str_raw_bytes(key, vm), str_length(key, vm));
     entry->value = object_retain(value, vm);
     entry->next = NULL;
     return entry;
 }
 
-object_table* object_table_init(clockwork_vm* vm, unsigned int size)
+dictionary* dictionary_init(clockwork_vm* vm, unsigned int size)
 {
-    object_table* table = (object_table*)vm_allocate(vm, sizeof(object_table));
+    dictionary* table = (dictionary*)clkwk_allocate(vm, sizeof(dictionary));
     table->capacity = size;
-    table->entries = (struct object_table_entry**)vm_allocate(vm, sizeof(struct object_table_entry*) * size);
+    table->entries = (struct dictionary_entry**)clkwk_allocate(vm, sizeof(struct dictionary_entry*) * size);
     table->count = 0;
     return table;
 }
 
-void object_table_dealloc(object_table* table, clockwork_vm* vm)
+void dictionary_dealloc(dictionary* table, clockwork_vm* vm)
 {
-    object_table_purge(table, vm);
-    vm_freeSize(vm, table->entries, sizeof(struct object_table_entry*) * table->capacity);
-    vm_freeSize(vm, table, sizeof(object_table));
+    dictionary_purge(table, vm);
+    clkwk_freeSize(vm, table->entries, sizeof(struct dictionary_entry*) * table->capacity);
+    clkwk_freeSize(vm, table, sizeof(dictionary));
 }
 
-void object_table_set(object_table* table, clockwork_vm* vm, str* key, object* value)
+void dictionary_set(dictionary* table, clockwork_vm* vm, str* key, object* value)
 {
     uint32_t bin = _hash_string(key, vm) % table->capacity;
-    struct object_table_entry* next = table->entries[bin];
-    struct object_table_entry* last = NULL;
+    struct dictionary_entry* next = table->entries[bin];
+    struct dictionary_entry* last = NULL;
 
     while (next != NULL && next->key != NULL && str_compare(key, vm, next->key) > 0)
     {
@@ -92,7 +92,7 @@ void object_table_set(object_table* table, clockwork_vm* vm, str* key, object* v
     // Create new pair and insert
     else
     {
-        struct object_table_entry* entry = _new_entry(vm, key, value);
+        struct dictionary_entry* entry = _new_entry(vm, key, value);
         if (next == table->entries[bin])
         {
             entry->next = next;
@@ -118,10 +118,10 @@ void object_table_set(object_table* table, clockwork_vm* vm, str* key, object* v
     }
 }
 
-object* object_table_get(object_table* table, clockwork_vm* vm, str* key)
+object* dictionary_get(dictionary* table, clockwork_vm* vm, str* key)
 {
     uint32_t bin = _hash_string(key, vm) % table->capacity;
-    struct object_table_entry* entry = table->entries[bin];
+    struct dictionary_entry* entry = table->entries[bin];
 	while (entry != NULL && entry->key != NULL && str_compare(key, vm, entry->key) > 0)
     {
 		entry = entry->next;
@@ -138,11 +138,11 @@ object* object_table_get(object_table* table, clockwork_vm* vm, str* key)
     return value;
 }
 
-void object_table_remove(object_table* table, clockwork_vm* vm, str* key)
+void dictionary_remove(dictionary* table, clockwork_vm* vm, str* key)
 {
     uint32_t bin = _hash_string(key, vm) % table->capacity;
-    struct object_table_entry* entry = table->entries[bin];
-    struct object_table_entry* previous = NULL;
+    struct dictionary_entry* entry = table->entries[bin];
+    struct dictionary_entry* previous = NULL;
 	while (entry != NULL && entry->key != NULL && str_compare(key, vm, entry->key) > 0)
     {
         previous = entry;
@@ -156,25 +156,25 @@ void object_table_remove(object_table* table, clockwork_vm* vm, str* key)
         {
             previous->next = entry->next;
         }
-        vm_freeSize(vm, entry, sizeof(struct object_table_entry));
+        clkwk_freeSize(vm, entry, sizeof(struct dictionary_entry));
         table->count--;
 	}
 }
 
-void object_table_purge(object_table* table, clockwork_vm* vm)
+void dictionary_purge(dictionary* table, clockwork_vm* vm)
 {
     for (int i = 0; i < table->capacity; i++)
 	{
         if (table->entries[i] != NULL)
         {
-            struct object_table_entry* entry = table->entries[i];
+            struct dictionary_entry* entry = table->entries[i];
             while (entry)
             {
                 object_release(table->entries[i]->value, vm);
                 entry = entry->next;
-                vm_freeSize(vm, entry, sizeof(struct object_table_entry));
+                clkwk_freeSize(vm, entry, sizeof(struct dictionary_entry));
             }
-            vm_freeSize(vm, table->entries[i], sizeof(struct object_table_entry));
+            clkwk_freeSize(vm, table->entries[i], sizeof(struct dictionary_entry));
             table->entries[i] = NULL;
         }
 	}

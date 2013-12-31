@@ -16,7 +16,7 @@ typedef int boolean;
 
 struct str;
 struct block;
-struct object_table;
+struct dictionary;
 struct clockwork_vm;
 struct class;
 typedef struct str sel;

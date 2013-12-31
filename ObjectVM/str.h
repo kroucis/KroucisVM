@@ -25,3 +25,4 @@ uint32_t str_length(str*, struct clockwork_vm*);
 char* str_raw_bytes(str*, struct clockwork_vm*);
 void str_into_cstr(str*, struct clockwork_vm*, char*);
 int     str_compare(str*, struct clockwork_vm*, str*);
+int64_t str_hash(str*, struct clockwork_vm*);

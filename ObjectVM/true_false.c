@@ -22,20 +22,20 @@
 
 static void false_is_nil_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushFalse(vm);
-    vm_return(vm);
+    clkwk_pushFalse(vm);
+    clkwk_return(vm);
 }
 
 static void false_is_true_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushFalse(vm);
-    vm_return(vm);
+    clkwk_pushFalse(vm);
+    clkwk_return(vm);
 }
 
 static void false_is_false_native(object* obj, clockwork_vm* vm)
 {
-    vm_pushTrue(vm);
-    vm_return(vm);
+    clkwk_pushTrue(vm);
+    clkwk_return(vm);
 }
 
 #pragma mark - Native Methods
@@ -50,7 +50,7 @@ class* true_class(clockwork_vm* vm)
 object* true_instance(clockwork_vm* vm)
 {
     object* trueSuper = object_init(vm);
-    object* trueObj = object_create_super(vm, trueSuper, (class*)vm_getConstant(vm, "True"), sizeof(void*) * 3);
+    object* trueObj = object_create_super(vm, trueSuper, (class*)clkwk_getConstant(vm, "True"), sizeof(void*) * 3);
     return trueObj;
 }
 
@@ -82,7 +82,7 @@ class* false_class(clockwork_vm* vm)
 object* false_instance(clockwork_vm* vm)
 {
     object* falseSuper = object_init(vm);
-    object* falseObj = object_create_super(vm, falseSuper, (class*)vm_getConstant(vm, "False"), sizeof(void*) * 3);
+    object* falseObj = object_create_super(vm, falseSuper, (class*)clkwk_getConstant(vm, "False"), sizeof(void*) * 3);
     return falseObj;
 }
 
@@ -93,5 +93,5 @@ int object_isTrue(object* obj, clockwork_vm* vm)
 
 int object_isFalse(object* obj, clockwork_vm* vm)
 {
-    return object_isKindOfClass_native(obj, (class*)vm_getConstant(vm, "False")) || object_isNil(obj, vm);
+    return object_isKindOfClass_native(obj, (class*)clkwk_getConstant(vm, "False")) || object_isNil(obj, vm);
 }

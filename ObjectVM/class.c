@@ -37,17 +37,17 @@ struct class
 
 class* class_init(clockwork_vm* vm, char* name, char* superclass)
 {
-    class* klass = vm_allocate(vm, sizeof(class));
+    class* klass = clkwk_allocate(vm, sizeof(class));
 
     if (superclass && strlen(superclass) > 0)
     {
-        object* sup = vm_getConstant(vm, superclass);
+        object* sup = clkwk_getConstant(vm, superclass);
         klass->super = sup;
     }
 
     klass->isa = klass;
     klass->nameLength = strlen(name);
-    klass->name = vm_allocate(vm, klass->nameLength);
+    klass->name = clkwk_allocate(vm, klass->nameLength);
     strcpy(klass->name, name);
     klass->size = sizeof(class);
 
@@ -56,8 +56,8 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
 
 void class_dealloc(class* klass, struct clockwork_vm* vm)
 {
-    vm_freeSize(vm, klass->name, klass->nameLength);
-    vm_free(vm, (object*)klass);
+    clkwk_freeSize(vm, klass->name, klass->nameLength);
+    clkwk_free(vm, (object*)klass);
 }
 
 void class_addInstanceMethod(class* klass, clockwork_vm* vm, char* name, block* meth)

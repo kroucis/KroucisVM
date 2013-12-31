@@ -39,15 +39,15 @@ struct integer
 
 static void integer_add_native(object* self, clockwork_vm* vm)
 {
-    object* other = vm_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
         int64_t result = integer_toInt64(self_i, vm) + integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
-        vm_push(vm, result_obj);
-        vm_return(vm);
+        clkwk_push(vm, result_obj);
+        clkwk_return(vm);
     }
     else
     {
@@ -57,15 +57,15 @@ static void integer_add_native(object* self, clockwork_vm* vm)
 
 static void integer_sub_native(object* self, clockwork_vm* vm)
 {
-    object* other = vm_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
         int64_t result = integer_toInt64(self_i, vm) - integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
-        vm_push(vm, result_obj);
-        vm_return(vm);
+        clkwk_push(vm, result_obj);
+        clkwk_return(vm);
     }
     else
     {
@@ -75,15 +75,15 @@ static void integer_sub_native(object* self, clockwork_vm* vm)
 
 static void integer_mul_native(object* self, clockwork_vm* vm)
 {
-    object* other = vm_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
         int64_t result = integer_toInt64(self_i, vm) * integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
-        vm_push(vm, result_obj);
-        vm_return(vm);
+        clkwk_push(vm, result_obj);
+        clkwk_return(vm);
     }
     else
     {
@@ -93,15 +93,61 @@ static void integer_mul_native(object* self, clockwork_vm* vm)
 
 static void integer_div_native(object* self, clockwork_vm* vm)
 {
-    object* other = vm_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)vm_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
         int64_t result = integer_toInt64(self_i, vm) / integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
-        vm_push(vm, result_obj);
-        vm_return(vm);
+        clkwk_push(vm, result_obj);
+        clkwk_return(vm);
+    }
+    else
+    {
+#warning THROW EXCEPTION!
+    }
+}
+
+static void integer_lessThan_native(object* self, clockwork_vm* vm)
+{
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    {
+        integer* other_i = (integer*)other;
+        integer* self_i = (integer*)self;
+        if (integer_toInt64(self_i, vm) < integer_toInt64(other_i, vm))
+        {
+            clkwk_pushTrue(vm);
+        }
+        else
+        {
+            clkwk_pushFalse(vm);
+        }
+        clkwk_return(vm);
+    }
+    else
+    {
+#warning THROW EXCEPTION!
+    }
+}
+
+static void integer_greaterThan_native(object* self, clockwork_vm* vm)
+{
+    object* other = clkwk_getLocal(vm, "other");
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    {
+        integer* other_i = (integer*)other;
+        integer* self_i = (integer*)self;
+        if (integer_toInt64(self_i, vm) > integer_toInt64(other_i, vm))
+        {
+            clkwk_pushTrue(vm);
+        }
+        else
+        {
+            clkwk_pushFalse(vm);
+        }
+        clkwk_return(vm);
     }
     else
     {
@@ -168,6 +214,20 @@ class* integer_class(clockwork_vm* vm)
         class_addInstanceMethod(integerClass, vm, "div:", divMethod);
     }
 
+    {
+        local_scope* lt_ls = local_scope_init(vm);
+        local_scope_addLocal(lt_ls, vm, "other");
+        block* ltMethod = block_init_native(vm, lt_ls, &integer_lessThan_native);
+        class_addInstanceMethod(integerClass, vm, "lessThan:", ltMethod);
+    }
+
+    {
+        local_scope* gt_ls = local_scope_init(vm);
+        local_scope_addLocal(gt_ls, vm, "other");
+        block* gtMethod = block_init_native(vm, gt_ls, &integer_greaterThan_native);
+        class_addInstanceMethod(integerClass, vm, "greaterThan:", gtMethod);
+    }
+
     //
     //    {
     //        block* isTrueMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_true_native);
@@ -187,8 +247,8 @@ class* integer_class(clockwork_vm* vm)
 integer* integer_init(clockwork_vm* vm, int64_t i)
 {
     object* objSuper = object_init(vm);
-    object* numericSuper = object_create_super(vm, objSuper, (class*)vm_getConstant(vm, "Numeric"), sizeof(numeric));
-    integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)vm_getConstant(vm, "Integer"), sizeof(integer));
+    object* numericSuper = object_create_super(vm, objSuper, (class*)clkwk_getConstant(vm, "Numeric"), sizeof(numeric));
+    integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)clkwk_getConstant(vm, "Integer"), sizeof(integer));
     intObj->data = i;
     intObj->size = sizeof(integer);
     return intObj;

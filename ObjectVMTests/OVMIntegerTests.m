@@ -28,12 +28,12 @@
 {
     [super setUp];
 
-    _vm = vm_init();
+    _vm = clkwk_init();
 }
 
 - (void)tearDown
 {
-    vm_dealloc(_vm);
+    clkwk_dealloc(_vm);
 
     [super tearDown];
 }
@@ -43,16 +43,16 @@
     integer* i = integer_init(_vm, 42);
 
     XCTAssertTrue(i != NULL);
-    XCTAssertTrue(object_isKindOfClass_native((object*)i, (class*)vm_getConstant(_vm, "Integer")));
+    XCTAssertTrue(object_isKindOfClass_native((object*)i, (class*)clkwk_getConstant(_vm, "Integer")));
     XCTAssertEqual((int64_t)integer_toInt64(i, _vm), (int64_t)42);
 
-    instruction inst = (instruction){ .op = VM_PUSH_INT, .param_count = 1, .params[0] = "42" };
+    instruction inst = (instruction){ .op = clkwk_PUSH_INT, .param_count = 1, .params[0] = "42" };
     assembler_run_instruction(&inst, _vm);
 
-    integer* oi = (integer*)vm_pop(_vm);
+    integer* oi = (integer*)clkwk_pop(_vm);
 
     XCTAssertTrue(oi);
-    XCTAssertTrue(object_isKindOfClass_native((object*)oi, (class*)vm_getConstant(_vm, "Integer")));
+    XCTAssertTrue(object_isKindOfClass_native((object*)oi, (class*)clkwk_getConstant(_vm, "Integer")));
     XCTAssertEqual((int64_t)integer_toInt64(i, _vm), (int64_t)integer_toInt64(oi, _vm));
     XCTAssertEqual((int64_t)integer_toInt64(oi, _vm), (int64_t)42);
 }
@@ -60,22 +60,22 @@
 - (void) testIntAdd
 {
     integer* i = integer_init(_vm, 42);
-    vm_push(_vm, (object*)i);
-    vm_makeStringCstr(_vm, "add:");
-    vm_dispatch(_vm, "respondsToSelector:", 1);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "add:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
-    object* torf = vm_pop(_vm);
+    object* torf = clkwk_pop(_vm);
     XCTAssertTrue(object_isTrue(torf, _vm));
 
-    vm_push(_vm, (object*)i);
+    clkwk_push(_vm, (object*)i);
 
     integer* x = integer_init(_vm, 33);
-    vm_push(_vm, (object*)x);
+    clkwk_push(_vm, (object*)x);
 
-    vm_dispatch(_vm, "add:", 1);
+    clkwk_dispatch(_vm, "add:", 1);
 
-    object* r = vm_pop(_vm);
-    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(_vm, "Integer")));
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)clkwk_getConstant(_vm, "Integer")));
     integer* ri = (integer*)r;
     XCTAssertEqual((int64_t)integer_toInt64(ri, _vm), (int64_t)(42 + 33));
 }
@@ -83,22 +83,22 @@
 - (void) testIntSub
 {
     integer* i = integer_init(_vm, 42);
-    vm_push(_vm, (object*)i);
-    vm_makeStringCstr(_vm, "sub:");
-    vm_dispatch(_vm, "respondsToSelector:", 1);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "sub:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
-    object* torf = vm_pop(_vm);
+    object* torf = clkwk_pop(_vm);
     XCTAssertTrue(object_isTrue(torf, _vm));
 
-    vm_push(_vm, (object*)i);
+    clkwk_push(_vm, (object*)i);
 
     integer* x = integer_init(_vm, 33);
-    vm_push(_vm, (object*)x);
+    clkwk_push(_vm, (object*)x);
 
-    vm_dispatch(_vm, "sub:", 1);
+    clkwk_dispatch(_vm, "sub:", 1);
 
-    object* r = vm_pop(_vm);
-    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(_vm, "Integer")));
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)clkwk_getConstant(_vm, "Integer")));
     integer* ri = (integer*)r;
     XCTAssertEqual((int64_t)integer_toInt64(ri, _vm), (int64_t)(42 - 33));
 }
@@ -106,22 +106,22 @@
 - (void) testIntMul
 {
     integer* i = integer_init(_vm, 42);
-    vm_push(_vm, (object*)i);
-    vm_makeStringCstr(_vm, "mul:");
-    vm_dispatch(_vm, "respondsToSelector:", 1);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "mul:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
-    object* torf = vm_pop(_vm);
+    object* torf = clkwk_pop(_vm);
     XCTAssertTrue(object_isTrue(torf, _vm));
 
-    vm_push(_vm, (object*)i);
+    clkwk_push(_vm, (object*)i);
 
     integer* x = integer_init(_vm, 33);
-    vm_push(_vm, (object*)x);
+    clkwk_push(_vm, (object*)x);
 
-    vm_dispatch(_vm, "mul:", 1);
+    clkwk_dispatch(_vm, "mul:", 1);
 
-    object* r = vm_pop(_vm);
-    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(_vm, "Integer")));
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)clkwk_getConstant(_vm, "Integer")));
     integer* ri = (integer*)r;
     XCTAssertEqual((int64_t)integer_toInt64(ri, _vm), (int64_t)(42 * 33));
 }
@@ -129,24 +129,86 @@
 - (void) testIntDiv
 {
     integer* i = integer_init(_vm, 42);
-    vm_push(_vm, (object*)i);
-    vm_makeStringCstr(_vm, "div:");
-    vm_dispatch(_vm, "respondsToSelector:", 1);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "div:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
-    object* torf = vm_pop(_vm);
+    object* torf = clkwk_pop(_vm);
     XCTAssertTrue(object_isTrue(torf, _vm));
 
-    vm_push(_vm, (object*)i);
+    clkwk_push(_vm, (object*)i);
 
     integer* x = integer_init(_vm, 33);
-    vm_push(_vm, (object*)x);
+    clkwk_push(_vm, (object*)x);
 
-    vm_dispatch(_vm, "div:", 1);
+    clkwk_dispatch(_vm, "div:", 1);
 
-    object* r = vm_pop(_vm);
-    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)vm_getConstant(_vm, "Integer")));
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isKindOfClass_native((object*)r, (class*)clkwk_getConstant(_vm, "Integer")));
     integer* ri = (integer*)r;
     XCTAssertEqual((int64_t)integer_toInt64(ri, _vm), (int64_t)(42 / 33));
+}
+
+- (void) testIntLessThan
+{
+    integer* i = integer_init(_vm, 42);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "lessThan:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
+
+    object* torf = clkwk_pop(_vm);
+    XCTAssertTrue(object_isTrue(torf, _vm));
+
+    clkwk_push(_vm, (object*)i);
+
+    integer* x = integer_init(_vm, 33);
+    clkwk_push(_vm, (object*)x);
+
+    clkwk_dispatch(_vm, "lessThan:", 1);
+
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isFalse(r, _vm));
+
+    clkwk_push(_vm, (object*)i);
+
+    integer* y = integer_init(_vm, 58);
+    clkwk_push(_vm, (object*)y);
+
+    clkwk_dispatch(_vm, "lessThan:", 1);
+
+    r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isTrue(r, _vm));
+}
+
+- (void) testIntGreaterThan
+{
+    integer* i = integer_init(_vm, 42);
+    clkwk_push(_vm, (object*)i);
+    clkwk_makeStringCstr(_vm, "greaterThan:");
+    clkwk_dispatch(_vm, "respondsToSelector:", 1);
+
+    object* torf = clkwk_pop(_vm);
+    XCTAssertTrue(object_isTrue(torf, _vm));
+
+    clkwk_push(_vm, (object*)i);
+
+    integer* x = integer_init(_vm, 33);
+    clkwk_push(_vm, (object*)x);
+
+    clkwk_dispatch(_vm, "greaterThan:", 1);
+
+    object* r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isTrue(r, _vm));
+
+    clkwk_push(_vm, (object*)i);
+
+    integer* y = integer_init(_vm, 58);
+    clkwk_push(_vm, (object*)y);
+
+    clkwk_dispatch(_vm, "greaterThan:", 1);
+
+    r = clkwk_pop(_vm);
+    XCTAssertTrue(object_isFalse(r, _vm));
 }
 
 @end
