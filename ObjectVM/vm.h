@@ -12,8 +12,10 @@
 
 struct object;
 struct str;
+struct assembled_binary;
 
 typedef struct clockwork_vm clockwork_vm;
+typedef char* symbol;
 
 /**
  *  Allocate and initialize a new ClockworkVM instance.
@@ -114,11 +116,16 @@ void clkwk_free(clockwork_vm* vm, struct object* obj);
  *  BEFORE  [ ... ]
  *  AFTER   [ ... ]
  *
+ *  @note This does not call -release or -dealloc and does not ensure the memory was previously
+ *      allocated by the VM.
  *  @param vm The VM instance to work with.
  *  @param memory Pointer to the memory chunk to be freed.
  *  @param bytes The number of bytes being freed.
  */
 void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
+
+// --- EXECUTION ---
+void clkwk_runBinary(clockwork_vm* vm, struct assembled_binary* binary);
 
 // --- PROGRAM COUNTER --- >> SHOULD THIS BE HERE? THIS IS A FUNCTION OF THE ASSEMBLER, RIGHT?
 void clkwk_goto(clockwork_vm* vm, uint64_t location);
@@ -133,23 +140,23 @@ void clkwk_pushTrue(clockwork_vm* vm);
 void clkwk_pushFalse(clockwork_vm* vm);
 
 // --- LOCALS ---
-void clkwk_setLocal(clockwork_vm* vm, char* local);
-void clkwk_popToLocal(clockwork_vm* vm, char* local);
-void clkwk_pushLocal(clockwork_vm* vm, char* local);
-struct object* clkwk_getLocal(clockwork_vm* vm, char* local);
+void clkwk_setLocal(clockwork_vm* vm, symbol local);
+void clkwk_popToLocal(clockwork_vm* vm, symbol local);
+void clkwk_pushLocal(clockwork_vm* vm, symbol local);
+struct object* clkwk_getLocal(clockwork_vm* vm, symbol local);
 
 // --- IVARS ---
-void clkwk_setIvar(clockwork_vm* vm, char* ivar);
-void clkwk_pushIvar(clockwork_vm* vm, char* ivar);
+void clkwk_setIvar(clockwork_vm* vm, symbol ivar);
+void clkwk_pushIvar(clockwork_vm* vm, symbol ivar);
 
 // --- SELF AND SUPER ---
 void clkwk_pushSelf(clockwork_vm* vm);
 void clkwk_pushSuper(clockwork_vm* vm);
 
 // --- CONSTANTS ---
-void clkwk_pushConst(clockwork_vm* vm, char* name);
-void clkwk_setConst(clockwork_vm* vm, char* name);
-struct object* clkwk_getConstant(clockwork_vm*, char*);
+void clkwk_pushConst(clockwork_vm* vm, symbol name);
+void clkwk_setConst(clockwork_vm* vm, symbol name);
+struct object* clkwk_getConstant(clockwork_vm* vm, symbol name);
 
 // --- CLASSES ---
 void clkwk_openClass(clockwork_vm* vm, char*, char*);

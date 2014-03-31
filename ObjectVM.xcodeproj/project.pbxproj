@@ -135,6 +135,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		751374EF18E76B3B00594CC8 /* assembler */ = {
+			isa = PBXGroup;
+			children = (
+				7541EAA618383AFC0082A78F /* assembler.h */,
+				7541EAA818383C800082A78F /* assembler.c */,
+			);
+			name = assembler;
+			sourceTree = "<group>";
+		};
 		7574403E183044D10008416B = {
 			isa = PBXGroup;
 			children = (
@@ -235,6 +244,7 @@
 		75A88B5518431A59007B7D7A /* vm */ = {
 			isa = PBXGroup;
 			children = (
+				751374EF18E76B3B00594CC8 /* assembler */,
 				7574407E183045020008416B /* object.h */,
 				7574407F1830450B0008416B /* object.c */,
 				75744081183046E10008416B /* vm.h */,
@@ -245,8 +255,6 @@
 				7541EAA018371D150082A78F /* str.c */,
 				7541EAA2183726950082A78F /* dictionary.h */,
 				7541EAA3183727890082A78F /* dictionary.c */,
-				7541EAA618383AFC0082A78F /* assembler.h */,
-				7541EAA818383C800082A78F /* assembler.c */,
 				7541EAA718383B3D0082A78F /* instruction.h */,
 				7541EAAB1839A0430082A78F /* block.h */,
 				7541EAAC1839A07C0082A78F /* block.c */,

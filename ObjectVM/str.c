@@ -16,6 +16,7 @@
 #include "integer.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #pragma mark String
@@ -71,6 +72,14 @@ static void string_hash_native(object* instance, clockwork_vm* vm)
     clkwk_return(vm);
 }
 
+static void string_print_native(object* instance, clockwork_vm* vm)
+{
+    str* string = (str*)instance;
+    printf("%.*s\n", str_length(string, vm), str_raw_bytes(string, vm));
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
+}
+
 #pragma mark - Native Methods
 
 struct class* string_class(clockwork_vm* vm)
@@ -81,6 +90,7 @@ struct class* string_class(clockwork_vm* vm)
     class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, NULL, &string_length_native));
     class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, NULL, &string_dealloc_native));
     class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, NULL, &string_hash_native));
+    class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, NULL, &string_print_native));
 
     return stringClass;
 }

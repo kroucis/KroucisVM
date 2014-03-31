@@ -38,6 +38,18 @@ static void false_is_false_native(object* obj, clockwork_vm* vm)
     clkwk_return(vm);
 }
 
+static void false_description_native(object* obj, clockwork_vm* vm)
+{
+    clkwk_makeStringCstr(vm, "false");
+    clkwk_return(vm);
+}
+
+static void true_description_native(object* obj, clockwork_vm* vm)
+{
+    clkwk_makeStringCstr(vm, "true");
+    clkwk_return(vm);
+}
+
 #pragma mark - Native Methods
 
 class* true_class(clockwork_vm* vm)
@@ -50,7 +62,14 @@ class* true_class(clockwork_vm* vm)
 object* true_instance(clockwork_vm* vm)
 {
     object* trueSuper = object_init(vm);
-    object* trueObj = object_create_super(vm, trueSuper, (class*)clkwk_getConstant(vm, "True"), sizeof(void*) * 3);
+    class* trueClass = (class*)clkwk_getConstant(vm, "True");
+    object* trueObj = object_create_super(vm, trueSuper, trueClass, sizeof(void*) * 3);
+
+    {
+        block* descriptionMethodNative = block_init_native(vm, 0x0, &true_description_native);
+        class_addInstanceMethod(trueClass, vm, "description", descriptionMethodNative);
+    }
+
     return trueObj;
 }
 
@@ -74,6 +93,11 @@ class* false_class(clockwork_vm* vm)
         block* isFalseMethodNative = block_init_native(vm, 0x0, &false_is_false_native);
         class_addClassMethod(fc, vm, "isFalse", isFalseMethodNative);
         class_addInstanceMethod(fc, vm, "isFalse", isFalseMethodNative);
+    }
+
+    {
+        block* descriptionMethodNative = block_init_native(vm, 0x0, &false_description_native);
+        class_addInstanceMethod(fc, vm, "description", descriptionMethodNative);
     }
 
     return fc;

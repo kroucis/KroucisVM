@@ -13,6 +13,9 @@
 #include "vm.h"
 #include "primitive_table.h"
 #include "block.h"
+#include "str.h"
+
+#include <stdio.h>
 
 #pragma mark Numeric
 
@@ -32,7 +35,7 @@ struct integer
     primitive_table* ivars;
     uint32_t size;
 
-    int64_t data;
+    int64_t value;
 };
 
 #pragma mark - Bound Methods
@@ -51,6 +54,7 @@ static void integer_add_native(object* self, clockwork_vm* vm)
     }
     else
     {
+        printf("SHIT WENT WRONG!");
 #warning THROW EXCEPTION!
     }
 }
@@ -155,6 +159,16 @@ static void integer_greaterThan_native(object* self, clockwork_vm* vm)
     }
 }
 
+static void integer_description(object* self, clockwork_vm* vm)
+{
+    integer* self_i = (integer*)self;
+    int64_t value = integer_toInt64(self_i, vm);
+    char buffer[value / 10];
+    sprintf(buffer, "%lld", value);
+    clkwk_makeStringCstr(vm, buffer);
+    clkwk_return(vm);
+}
+
 #pragma mark - Native Methods
 
 class* numeric_class(clockwork_vm* vm)
@@ -228,6 +242,11 @@ class* integer_class(clockwork_vm* vm)
         class_addInstanceMethod(integerClass, vm, "greaterThan:", gtMethod);
     }
 
+    {
+        block* to_s_Method = block_init_native(vm, NULL, &integer_description);
+        class_addInstanceMethod(integerClass, vm, "description", to_s_Method);
+    }
+
     //
     //    {
     //        block* isTrueMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_true_native);
@@ -249,12 +268,12 @@ integer* integer_init(clockwork_vm* vm, int64_t i)
     object* objSuper = object_init(vm);
     object* numericSuper = object_create_super(vm, objSuper, (class*)clkwk_getConstant(vm, "Numeric"), sizeof(numeric));
     integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)clkwk_getConstant(vm, "Integer"), sizeof(integer));
-    intObj->data = i;
+    intObj->value = i;
     intObj->size = sizeof(integer);
     return intObj;
 }
 
 int64_t integer_toInt64(integer* instance, clockwork_vm* vm)
 {
-    return instance->data;
+    return instance->value;
 }

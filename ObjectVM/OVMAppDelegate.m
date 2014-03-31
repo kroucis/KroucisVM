@@ -33,12 +33,28 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    [self testPrints];
-    [self testAddClassMethod];
-    [self testInputStream];
-    [self testTokenizer];
+//    [self testPrints];
+//    [self testAddClassMethod];
+//    [self testInputStream];
+//    [self testTokenizer];
 
-    //    [self testForwardCrash];
+    clockwork_vm* vm = clkwk_init();
+
+    FILE* file = fopen("/Users/kyleroucis/Desktop/test.clkwkasm", "r");
+    fseek(file, 0L, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char* s = malloc(size);
+    fread(s, sizeof(char), size, file);
+
+//    char* s = "push \"foo!\ndisp print 0\npush #5\npush #3\nreturn\nend\n";
+    assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
+    clkwk_runBinary(vm, asm_bin);
+
+    assembled_binary_dealloc(asm_bin);
+
+//    [self testForwardCrash];
 }
 
 - (void) testSimpleAST

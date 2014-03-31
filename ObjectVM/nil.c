@@ -64,6 +64,12 @@ static void nil_forwardMessage_withArguments_native(object* obj, clockwork_vm* v
     clkwk_return(vm);
 }
 
+static void nil_description_native(object* obj, clockwork_vm* vm)
+{
+    clkwk_makeStringCstr(vm, "nil");
+    clkwk_return(vm);
+}
+
 #pragma mark - Native Methods
 
 class* nil_class(struct clockwork_vm* vm)
@@ -106,6 +112,10 @@ class* nil_class(struct clockwork_vm* vm)
         block* forwardMethodNative = block_init_native(vm, ls, &nil_forwardMessage_withArguments_native);
         class_addInstanceMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
         class_addClassMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
+    }
+
+    {
+        class_addInstanceMethod(nilClass, vm, "description", block_init_native(vm, NULL, &nil_description_native));
     }
 
 #warning TODO: PUT IN EXCEPTION THROW ON INSTANCE CREATION

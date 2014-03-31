@@ -142,18 +142,27 @@ static void object_description_native(object* instance, clockwork_vm* vm)
 #warning IMPLEMENT FULLY?
     if (instance->isa != (class*)instance)
     {
-
+        char s[50];
+        int chars = sprintf(s, "<%s@%#016llx>", class_name(instance->isa, vm), (uint64_t)instance);
+        s[chars] = '\0';
+        clkwk_makeStringCstr(vm, s);
+        clkwk_return(vm);
     }
     else
     {
-        clkwk_makeStringCstr(vm, class_name(instance->isa, vm));
+        char s[50];
+        int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->isa, vm), (uint64_t)instance);
+        s[chars] = '\0';
+        clkwk_makeStringCstr(vm, s);
         clkwk_return(vm);
     }
 }
 
-static void object_forwardMessage_withArguments_native(object*klass, clockwork_vm* vm)
+static void object_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
 {
 #warning THROW EXCEPTION
+    printf("Object %s does not respond to selector\n", class_name(object_getClass(klass, vm), vm));
+
     exit(1);
 }
 
@@ -503,7 +512,8 @@ object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 object* object_retain(object* instance, clockwork_vm* vm)
 {
     object* sup = instance;
-    while (sup->super) {
+    while (sup->super)
+    {
         sup = sup->super;
     }
     sup->retainCount++;
