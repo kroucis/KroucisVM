@@ -24,12 +24,7 @@
 
 struct object
 {
-    class* isa;
-    struct object* super;
-    primitive_table* ivars;
-    uint32_t size;
-
-    int32_t retainCount;
+    struct object_header header;
 };
 
 #pragma mark - Bound Methods
@@ -66,7 +61,7 @@ static void class_retain_native(object* klass, clockwork_vm* vm)
 
 static void object_init_native(object* instance, clockwork_vm* vm)
 {
-    if (instance->super)
+    if (instance->header.super)
     {
         clkwk_pushSuper(vm);
         clkwk_dispatch(vm, "init", 0);
@@ -75,7 +70,7 @@ static void object_init_native(object* instance, clockwork_vm* vm)
     }
     else
     {
-        instance->retainCount = 1;
+        instance->header.retainCount = 1;
 
         clkwk_push(vm, instance);
     }
@@ -87,9 +82,9 @@ static void object_dealloc_native(object* obj, clockwork_vm* vm)
 {
 #warning ITERATE OVER ALL IVARS AND RELEASE THEM (IF NOT WEAK).
     printf("Deallocating instance 0x%lld\n", (uint64_t)obj);
-    if (obj->ivars)
+    if (obj->header.ivars)
     {
-        primitive_table_dealloc(obj->ivars, vm, Yes);
+        primitive_table_dealloc(obj->header.ivars, vm, Yes);
     }
     clkwk_free(vm, obj);
 
@@ -140,10 +135,10 @@ static void object_isFalse_native(object* klass, clockwork_vm* vm)
 static void object_description_native(object* instance, clockwork_vm* vm)
 {
 #warning IMPLEMENT FULLY?
-    if (instance->isa != (class*)instance)
+    if (instance->header.isa != (class*)instance)
     {
         char s[50];
-        int chars = sprintf(s, "<%s@%#016llx>", class_name(instance->isa, vm), (uint64_t)instance);
+        int chars = sprintf(s, "<%s@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
         s[chars] = '\0';
         clkwk_makeStringCstr(vm, s);
         clkwk_return(vm);
@@ -151,7 +146,7 @@ static void object_description_native(object* instance, clockwork_vm* vm)
     else
     {
         char s[50];
-        int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->isa, vm), (uint64_t)instance);
+        int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
         s[chars] = '\0';
         clkwk_makeStringCstr(vm, s);
         clkwk_return(vm);
@@ -169,7 +164,7 @@ static void object_forwardMessage_withArguments_native(object* klass, clockwork_
 static void class_alloc_native(object* klass, clockwork_vm* vm)
 {
     object* super = NULL;
-    if (klass->super)
+    if (klass->header.super)
     {
         clkwk_pushSuper(vm);
         clkwk_dispatch(vm, "alloc", 0);
@@ -214,7 +209,7 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
     char* msgBytes = str_raw_bytes(message, vm);
     if (strncmp(msgBytes, "new", 3) != 0)
     {
-        if (klass->super)
+        if (klass->header.super)
         {
             clkwk_pushSuper(vm);
             clkwk_push(vm, (object*)argsArray);
@@ -431,62 +426,63 @@ boolean object_isKindOfClass_native(object* obj, class* klass)
     }
     else
     {
-        return object_isKindOfClass_native(obj->super, klass);
+        return object_isKindOfClass_native(obj->header.super, klass);
     }
 }
 
 boolean object_isMemberOfClass_native(object* obj, class* klass)
 {
-    return obj->isa == klass;
+    return obj->header.isa == klass;
 }
 
 object* object_init(clockwork_vm* vm)
 {
     object* obj = clkwk_allocate(vm, sizeof(object));
-    obj->retainCount = 1;
-    obj->isa = (class*)clkwk_getConstant(vm, "Object");
-    obj->super = NULL;
-    obj->size = sizeof(object);
-
+    obj->header.retainCount = 1;
+    obj->header.isa = (class*)clkwk_getConstant(vm, "Object");
+    obj->header.super = NULL;
+    obj->header.size = sizeof(object);
+    obj->header.extra = NULL;
     return obj;
 }
 
 object* object_create_super(struct clockwork_vm* vm, object* sup, struct class* klass, uint32_t bytes)
 {
     object* obj = clkwk_allocate(vm, bytes);
-    obj->isa = klass;
-    obj->super = sup;
-    obj->size = bytes;
+    obj->header.isa = klass;
+    obj->header.super = sup;
+    obj->header.size = bytes;
+    obj->header.extra = NULL;
     return obj;
 }
 
 uint32_t object_size(object* instance)
 {
-    return instance->size;
+    return instance->header.size;
 }
 
 void object_dealloc(object* instance, clockwork_vm* vm)
 {
     printf("Deallocating instance 0x%lld\n", (uint64_t)instance);
-    if (instance->ivars)
+    if (instance->header.ivars)
     {
-        primitive_table_dealloc(instance->ivars, vm, Yes);
+        primitive_table_dealloc(instance->header.ivars, vm, Yes);
     }
     clkwk_free(vm, instance);
 }
 
 void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* value)
 {
-    if (instance->ivars == NULL)
+    if (instance->header.ivars == NULL)
     {
-        instance->ivars = primitive_table_init(vm, 5);
+        instance->header.ivars = primitive_table_init(vm, 5);
     }
 #warning GROW ivar TABLE WHEN NEEDED
 
-    object* old = primitive_table_get(instance->ivars, vm, ivar);
+    object* old = primitive_table_get(instance->header.ivars, vm, ivar);
     if (value != old)
     {
-        primitive_table_set(instance->ivars, vm, ivar, value);
+        primitive_table_set(instance->header.ivars, vm, ivar, value);
         if (old)
         {
             object_release(old, vm);
@@ -499,9 +495,9 @@ void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* valu
 object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 {
     object* value = NULL;
-    if (instance->ivars != NULL)
+    if (instance->header.ivars != NULL)
     {
-        value = primitive_table_get(instance->ivars, vm, ivar);
+        value = primitive_table_get(instance->header.ivars, vm, ivar);
     }
 
 #warning TODO: LOOK IN SUPER FOR ivars IF WE CANNOT FIND THEM HERE.
@@ -511,31 +507,22 @@ object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 
 object* object_retain(object* instance, clockwork_vm* vm)
 {
-    object* sup = instance;
-    while (sup->super)
-    {
-        sup = sup->super;
-    }
-    sup->retainCount++;
+    instance->header.retainCount++;
 
     return instance;
 }
 
 void object_release(object* instance, clockwork_vm* vm)
 {
-    object* sup = instance;
-    while (sup->super) {
-        sup = sup->super;
-    }
-    sup->retainCount--;
+    instance->header.retainCount--;
 
-    if (instance->retainCount == 0)
+    if (instance->header.retainCount == 0)
     {
         clkwk_push(vm, instance);
         clkwk_dispatch(vm, "dealloc", 0);
         clkwk_pop(vm);
     }
-    else if (instance->retainCount < 0)
+    else if (instance->header.retainCount < 0)
     {
         printf("OBJECT 0x%lld WAS UNDER-RETAINED!\n", (uint64_t)instance);
     }
@@ -546,23 +533,23 @@ boolean object_respondsToSelector(object* instance, clockwork_vm* vm, char* sele
     int yn = No;
     if (instance)
     {
-        if ((object*)instance->isa != instance)
+        if ((object*)instance->header.isa != instance)
         {
-            yn = class_getInstanceMethod(instance->isa, vm, selector) != NULL;
+            yn = class_getInstanceMethod(instance->header.isa, vm, selector) != NULL;
             if (!yn)
             {
-                yn = object_respondsToSelector(instance->super, vm, selector);
+                yn = object_respondsToSelector(instance->header.super, vm, selector);
             }
         }
         else
         {
-            yn = class_getInstanceMethod(instance->isa, vm, selector) != NULL;
+            yn = class_getInstanceMethod(instance->header.isa, vm, selector) != NULL;
             if (!yn)
             {
-                yn = class_getClassMethod(instance->isa, vm, selector) != NULL;
+                yn = class_getClassMethod(instance->header.isa, vm, selector) != NULL;
                 if (!yn)
                 {
-                    yn = object_respondsToSelector(instance->super, vm, selector);
+                    yn = object_respondsToSelector(instance->header.super, vm, selector);
                 }
             }
         }
@@ -576,10 +563,10 @@ block* object_findInstanceMethod(object* instance, clockwork_vm* vm, char* selec
     block* m = NULL;
     if (instance)
     {
-        m = class_getInstanceMethod(instance->isa, vm, selector);
+        m = class_getInstanceMethod(instance->header.isa, vm, selector);
         if (!m)
         {
-            m = object_findInstanceMethod(instance->super, vm, selector);
+            m = object_findInstanceMethod(instance->header.super, vm, selector);
         }
     }
 
@@ -588,7 +575,7 @@ block* object_findInstanceMethod(object* instance, clockwork_vm* vm, char* selec
 
 block* object_findMethod(object* instance, clockwork_vm* vm, char* selector)
 {
-    if (instance != (object*)instance->isa)
+    if (instance != (object*)instance->header.isa)
     {
         return object_findInstanceMethod(instance, vm, selector);
     }
@@ -600,15 +587,15 @@ block* object_findMethod(object* instance, clockwork_vm* vm, char* selector)
 
 void object_setSuper(object* instance, clockwork_vm* vm, object* sup)
 {
-    instance->super = sup;
+    instance->header.super = sup;
 }
 
 object* object_super(object* instance, clockwork_vm* vm)
 {
-    return instance->super;
+    return instance->header.super;
 }
 
 class* object_getClass(object* instance, clockwork_vm* vm)
 {
-    return instance->isa;
+    return instance->header.isa;
 }

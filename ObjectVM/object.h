@@ -19,8 +19,19 @@ struct block;
 struct dictionary;
 struct clockwork_vm;
 struct class;
+struct primitive_table;
 typedef struct str sel;
 typedef struct object object;
+
+struct object_header
+{
+    struct class* isa;
+    object* super;
+    struct primitive_table* ivars;
+    uint32_t size;
+    int32_t retainCount;
+    void* extra;
+};
 
 boolean         object_isKindOfClass_native(object*, struct class*);
 boolean         object_isMemberOfClass_native(object*, struct class*);

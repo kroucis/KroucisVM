@@ -384,6 +384,10 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
         index = result.index;
         assembler_popToLocal(state, result.sym);
     }
+    else if (strcmp(mneumonic, "clkwk") == 0)
+    {
+        assembler_pushClockwork(state);
+    }
     else if (strcmp(mneumonic, "return") == 0)
     {
         assembler_return(state);
@@ -420,10 +424,10 @@ char* assembled_binary_data(assembled_binary* asm_bin)
     return asm_bin->binary_data;
 }
 
-void assembled_binary_dealloc(assembled_binary* asm_bin)
+void assembled_binary_dealloc(assembled_binary* asm_bin, clockwork_vm* vm)
 {
-    free(asm_bin->binary_data);
-    free(asm_bin);
+    clkwk_free(vm, asm_bin->binary_data);
+    clkwk_free(vm, asm_bin);
 }
 
 assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input_size length, clockwork_vm* vm)
@@ -450,7 +454,8 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
     assembled_binary* binary = a->binary;
 
     primitive_table_dealloc(a->labels, vm, Yes);
-    clkwk_freeSize(vm, a, sizeof(assembler));
+//    clkwk_freeSize(vm, a, sizeof(assembler));
+    clkwk_free(vm, a);
 
     return binary;
 }
@@ -588,7 +593,7 @@ void assembler_dispatch(assembler* ar, char* sel, unsigned char args)
 
 void assembler_pushLocal(assembler* ar, symbol sym)
 {
-    printf("pushl :%s", sym);
+    printf("pushl :%s\n", sym);
     write_char((char)clkwk_PUSH_LOCAL, ar->binary);
     write_char((char)strlen(sym), ar->binary);
     write_cstr(sym, strlen(sym), ar->binary);
@@ -596,7 +601,7 @@ void assembler_pushLocal(assembler* ar, symbol sym)
 
 void assembler_setLocal(assembler* ar, symbol sym)
 {
-    printf("setl :%s", sym);
+    printf("setl :%s\n", sym);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
     write_char((char)strlen(sym), ar->binary);
     write_cstr(sym, strlen(sym), ar->binary);
@@ -604,10 +609,16 @@ void assembler_setLocal(assembler* ar, symbol sym)
 
 void assembler_popToLocal(assembler* ar, symbol sym)
 {
-    printf("popl :%s", sym);
+    printf("popl :%s\n", sym);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
     write_char((char)strlen(sym), ar->binary);
     write_cstr(sym, strlen(sym), ar->binary);
+}
+
+void assembler_pushClockwork(assembler *ar)
+{
+    printf("clkwk\n");
+    write_char((char)clkwk_PUSH_CLOCKWORK, ar->binary);
 }
 
 void assembler_run_instruction(instruction* inst, clockwork_vm* vm)

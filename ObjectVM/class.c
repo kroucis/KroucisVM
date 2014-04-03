@@ -22,10 +22,7 @@
 
 struct class
 {
-    struct class* isa;
-    object* super;
-    primitive_table* ivars;
-    uint32_t size;
+    struct object_header header;
 
     primitive_table* instanceMethods;
     primitive_table* classMethods;
@@ -42,14 +39,14 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
     if (superclass && strlen(superclass) > 0)
     {
         object* sup = clkwk_getConstant(vm, superclass);
-        klass->super = sup;
+        klass->header.super = sup;
     }
 
-    klass->isa = klass;
+    klass->header.isa = klass;
     klass->nameLength = strlen(name);
     klass->name = clkwk_allocate(vm, klass->nameLength);
     strcpy(klass->name, name);
-    klass->size = sizeof(class);
+    klass->header.size = sizeof(class);
 
     return klass;
 }
@@ -60,7 +57,7 @@ void class_dealloc(class* klass, struct clockwork_vm* vm)
     clkwk_free(vm, (object*)klass);
 }
 
-void class_addInstanceMethod(class* klass, clockwork_vm* vm, char* name, block* meth)
+void class_addInstanceMethod(class* klass, clockwork_vm* vm, symbol name, block* meth)
 {
     if (klass->instanceMethods == NULL)
     {
@@ -117,7 +114,7 @@ block* class_findClassMethod(class* klass, clockwork_vm* vm, char* selector)
         m = klass->classMethods ? (block*)primitive_table_get(klass->classMethods, vm, selector) : NULL;
         if (!m)
         {
-            m = class_findClassMethod((class*)klass->super, vm, selector);
+            m = class_findClassMethod((class*)klass->header.super, vm, selector);
         }
     }
 

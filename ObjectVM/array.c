@@ -31,10 +31,7 @@ static uint8_t const c_array_growthFactor = 2;
 
 struct array
 {
-    class* isa;
-    object* super;
-    primitive_table* ivars;
-    uint32_t size;
+    struct object_header header;
 
     object** contents;
     uint64_t count;
@@ -250,7 +247,7 @@ array* array_init(clockwork_vm* vm)
 {
     object* arraySuper = object_init(vm);
     array* ary = (array*)object_create_super(vm, arraySuper, (class*)clkwk_getConstant(vm, "Array"), sizeof(array));
-    ary->size = sizeof(array);
+    ary->header.size = sizeof(array);
     return ary;
 }
 

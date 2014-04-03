@@ -39,6 +39,7 @@
 		75A88B5A18431CD3007B7D7A /* tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B5918431CD3007B7D7A /* tokenizer.c */; };
 		75A88B6118434127007B7D7A /* input_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B6018434127007B7D7A /* input_stream.c */; };
 		75A88B661847DC14007B7D7A /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B651847DC14007B7D7A /* parser.c */; };
+		75BE503C18ED089B007FBB13 /* memory_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BE503B18ED089B007FBB13 /* memory_manager.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +113,8 @@
 		75A88B6318472E4D007B7D7A /* ast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast.h; sourceTree = "<group>"; };
 		75A88B641847D824007B7D7A /* parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = parser.h; sourceTree = "<group>"; };
 		75A88B651847DC14007B7D7A /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
+		75BE503A18ED07D6007FBB13 /* memory_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_manager.h; sourceTree = "<group>"; };
+		75BE503B18ED089B007FBB13 /* memory_manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memory_manager.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,13 +138,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		751374EF18E76B3B00594CC8 /* assembler */ = {
+		751374EF18E76B3B00594CC8 /* Assembler */ = {
 			isa = PBXGroup;
 			children = (
 				7541EAA618383AFC0082A78F /* assembler.h */,
 				7541EAA818383C800082A78F /* assembler.c */,
 			);
-			name = assembler;
+			name = Assembler;
 			sourceTree = "<group>";
 		};
 		7574403E183044D10008416B = {
@@ -244,9 +247,9 @@
 		75A88B5518431A59007B7D7A /* vm */ = {
 			isa = PBXGroup;
 			children = (
-				751374EF18E76B3B00594CC8 /* assembler */,
-				7574407E183045020008416B /* object.h */,
-				7574407F1830450B0008416B /* object.c */,
+				75BE503918ED06BB007FBB13 /* Memory Management */,
+				751374EF18E76B3B00594CC8 /* Assembler */,
+				75BE503818ED06A9007FBB13 /* Basic Objects */,
 				75744081183046E10008416B /* vm.h */,
 				75744082183046E90008416B /* vm.c */,
 				75744086183048F50008416B /* stack.h */,
@@ -258,12 +261,6 @@
 				7541EAA718383B3D0082A78F /* instruction.h */,
 				7541EAAB1839A0430082A78F /* block.h */,
 				7541EAAC1839A07C0082A78F /* block.c */,
-				7501CBE4183DD02200CCFF42 /* class.h */,
-				7501CBE5183DD08C00CCFF42 /* class.c */,
-				7501CBE7183DD8DA00CCFF42 /* nil.h */,
-				7501CBEA183DD97600CCFF42 /* nil.c */,
-				75A88B4C183F0A7A007B7D7A /* true_false.h */,
-				75A88B4D183F0B40007B7D7A /* true_false.c */,
 				75A88B4F1841EBD0007B7D7A /* primitive_table.h */,
 				75A88B501841EC52007B7D7A /* primitive_table.c */,
 				75A88B521842BE21007B7D7A /* integer.h */,
@@ -295,6 +292,30 @@
 				75A88B6018434127007B7D7A /* input_stream.c */,
 			);
 			name = lexer;
+			sourceTree = "<group>";
+		};
+		75BE503818ED06A9007FBB13 /* Basic Objects */ = {
+			isa = PBXGroup;
+			children = (
+				7574407E183045020008416B /* object.h */,
+				7574407F1830450B0008416B /* object.c */,
+				7501CBE4183DD02200CCFF42 /* class.h */,
+				7501CBE5183DD08C00CCFF42 /* class.c */,
+				7501CBE7183DD8DA00CCFF42 /* nil.h */,
+				7501CBEA183DD97600CCFF42 /* nil.c */,
+				75A88B4C183F0A7A007B7D7A /* true_false.h */,
+				75A88B4D183F0B40007B7D7A /* true_false.c */,
+			);
+			name = "Basic Objects";
+			sourceTree = "<group>";
+		};
+		75BE503918ED06BB007FBB13 /* Memory Management */ = {
+			isa = PBXGroup;
+			children = (
+				75BE503A18ED07D6007FBB13 /* memory_manager.h */,
+				75BE503B18ED089B007FBB13 /* memory_manager.c */,
+			);
+			name = "Memory Management";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -398,6 +419,7 @@
 			files = (
 				75A88B661847DC14007B7D7A /* parser.c in Sources */,
 				7501CBEB183DD97600CCFF42 /* nil.c in Sources */,
+				75BE503C18ED089B007FBB13 /* memory_manager.c in Sources */,
 				7501CBE6183DD08C00CCFF42 /* class.c in Sources */,
 				75744088183048F50008416B /* stack.c in Sources */,
 				75744083183046E90008416B /* vm.c in Sources */,

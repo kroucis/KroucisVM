@@ -71,8 +71,10 @@ void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean
         primitive_table_purge(m_table, vm);
     }
     
-    clkwk_freeSize(vm, m_table->entries, sizeof(struct primitive_table_entry*) * m_table->capacity);
-    clkwk_freeSize(vm, m_table, sizeof(primitive_table));
+//    clkwk_freeSize(vm, m_table->entries, sizeof(struct primitive_table_entry*) * m_table->capacity);
+    clkwk_free(vm, m_table->entries);
+//    clkwk_freeSize(vm, m_table, sizeof(primitive_table));
+    clkwk_free(vm, m_table);
 }
 
 void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, object* obj)

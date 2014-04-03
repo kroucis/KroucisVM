@@ -23,10 +23,7 @@
 
 struct str
 {
-    class* isa;
-    object* super;
-    primitive_table* ivars;
-    uint32_t size;
+    struct object_header header;
 
     uint32_t length;
     char* data;
@@ -111,7 +108,7 @@ str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
         memcpy(string->data, (void*)data, len);
     }
     string->length = len;
-    string->size = sizeof(str);
+    string->header.size = sizeof(str);
     
     return string;
 }

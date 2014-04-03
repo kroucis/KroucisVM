@@ -24,17 +24,19 @@
 #include "frame.h"
 #include "assembler.h"
 
+#include "memory_manager.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+
+#define MEM_ALLOC
 
 #pragma mark Clockwork
 
 struct clockwork_vm
 {
-    class* isa;
-    object* super;
-    dictionary* ivars;
+    struct object_header header;
 
     uint64_t pc;
     stack* stack;
@@ -53,7 +55,7 @@ struct clockwork_vm
 
     // TODO: Internal memory for the VM?
 //    void* memoryPage;
-    uint64_t allocatedMemory;
+//    uint64_t allocatedMemory;
 };
 
 #pragma mark - Bound Methods
@@ -72,8 +74,6 @@ clockwork_vm* clkwk_init(void)
     vm->stack = stack_init();
     vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
-
-//    vm->memoryPage = malloc(kVMMemorySize);
 
     class* objectClass = object_class(vm);
     primitive_table_set(vm->constants, vm, class_name(objectClass, vm), (object*)objectClass);
@@ -111,7 +111,7 @@ clockwork_vm* clkwk_init(void)
     class* clockworkClass = clockwork_class(vm);
     primitive_table_set(vm->constants, vm, class_name(clockworkClass, vm), (object*)vm);
 
-    vm->isa = clockworkClass;
+    vm->header.isa = clockworkClass;
 
     return vm;
 }
@@ -127,10 +127,10 @@ void clkwk_dealloc(clockwork_vm* vm)
 #warning FIX THIS: NEED TO FREE ALL ALLOCATED MEMORY (CLASSES, LOCALS, AND ALL OBJECT GRAPHS)
 
 //    primitive_table_each(vm->locals, vm, dealloc_primitive_table_contents);
-//    primitive_table_dealloc(vm->locals, vm, No);
-//
+    primitive_table_dealloc(vm->locals, vm, Yes);
+
 //    primitive_table_each(vm->constants, vm, dealloc_primitive_table_contents);
-//    primitive_table_dealloc(vm->constants, vm, No);
+    primitive_table_dealloc(vm->constants, vm, Yes);
     free(vm);
 }
 
@@ -167,30 +167,33 @@ object* clkwk_currentSelf(clockwork_vm* vm)
 
 void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes)
 {
-    void* value = calloc(1, bytes);
+    void* value = MEM_MALLOC(bytes);
+//    void* value = calloc(1, bytes);
     if (!value)
     {
-        printf("calloc FAILED TO RETURN VIABLE MEMORY!");
+        printf("clkwk_allocate FAILED TO RETURN VIABLE MEMORY!");
     }
 
-    vm->allocatedMemory += bytes;
+//    vm->allocatedMemory += bytes;
 
-    printf("Was %llu. Allocating %llu bytes. Total %llu\n", vm->allocatedMemory - bytes, bytes, vm->allocatedMemory);
+//    printf("Was %llu. Allocating %llu bytes. Total %llu\n", vm->allocatedMemory - bytes, bytes, vm->allocatedMemory);
 
     return value;
 }
 
-void clkwk_free(clockwork_vm* vm, object* obj)
+void clkwk_free(clockwork_vm* vm, void* obj)
 {
-    clkwk_freeSize(vm, obj, object_size(obj));
+    MEM_FREE(obj);
+//    clkwk_freeSize(vm, obj, object_size(obj));
 }
 
 void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
 {
-    vm->allocatedMemory -= bytes;
-    free(memory);
-
-    printf("Was %llu. Freeing %llu bytes. Total %llu\n", vm->allocatedMemory + bytes, bytes, vm->allocatedMemory);
+    printf("DON'T USE THIS ANYMORE");
+//    vm->allocatedMemory -= bytes;
+//    free(memory);
+//
+//    printf("Was %llu. Freeing %llu bytes. Total %llu\n", vm->allocatedMemory + bytes, bytes, vm->allocatedMemory);
 }
 
 #pragma mark - EXECUTION
@@ -374,6 +377,12 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 vm->pc += sym_len;
 
                 clkwk_dispatch(vm, sym, args);
+                break;
+            }
+            case clkwk_PUSH_CLOCKWORK:
+            {
+                clkwk_pushClockwork(vm);
+                break;
             }
             case clkwk_RETURN:
             {
@@ -426,7 +435,7 @@ void clkwk_gotoIfTrue(clockwork_vm* vm, uint64_t location)
 void clkwk_push(clockwork_vm* vm, object* obj)
 {
 #warning TODO: This was trashing the instanceMethods table in pushed classes. Need to rethink this.
-//    object_retain(obj, vm);
+    object_retain(obj, vm);
     stack_push(vm->stack, obj);
 }
 

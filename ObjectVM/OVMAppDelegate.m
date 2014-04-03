@@ -22,6 +22,8 @@
 #import "parser.h"
 #import "ast.h"
 
+#import "memory_manager.h"
+
 #import <string.h>
 
 static void test_class_method(object* instance, clockwork_vm* vm)
@@ -38,6 +40,8 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 //    [self testInputStream];
 //    [self testTokenizer];
 
+//    memory_manager* mm = memory_manager_init(1024);
+
     clockwork_vm* vm = clkwk_init();
 
     FILE* file = fopen("/Users/kyleroucis/Desktop/test.clkwkasm", "r");
@@ -52,7 +56,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
     clkwk_runBinary(vm, asm_bin);
 
-    assembled_binary_dealloc(asm_bin);
+    assembled_binary_dealloc(asm_bin, vm);
 
 //    [self testForwardCrash];
 }

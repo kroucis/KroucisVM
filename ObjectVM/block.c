@@ -30,10 +30,7 @@ struct local_scope
 
 struct block
 {
-    class* isa;
-    object* super;
-    primitive_table* ivars;
-    uint32_t size;
+    struct object_header header;
 
     local_scope* locals;
     instruction_sequence* instructions;
@@ -113,7 +110,7 @@ block* block_init_native(clockwork_vm* vm, local_scope* locals, native_block fun
     m->locals = locals;
     m->instructions = NULL;
     m->nativeFunc = func;
-    m->size = sizeof(block);
+    m->header.size = sizeof(block);
 
     return m;
 }

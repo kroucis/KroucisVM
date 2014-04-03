@@ -25,6 +25,7 @@ enum
     clkwk_PUSH_TRUE,        // true
     clkwk_PUSH_FALSE,       // false
     clkwk_PUSH_LOCAL,       // pushl :
+    clkwk_PUSH_CLOCKWORK,   // clkwk
     clkwk_SET_LOCAL,        // setl :
     clkwk_POP_TO_LOCAL,     // popl :
     clkwk_PUSH_SELF,        // self
@@ -69,10 +70,11 @@ void assembler_dispatch(assembler* ar, char* sel, unsigned char args);
 void assembler_pushLocal(assembler* ar, char* sym);
 void assembler_setLocal(assembler* ar, char* sym);
 void assembler_popToLocal(assembler* ar, char* sym);
+void assembler_pushClockwork(assembler *ar);
 
 uint64_t assembled_binary_size(assembled_binary* asm_bin);
 char* assembled_binary_data(assembled_binary* asm_bin);
-void assembled_binary_dealloc(assembled_binary* asm_bin);
+void assembled_binary_dealloc(assembled_binary* asm_bin, struct clockwork_vm* vm);
 
 #warning THESE ARE IN THE WRONG PLACE!!!!
 void assembler_run_instruction(instruction*, struct clockwork_vm*);

@@ -21,19 +21,14 @@
 
 struct numeric
 {
-    class* isa;
-    object* super;
-    primitive_table* ivars;
+    struct object_header header;
 };
 
 #pragma mark Integer
 
 struct integer
 {
-    class* isa;
-    object* super;
-    primitive_table* ivars;
-    uint32_t size;
+    struct object_header header;
 
     int64_t value;
 };
@@ -269,7 +264,7 @@ integer* integer_init(clockwork_vm* vm, int64_t i)
     object* numericSuper = object_create_super(vm, objSuper, (class*)clkwk_getConstant(vm, "Numeric"), sizeof(numeric));
     integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)clkwk_getConstant(vm, "Integer"), sizeof(integer));
     intObj->value = i;
-    intObj->size = sizeof(integer);
+    intObj->header.size = sizeof(integer);
     return intObj;
 }
 

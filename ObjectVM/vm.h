@@ -108,7 +108,7 @@ void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes);
  *  @param vm The VM instance to work with.
  *  @param obj The object to free.
  */
-void clkwk_free(clockwork_vm* vm, struct object* obj);
+void clkwk_free(clockwork_vm* vm, void* obj);
 
 /**
  *  Deallocates the memory pointed to by <memory>.
