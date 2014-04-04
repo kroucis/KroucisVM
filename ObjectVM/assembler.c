@@ -368,21 +368,21 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
         index++;
         struct _result result = read_pushLocal(input, length, index);
         index = result.index;
-        assembler_pushLocal(state, result.sym);
+        assembler_pushLocal(state, (uint8_t)result.value.i);
     }
     else if (strcmp(mneumonic, "setl") == 0)
     {
         index++;
         struct _result result = read_setLocal(input, length, index);
         index = result.index;
-        assembler_setLocal(state, result.sym);
+        assembler_setLocal(state, (uint8_t)result.value.i);
     }
     else if (strcmp(mneumonic, "popl") == 0)
     {
         index++;
         struct _result result = read_setLocal(input, length, index);
         index = result.index;
-        assembler_popToLocal(state, result.sym);
+        assembler_popToLocal(state, (uint8_t)result.value.i);
     }
     else if (strcmp(mneumonic, "clkwk") == 0)
     {
@@ -591,28 +591,25 @@ void assembler_dispatch(assembler* ar, char* sel, unsigned char args)
     write_cstr(sel, strlen(sel), ar->binary);
 }
 
-void assembler_pushLocal(assembler* ar, symbol sym)
+void assembler_pushLocal(assembler* ar, uint8_t lcl)
 {
-    printf("pushl :%s\n", sym);
+    printf("pushl %d\n", lcl);
     write_char((char)clkwk_PUSH_LOCAL, ar->binary);
-    write_char((char)strlen(sym), ar->binary);
-    write_cstr(sym, strlen(sym), ar->binary);
+    write_unsigned_char(lcl, ar->binary);
 }
 
-void assembler_setLocal(assembler* ar, symbol sym)
+void assembler_setLocal(assembler* ar, uint8_t lcl)
 {
-    printf("setl :%s\n", sym);
+    printf("setl %d\n", lcl);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
-    write_char((char)strlen(sym), ar->binary);
-    write_cstr(sym, strlen(sym), ar->binary);
+    write_unsigned_char(lcl, ar->binary);
 }
 
-void assembler_popToLocal(assembler* ar, symbol sym)
+void assembler_popToLocal(assembler* ar, uint8_t lcl)
 {
-    printf("popl :%s\n", sym);
+    printf("popl %d\n", lcl);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
-    write_char((char)strlen(sym), ar->binary);
-    write_cstr(sym, strlen(sym), ar->binary);
+    write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_pushClockwork(assembler *ar)
@@ -669,17 +666,17 @@ void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
         }
         case clkwk_PUSH_LOCAL:
         {
-            clkwk_pushLocal(vm, inst->params[0]);
+            clkwk_pushLocal(vm, cstr_to_uint64(inst->params[0]));
             break;
         }
         case clkwk_SET_LOCAL:
         {
-            clkwk_setLocal(vm, inst->params[0]);
+            clkwk_setLocal(vm, cstr_to_uint64(inst->params[0]));
             break;
         }
         case clkwk_POP_TO_LOCAL:
         {
-            clkwk_popToLocal(vm, inst->params[0]);
+            clkwk_popToLocal(vm, cstr_to_uint64(inst->params[0]));
             break;
         }
         case clkwk_PUSH_SELF:

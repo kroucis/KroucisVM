@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 
+static char* c_IntegerClassName = "Integer";
+
 #pragma mark Numeric
 
 struct numeric
@@ -37,8 +39,8 @@ struct integer
 
 static void integer_add_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -56,8 +58,8 @@ static void integer_add_native(object* self, clockwork_vm* vm)
 
 static void integer_sub_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -74,8 +76,8 @@ static void integer_sub_native(object* self, clockwork_vm* vm)
 
 static void integer_mul_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -92,8 +94,8 @@ static void integer_mul_native(object* self, clockwork_vm* vm)
 
 static void integer_div_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -110,8 +112,8 @@ static void integer_div_native(object* self, clockwork_vm* vm)
 
 static void integer_lessThan_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -133,8 +135,8 @@ static void integer_lessThan_native(object* self, clockwork_vm* vm)
 
 static void integer_greaterThan_native(object* self, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "other");
-    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, "Integer")))
+    object* other = clkwk_getLocal(vm, 0);
+    if (other && object_isMemberOfClass_native(other, (class*)clkwk_getConstant(vm, c_IntegerClassName)))
     {
         integer* other_i = (integer*)other;
         integer* self_i = (integer*)self;
@@ -262,7 +264,7 @@ integer* integer_init(clockwork_vm* vm, int64_t i)
 {
     object* objSuper = object_init(vm);
     object* numericSuper = object_create_super(vm, objSuper, (class*)clkwk_getConstant(vm, "Numeric"), sizeof(numeric));
-    integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)clkwk_getConstant(vm, "Integer"), sizeof(integer));
+    integer* intObj = (integer*)object_create_super(vm, numericSuper, (class*)clkwk_getConstant(vm, c_IntegerClassName), sizeof(integer));
     intObj->value = i;
     intObj->header.size = sizeof(integer);
     return intObj;

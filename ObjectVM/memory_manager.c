@@ -29,27 +29,29 @@ void* _debug_malloc(const char* file, int line, size_t size)
         return NULL;
     }
 
-//    size = size < 8 ? 8 : size;
+    void* ptr = calloc(1, size);
+    return ptr;
 
-    void* ptr = calloc(1, size + sizeof(size_t));
-    if (ptr)
-    {
-        s_count += size;
-
-#ifdef DEBUG_MEMORY
-        printf("Allocating %zu bytes. Total: %zu\n", size, s_count);
-#endif
-
-        struct mem_block* mem = (struct mem_block*)ptr;
-
-        mem->size = size;
-
-        return ptr + sizeof(size_t);
-    }
-    else
-    {
-        return NULL;
-    }
+//    void* ptr = calloc(1, size + sizeof(size_t));
+//    if (ptr)
+//    {
+//        s_count += size;
+//
+//#ifdef DEBUG_MEMORY
+//        printf("Allocating %zu bytes. Total: %zu\n", size, s_count);
+//#endif
+//
+//        struct mem_block* mem = (struct mem_block*)ptr;
+//
+//        mem->size = size;
+//        mem->memory = ptr + sizeof(size_t);
+//
+//        return ptr + sizeof(size_t);
+//    }
+//    else
+//    {
+//        return NULL;
+//    }
 }
 
 void _debug_free(const char* file, int line, void* ptr)
@@ -59,15 +61,17 @@ void _debug_free(const char* file, int line, void* ptr)
         return;
     }
 
-    struct mem_block* mem = (struct mem_block*)(ptr - sizeof(size_t));
+    free(ptr);
 
-    s_count -= mem->size;
-
-#ifdef DEBUG_MEMORY
-    printf("Freeing %zu bytes. Total: %zu\n", mem->size, s_count);
-#endif
-
-    free(mem);
+//    struct mem_block* mem = (struct mem_block*)(ptr - sizeof(size_t));
+//
+//    s_count -= mem->size;
+//
+//#ifdef DEBUG_MEMORY
+//    printf("Freeing %zu bytes. Total: %zu\n", mem->size, s_count);
+//#endif
+//
+//    free(mem);
 }
 
 //#include <stdlib.h>

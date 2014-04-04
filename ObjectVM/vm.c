@@ -29,10 +29,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include <assert.h>
 
 #define MEM_ALLOC
 
 #pragma mark Clockwork
+
+//static const uint8_t c_VMLocalsLimit = 10;
 
 struct clockwork_vm
 {
@@ -40,7 +43,7 @@ struct clockwork_vm
 
     uint64_t pc;
     stack* stack;
-    primitive_table* locals;
+//    object* locals[c_VMLocalsLimit];
     primitive_table* constants;
     object* currentSelf;
 
@@ -58,6 +61,23 @@ struct clockwork_vm
 //    uint64_t allocatedMemory;
 };
 
+#pragma mark - Private Helpers
+
+static frame* _clkwk_current_frame(clockwork_vm* vm)
+{
+    return &vm->frameStack.frames[vm->frameStack.idx];
+}
+
+static frame* _clkwk_push_frame(clockwork_vm* vm)
+{
+    return &vm->frameStack.frames[vm->frameStack.idx++];
+}
+
+static frame* _clkwk_pop_frame(clockwork_vm* vm)
+{
+    return &vm->frameStack.frames[--vm->frameStack.idx];
+}
+
 #pragma mark - Bound Methods
 
 #pragma mark - Native Methods
@@ -70,9 +90,9 @@ class* clockwork_class(clockwork_vm* vm)
 
 clockwork_vm* clkwk_init(void)
 {
-    clockwork_vm* vm = (clockwork_vm*)calloc(1, sizeof(clockwork_vm));
+    clockwork_vm* vm = MEM_MALLOC(sizeof(clockwork_vm));
     vm->stack = stack_init();
-    vm->locals = primitive_table_init(vm, 10);
+//    vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
 
     class* objectClass = object_class(vm);
@@ -127,11 +147,11 @@ void clkwk_dealloc(clockwork_vm* vm)
 #warning FIX THIS: NEED TO FREE ALL ALLOCATED MEMORY (CLASSES, LOCALS, AND ALL OBJECT GRAPHS)
 
 //    primitive_table_each(vm->locals, vm, dealloc_primitive_table_contents);
-    primitive_table_dealloc(vm->locals, vm, Yes);
+//    primitive_table_dealloc(vm->locals, vm, Yes);
 
 //    primitive_table_each(vm->constants, vm, dealloc_primitive_table_contents);
-    primitive_table_dealloc(vm->constants, vm, Yes);
-    free(vm);
+//    primitive_table_dealloc(vm->constants, vm, Yes);
+    MEM_FREE(vm);
 }
 
 #pragma mark - MISCELLANEOUS
@@ -168,11 +188,13 @@ object* clkwk_currentSelf(clockwork_vm* vm)
 void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes)
 {
     void* value = MEM_MALLOC(bytes);
+    assert(value);
+
 //    void* value = calloc(1, bytes);
-    if (!value)
-    {
-        printf("clkwk_allocate FAILED TO RETURN VIABLE MEMORY!");
-    }
+//    if (!value)
+//    {
+//        printf("clkwk_allocate FAILED TO RETURN VIABLE MEMORY!");
+//    }
 
 //    vm->allocatedMemory += bytes;
 
@@ -189,7 +211,7 @@ void clkwk_free(clockwork_vm* vm, void* obj)
 
 void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
 {
-    printf("DON'T USE THIS ANYMORE");
+    assert(0);
 //    vm->allocatedMemory -= bytes;
 //    free(memory);
 //
@@ -207,6 +229,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
     // Verify binary signature
     {
         char* magic_byes = "CLKWK1";
+        assert(len > strlen(magic_byes));
         if (len < strlen(magic_byes))
         {
             printf("ClockworkVM: Incompatible binary.\n");
@@ -338,33 +361,32 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
             }
             case clkwk_PUSH_LOCAL:
             {
-                unsigned char sym_len = data[vm->pc++];
-                char sym[255];
-                memcpy(&sym, &data[vm->pc], sym_len);
-                vm->pc += sym_len;
+                local_index idx;
+                uint8_t idx_sz = sizeof(local_index);
+                memcpy(&idx, &data[vm->pc], idx_sz);
+                vm->pc += idx_sz;
 
-                clkwk_pushLocal(vm, sym);
+                clkwk_pushLocal(vm, idx);
                 break;
             }
             case clkwk_SET_LOCAL:
             {
-                unsigned char sym_len = data[vm->pc++];
-                char sym[255];
-                memcpy(&sym, &data[vm->pc], sym_len);
-                vm->pc += sym_len;
+                local_index idx;
+                uint8_t idx_sz = sizeof(local_index);
+                memcpy(&idx, &data[vm->pc], idx_sz);
+                vm->pc += idx_sz;
 
-                clkwk_setLocal(vm, sym);
+                clkwk_setLocal(vm, idx);
                 break;
             }
             case clkwk_POP_TO_LOCAL:
             {
-                unsigned char sym_len = data[vm->pc++];
-                char sym[sym_len + 1];
-                memcpy(&sym, &data[vm->pc], sym_len);
-                sym[sym_len] = '\0';
-                vm->pc += sym_len;
+                local_index idx;
+                uint8_t idx_sz = sizeof(local_index);
+                memcpy(&idx, &data[vm->pc], idx_sz);
+                vm->pc += idx_sz;
 
-                clkwk_popToLocal(vm, sym);
+                clkwk_popToLocal(vm, idx);
                 break;
             }
             case clkwk_DISPATCH:
@@ -463,8 +485,9 @@ void clkwk_pushFalse(clockwork_vm* vm)
 
 #pragma mark - LOCALS
 
-void clkwk_setLocal(clockwork_vm* vm, symbol local)
+void clkwk_setLocal(clockwork_vm* vm, local_index local)
 {
+    assert(local < c_LocalsLimit);
     object* obj = stack_pop(vm->stack);
     if (obj == NULL)
     {
@@ -473,23 +496,25 @@ void clkwk_setLocal(clockwork_vm* vm, symbol local)
 
 #warning TODO: GROW LOCALS WHEN NEEDED
 
-    primitive_table_set(vm->locals, vm, local, obj);
+    _clkwk_current_frame(vm)->locals[local] = obj;
     stack_push(vm->stack, obj);
 }
 
-void clkwk_popToLocal(clockwork_vm* vm, symbol local)
+void clkwk_popToLocal(clockwork_vm* vm, local_index local)
 {
+    assert(local < c_LocalsLimit);
     object* obj = stack_pop(vm->stack);
     if (obj == NULL)
     {
         obj = vm->nilObject;
     }
-    primitive_table_set(vm->locals, vm, local, obj);
+    _clkwk_current_frame(vm)->locals[local] = obj;
 }
 
-void clkwk_pushLocal(clockwork_vm* vm, symbol local)
+void clkwk_pushLocal(clockwork_vm* vm, local_index local)
 {
-    object* obj = primitive_table_get(vm->locals, vm, local);
+    assert(local < c_LocalsLimit);
+    object* obj = _clkwk_current_frame(vm)->locals[local];
     if (obj == NULL)
     {
         obj = vm->nilObject;
@@ -497,9 +522,10 @@ void clkwk_pushLocal(clockwork_vm* vm, symbol local)
     stack_push(vm->stack, obj);
 }
 
-object* clkwk_getLocal(clockwork_vm* vm, symbol local)
+object* clkwk_getLocal(clockwork_vm* vm, local_index local)
 {
-    return primitive_table_get(vm->locals, vm, local);
+    assert(local < c_LocalsLimit);
+    return _clkwk_current_frame(vm)->locals[local];
 }
 
 #pragma mark - IVARS
@@ -588,14 +614,19 @@ void clkwk_forward(clockwork_vm* vm, object* target, char* message, object** arg
     object* argsArray = (object*)array_initWithObjects(vm, args, arg_count);     // REPLACE WITH arg ARRAY OBJECT
 
     local_scope* locals = block_locals(m, vm);
+    assert(local_scope_count(locals, vm) == 2);
     if (local_scope_count(locals, vm) != 2)
     {
         printf("Incorrect argument count to forward message %s!\n", message);
         return;
     }
     vm->currentSelf = target;
-    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 0), (object*)messageStr);
-    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 1), argsArray);
+
+    frame* cur_frame = _clkwk_current_frame(vm);
+    cur_frame->locals[0] = (object*)messageStr;
+    cur_frame->locals[1] = argsArray;
+//    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 0), (object*)messageStr);
+//    primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, 1), argsArray);
     assembler_run_block(m, vm);
 }
 
@@ -608,17 +639,19 @@ void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     }
 
     object* args[arg_count];
-    for (uint8_t i = 0; i < arg_count; i++)
+    for (local_index i = 0; i < arg_count; i++)
 	{
 		args[i] = clkwk_pop(vm);
 	}
+
     object* target = clkwk_pop(vm);
+    assert(target);
     if (!target)
     {
         printf("Could not find target on stack... wtf?");
     }
     block* m = object_findMethod(target, vm, selector);
-    frame* nextFrame = &vm->frameStack.frames[vm->frameStack.idx++];
+    frame* nextFrame = _clkwk_push_frame(vm);
     nextFrame->frameSelf = vm->currentSelf;
 //    nextFrame->returnPC = vm->pc + 1;
     if (m == NULL)
@@ -633,16 +666,17 @@ void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
         return;
     }
     vm->currentSelf = target;
-    for (int i = 0; i < arg_count; i++)
+    for (local_index i = 0; i < arg_count; i++)
 	{
-        primitive_table_set(vm->locals, vm, local_scope_localAt(locals, vm, i), args[i]);
+        frame* cur_frame = _clkwk_current_frame(vm);
+        cur_frame->locals[i] = args[i];
 	}
     assembler_run_block(m, vm);
 }
 
 void clkwk_return(clockwork_vm* vm)
 {
-    frame* oldFrame = &vm->frameStack.frames[--vm->frameStack.idx];
+    frame* oldFrame = _clkwk_pop_frame(vm);
     vm->currentSelf = oldFrame->frameSelf;
 //    vm->pc = oldFrame->returnPC;
 }

@@ -22,7 +22,7 @@ str*    str_init_len(struct clockwork_vm*, const char* const data, uint32_t len)
 
 void    str_dealloc(str*, struct clockwork_vm*);
 uint32_t str_length(str*, struct clockwork_vm*);
-char* str_raw_bytes(str*, struct clockwork_vm*);
-void str_into_cstr(str*, struct clockwork_vm*, char*);
+char*   str_raw_bytes(str*, struct clockwork_vm*);
+void    str_into_cstr(str*, struct clockwork_vm*, char*);
 int     str_compare(str*, struct clockwork_vm*, str*);
 int64_t str_hash(str*, struct clockwork_vm*);

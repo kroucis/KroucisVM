@@ -16,6 +16,7 @@ struct assembled_binary;
 
 typedef struct clockwork_vm clockwork_vm;
 typedef char* symbol;
+typedef uint8_t local_index;
 
 /**
  *  Allocate and initialize a new ClockworkVM instance.
@@ -140,10 +141,10 @@ void clkwk_pushTrue(clockwork_vm* vm);
 void clkwk_pushFalse(clockwork_vm* vm);
 
 // --- LOCALS ---
-void clkwk_setLocal(clockwork_vm* vm, symbol local);
-void clkwk_popToLocal(clockwork_vm* vm, symbol local);
-void clkwk_pushLocal(clockwork_vm* vm, symbol local);
-struct object* clkwk_getLocal(clockwork_vm* vm, symbol local);
+void clkwk_setLocal(clockwork_vm* vm, local_index local);
+void clkwk_popToLocal(clockwork_vm* vm, local_index local);
+void clkwk_pushLocal(clockwork_vm* vm, local_index local);
+struct object* clkwk_getLocal(clockwork_vm* vm, local_index local);
 
 // --- IVARS ---
 void clkwk_setIvar(clockwork_vm* vm, symbol ivar);

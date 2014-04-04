@@ -23,7 +23,7 @@ struct stack
 
 stack* stack_init(void)
 {
-	stack* the_stack = (stack*)malloc(sizeof(stack));
+	stack* the_stack = malloc(sizeof(stack));
 	the_stack->count = 0;
 	return the_stack;
 }

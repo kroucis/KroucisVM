@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include <assert.h>
 
 #pragma mark Object
 
@@ -31,8 +32,8 @@ struct object
 
 static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)clkwk_getLocal(vm, "selector");
-    block* impl = (block*)clkwk_getLocal(vm, "impl");
+    str* name = (str*)clkwk_getLocal(vm, 0);
+    block* impl = (block*)clkwk_getLocal(vm, 1);
     class_addInstanceMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
     clkwk_push(vm, klass);
     clkwk_return(vm);
@@ -40,8 +41,8 @@ static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
 
 static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)clkwk_getLocal(vm, "selector");
-    block* impl = (block*)clkwk_getLocal(vm, "impl");
+    str* name = (str*)clkwk_getLocal(vm, 0);
+    block* impl = (block*)clkwk_getLocal(vm, 1);
     class_addClassMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
     clkwk_push(vm, klass);
     clkwk_return(vm);
@@ -204,8 +205,8 @@ static void class_dealloc_native(object* klass, clockwork_vm* vm)
 
 static void class_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
 {
-    str* message = (str*)clkwk_getLocal(vm, "message");
-    array* argsArray = (array*)clkwk_getLocal(vm, "args");
+    str* message = (str*)clkwk_getLocal(vm, 0);
+    array* argsArray = (array*)clkwk_getLocal(vm, 1);
     char* msgBytes = str_raw_bytes(message, vm);
     if (strncmp(msgBytes, "new", 3) != 0)
     {
@@ -253,7 +254,7 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
 
 static void object_respondsToSelector_native(object* instance, clockwork_vm* vm)
 {
-    sel* selector = (sel*)clkwk_getLocal(vm, "selector");
+    sel* selector = (sel*)clkwk_getLocal(vm, 0);
     if (object_respondsToSelector(instance, vm, str_raw_bytes(selector, vm)))
     {
         clkwk_pushTrue(vm);
@@ -276,7 +277,7 @@ static void object_hash_native(object* instance, clockwork_vm* vm)
 
 static void object_isEqual_native(object* instance, clockwork_vm* vm)
 {
-    object* other = clkwk_getLocal(vm, "obj");
+    object* other = clkwk_getLocal(vm, 0);
     if (other == instance)  // Direct pointer compare
     {
         clkwk_pushTrue(vm);
@@ -494,6 +495,10 @@ void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* valu
 
 object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 {
+    assert(instance);
+    assert(vm);
+    assert(ivar);
+
     object* value = NULL;
     if (instance->header.ivars != NULL)
     {
@@ -507,6 +512,9 @@ object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
 
 object* object_retain(object* instance, clockwork_vm* vm)
 {
+    assert(instance);
+    assert(vm);
+
     instance->header.retainCount++;
 
     return instance;
@@ -514,6 +522,9 @@ object* object_retain(object* instance, clockwork_vm* vm)
 
 void object_release(object* instance, clockwork_vm* vm)
 {
+    assert(instance);
+    assert(vm);
+
     instance->header.retainCount--;
 
     if (instance->header.retainCount == 0)

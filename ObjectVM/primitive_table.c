@@ -14,6 +14,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 struct primitive_table_entry
 {
@@ -44,7 +45,7 @@ static uint32_t hash_string(char* string)
 	return hashval;
 }
 
-static struct primitive_table_entry* new_entry(clockwork_vm* vm, char* key, object* obj)
+static struct primitive_table_entry* _new_entry(clockwork_vm* vm, char* key, object* obj)
 {
     struct primitive_table_entry* entry = clkwk_allocate(vm, sizeof(struct primitive_table_entry));
     entry->key = clkwk_allocate(vm, strlen(key));
@@ -57,15 +58,20 @@ static struct primitive_table_entry* new_entry(clockwork_vm* vm, char* key, obje
 
 primitive_table* primitive_table_init(clockwork_vm* vm, uint32_t capacity)
 {
+    assert(vm);
+
     primitive_table* table = clkwk_allocate(vm, sizeof(primitive_table));
     table->capacity = capacity;
-    table->entries = (struct primitive_table_entry**)clkwk_allocate(vm, sizeof(struct primitive_table_entry*) * table->capacity);
+    table->entries = clkwk_allocate(vm, sizeof(struct primitive_table_entry*) * table->capacity);
 
     return table;
 }
 
 void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean purge)
 {
+    assert(m_table);
+    assert(vm);
+
     if (purge)
     {
         primitive_table_purge(m_table, vm);
@@ -79,6 +85,11 @@ void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean
 
 void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, object* obj)
 {
+    assert(m_table);
+    assert(vm);
+    assert(key);
+    assert(obj);
+
     uint32_t bin = hash_string(key) % m_table->capacity;
     struct primitive_table_entry* next = m_table->entries[bin];
     struct primitive_table_entry* last = NULL;
@@ -104,7 +115,7 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
     // Create new pair and insert
     else
     {
-        struct primitive_table_entry* entry = new_entry(vm, key, obj);
+        struct primitive_table_entry* entry = _new_entry(vm, key, obj);
         if (next == m_table->entries[bin])
         {
             entry->next = next;
@@ -132,6 +143,10 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
 
 object* primitive_table_get(primitive_table* m_table, clockwork_vm* vm, char* key)
 {
+    assert(m_table);
+    assert(vm);
+    assert(key);
+
     uint32_t bin = hash_string(key) % m_table->capacity;
     struct primitive_table_entry* entry = m_table->entries[bin];
 	while (entry != NULL && entry->key != NULL && strcmp(key, entry->key) > 0)
@@ -152,6 +167,9 @@ object* primitive_table_get(primitive_table* m_table, clockwork_vm* vm, char* ke
 
 void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
 {
+    assert(table);
+    assert(vm);
+
     if (table->count > 0)
     {
         for (int i = 0; i < table->capacity; i++)
@@ -180,6 +198,9 @@ void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
 
 void primitive_table_print(primitive_table* table, clockwork_vm* vm)
 {
+    assert(table);
+    assert(vm);
+
     printf("{");
     if (table->count > 0)
     {
@@ -197,6 +218,10 @@ void primitive_table_print(primitive_table* table, clockwork_vm* vm)
 
 void primitive_table_each(primitive_table* table, clockwork_vm* vm, primitive_table_iterator itr)
 {
+    assert(table);
+    assert(vm);
+    assert(itr);
+
     if (table->count > 0 && itr)
     {
         for (int i = 0; i < table->capacity; i++)

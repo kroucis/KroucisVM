@@ -67,9 +67,9 @@ void assembler_jump(assembler* ar, uint64_t loc);
 void assembler_jumpTrue(assembler* ar, uint64_t loc);
 void assembler_jumpFalse(assembler* ar, uint64_t loc);
 void assembler_dispatch(assembler* ar, char* sel, unsigned char args);
-void assembler_pushLocal(assembler* ar, char* sym);
-void assembler_setLocal(assembler* ar, char* sym);
-void assembler_popToLocal(assembler* ar, char* sym);
+void assembler_pushLocal(assembler* ar, uint8_t lcl);
+void assembler_setLocal(assembler* ar, uint8_t lcl);
+void assembler_popToLocal(assembler* ar, uint8_t lcl);
 void assembler_pushClockwork(assembler *ar);
 
 uint64_t assembled_binary_size(assembled_binary* asm_bin);

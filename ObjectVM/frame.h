@@ -10,12 +10,17 @@
 
 #include <stdint.h>
 
+static const uint8_t c_LocalsLimit = 8;
+static const uint8_t c_UpValsLimit = c_LocalsLimit;
+
 struct object;
 
 typedef struct frame
 {
     object* frameSelf;
-//    uint64_t returnPC;
+    uint64_t returnPC;
+    object* locals[c_LocalsLimit];
+    object* upvals[c_UpValsLimit];
 } frame;
 
 typedef struct frame_stack

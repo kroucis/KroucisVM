@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #pragma mark String
 
@@ -94,12 +95,18 @@ struct class* string_class(clockwork_vm* vm)
 
 str* str_init(clockwork_vm* vm, const char* const data)
 {
+    assert(vm);
+    assert(data);
+
     uint32_t len = data ? (uint32_t)strlen(data) : 0;
     return str_init_len(vm, data, len);
 }
 
 str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
 {
+    assert(vm);
+    assert(data);
+
     object* strSuper = object_init(vm);
     str* string = (str*)object_create_super(vm, strSuper, (class*)clkwk_getConstant(vm, "String"), sizeof(str));
     if (len > 0)
@@ -115,6 +122,9 @@ str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
 
 void str_dealloc(str* string, clockwork_vm* vm)
 {
+    assert(string);
+    assert(vm);
+
     if (str_length(string, vm) > 0)
     {
         clkwk_freeSize(vm, string->data, string->length);
@@ -124,16 +134,26 @@ void str_dealloc(str* string, clockwork_vm* vm)
 
 uint32_t str_length(str* string, clockwork_vm* vm)
 {
+    assert(string);
+    assert(vm);
+
     return string->length;
 }
 
 char* str_raw_bytes(str* string, clockwork_vm* vm)
 {
+    assert(string);
+    assert(vm);
+
     return string->data;
 }
 
 void str_into_cstr(str* string, clockwork_vm* vm, char* outCStr)
 {
+    assert(string);
+    assert(vm);
+    assert(outCStr);
+
     if (string->data != NULL)
     {
         memcpy(outCStr, string->data, string->length);
@@ -147,12 +167,19 @@ void str_into_cstr(str* string, clockwork_vm* vm, char* outCStr)
 
 int str_compare(str* s0, clockwork_vm* vm, str* s1)
 {
+    assert(s0);
+    assert(vm);
+    assert(s1);
+
     size_t min_len = s0->length < s1->length ? s0->length : s1->length;
     return strncmp(s0->data, s1->data, min_len);
 }
 
 int64_t str_hash(str* string, clockwork_vm* vm)
 {
+    assert(string);
+    assert(vm);
+    
     int64_t hashval = 0;
 
     int len_plus_one = str_length(string, vm) + 1;

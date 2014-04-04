@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 static uint8_t const c_array_baseStorage = 10;
 static uint8_t const c_array_growthFactor = 2;
@@ -78,7 +79,7 @@ static void array_count_native(object* instance, clockwork_vm* vm)
 static void array_objectAtIndex_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = clkwk_getLocal(vm, "idx");
+    object* obj = clkwk_getLocal(vm, 0);
     integer* idx = (integer*)obj;
     if (!object_isMemberOfClass_native(obj, (class*)clkwk_getConstant(vm, "Integer")))     // Not super sure if I actually want type coercion.
     {
@@ -102,7 +103,7 @@ static void array_objectAtIndex_native(object* instance, clockwork_vm* vm)
 static void array_add_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = clkwk_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, 0);
     array_add(ary, vm, obj);
     clkwk_push(vm, instance);
     clkwk_return(vm);
@@ -111,7 +112,7 @@ static void array_add_native(object* instance, clockwork_vm* vm)
 static void array_remove_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = clkwk_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, 0);
     boolean removed = No;
     for (uint64_t i = 0; i < array_count(ary, vm); i++)
 	{
@@ -153,7 +154,7 @@ static void array_isEmpty_native(object* instance, clockwork_vm* vm)
 static void array_contains_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = clkwk_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, 0);
     boolean found = No;
     for (int i = 0; i < array_count(ary, vm); i++)
 	{
@@ -181,7 +182,7 @@ static void array_contains_native(object* instance, clockwork_vm* vm)
 static void array_indexOf_native(object* instance, clockwork_vm* vm)
 {
     array* ary = (array*)instance;
-    object* obj = clkwk_getLocal(vm, "obj");
+    object* obj = clkwk_getLocal(vm, 0);
     for (uint64_t i = 0; i < array_count(ary, vm); i++)
 	{
 		clkwk_push(vm, array_objectAtIndex(ary, vm, i));
@@ -245,6 +246,8 @@ class* array_class(clockwork_vm* vm)
 
 array* array_init(clockwork_vm* vm)
 {
+    assert(vm);
+
     object* arraySuper = object_init(vm);
     array* ary = (array*)object_create_super(vm, arraySuper, (class*)clkwk_getConstant(vm, "Array"), sizeof(array));
     ary->header.size = sizeof(array);
@@ -253,6 +256,9 @@ array* array_init(clockwork_vm* vm)
 
 array* array_initWithObjects(clockwork_vm* vm, object** objects, uint64_t count)
 {
+    assert(vm);
+    assert(objects);
+
     array* arrayInit = array_init(vm);
     for (uint64_t i = 0; i < count; i++)
 	{
@@ -264,11 +270,17 @@ array* array_initWithObjects(clockwork_vm* vm, object** objects, uint64_t count)
 
 uint64_t array_count(array* ary, clockwork_vm* vm)
 {
+    assert(ary);
+    assert(vm);
+
     return ary->count;
 }
 
 object* array_objectAtIndex(array* ary, clockwork_vm* vm, uint64_t index)
 {
+    assert(ary);
+    assert(vm);
+
     if (index < ary->count)
     {
         return ary->contents[index];
@@ -283,6 +295,10 @@ object* array_objectAtIndex(array* ary, clockwork_vm* vm, uint64_t index)
 
 void array_add(array* ary, clockwork_vm* vm, object* obj)
 {
+    assert(ary);
+    assert(vm);
+    // OK to add nil?
+
     if (ary->contents == NULL)
     {
         ary->contents = clkwk_allocate(vm, sizeof(object*) * c_array_baseStorage);
@@ -300,6 +316,9 @@ void array_add(array* ary, clockwork_vm* vm, object* obj)
 
 void array_remove(array* ary, clockwork_vm* vm, object* obj)
 {
+    assert(ary);
+    assert(vm);
+
     for (uint64_t i = 0; i < ary->count; i++)
 	{
 		if (ary->contents[i] == obj)
@@ -311,6 +330,14 @@ void array_remove(array* ary, clockwork_vm* vm, object* obj)
 
 void array_removeAtIndex(array* ary, clockwork_vm* vm, uint64_t idx)
 {
+    assert(ary);
+    assert(vm);
+
+    if (idx >= ary->count)
+    {
+        return;
+    }
+
     clkwk_push(vm, ary->contents[idx]);
     clkwk_dispatch(vm, "release", 0);
     clkwk_pop(vm);

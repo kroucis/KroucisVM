@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <assert.h>
 
 struct dictionary_entry
 {
@@ -57,6 +58,8 @@ static struct dictionary_entry* _new_entry(clockwork_vm* vm, str* key, object* v
 
 dictionary* dictionary_init(clockwork_vm* vm, unsigned int size)
 {
+    assert(vm);
+
     dictionary* table = (dictionary*)clkwk_allocate(vm, sizeof(dictionary));
     table->capacity = size;
     table->entries = (struct dictionary_entry**)clkwk_allocate(vm, sizeof(struct dictionary_entry*) * size);
@@ -66,6 +69,9 @@ dictionary* dictionary_init(clockwork_vm* vm, unsigned int size)
 
 void dictionary_dealloc(dictionary* table, clockwork_vm* vm)
 {
+    assert(table);
+    assert(vm);
+
     dictionary_purge(table, vm);
     clkwk_freeSize(vm, table->entries, sizeof(struct dictionary_entry*) * table->capacity);
     clkwk_freeSize(vm, table, sizeof(dictionary));
@@ -73,6 +79,11 @@ void dictionary_dealloc(dictionary* table, clockwork_vm* vm)
 
 void dictionary_set(dictionary* table, clockwork_vm* vm, str* key, object* value)
 {
+    assert(table);
+    assert(vm);
+    assert(key);
+    assert(value);
+
     uint32_t bin = _hash_string(key, vm) % table->capacity;
     struct dictionary_entry* next = table->entries[bin];
     struct dictionary_entry* last = NULL;
@@ -120,6 +131,10 @@ void dictionary_set(dictionary* table, clockwork_vm* vm, str* key, object* value
 
 object* dictionary_get(dictionary* table, clockwork_vm* vm, str* key)
 {
+    assert(table);
+    assert(vm);
+    assert(key);
+
     uint32_t bin = _hash_string(key, vm) % table->capacity;
     struct dictionary_entry* entry = table->entries[bin];
 	while (entry != NULL && entry->key != NULL && str_compare(key, vm, entry->key) > 0)
@@ -140,6 +155,10 @@ object* dictionary_get(dictionary* table, clockwork_vm* vm, str* key)
 
 void dictionary_remove(dictionary* table, clockwork_vm* vm, str* key)
 {
+    assert(table);
+    assert(vm);
+    assert(key);
+
     uint32_t bin = _hash_string(key, vm) % table->capacity;
     struct dictionary_entry* entry = table->entries[bin];
     struct dictionary_entry* previous = NULL;
@@ -163,6 +182,9 @@ void dictionary_remove(dictionary* table, clockwork_vm* vm, str* key)
 
 void dictionary_purge(dictionary* table, clockwork_vm* vm)
 {
+    assert(table);
+    assert(vm);
+
     for (int i = 0; i < table->capacity; i++)
 	{
         if (table->entries[i] != NULL)

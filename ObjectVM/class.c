@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <string.h>
+#include <assert.h>
 
 #pragma mark Class
 
@@ -98,6 +99,10 @@ block* class_getClassMethod(class* klass, clockwork_vm* vm, char* selector)
 
 block* class_getInstanceMethod(class* klass, clockwork_vm* vm, char* selector)
 {
+    assert(klass);
+    assert(vm);
+    assert(selector);
+
     if (klass->instanceMethods)
     {
         return (block*)primitive_table_get(klass->instanceMethods, vm, selector);
@@ -108,6 +113,10 @@ block* class_getInstanceMethod(class* klass, clockwork_vm* vm, char* selector)
 
 block* class_findClassMethod(class* klass, clockwork_vm* vm, char* selector)
 {
+    assert(klass);
+    assert(vm);
+    assert(selector);
+
     block* m = NULL;
     if (klass)
     {
