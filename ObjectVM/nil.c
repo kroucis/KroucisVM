@@ -13,6 +13,7 @@
 #include "object.h"
 #include "str.h"
 #include "block.h"
+#include "symbols.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,7 +60,9 @@ static void nil_release_native(object* obj, clockwork_vm* vm)
 
 static void nil_forwardMessage_withArguments_native(object* obj, clockwork_vm* vm)
 {
-    printf("DEBUG: nil was messaged. Ignoring.\n");
+    symbol* msg = (symbol*)clkwk_getLocal(vm, 0);
+
+    printf("DEBUG: nil was sent %s. Ignoring.\n", symbol_cstr(msg));
     clkwk_pushNil(vm);
     clkwk_return(vm);
 }
@@ -77,45 +80,42 @@ class* nil_class(struct clockwork_vm* vm)
     class* nilClass = class_init(vm, "Nil", "Object");
 
     {
-        block* isNilMethodNative = block_init_native(vm, NULL, &nil_isNil_native);
+        block* isNilMethodNative = block_init_native(vm, 0, 0, &nil_isNil_native);
         class_addClassMethod(nilClass, vm, "isNil", isNilMethodNative);
         class_addInstanceMethod(nilClass, vm, "isNil", isNilMethodNative);
     }
 
     {
-        block* isTrueMethodNative = block_init_native(vm, NULL, &nil_isTrue_native);
+        block* isTrueMethodNative = block_init_native(vm, 0, 0, &nil_isTrue_native);
         class_addClassMethod(nilClass, vm, "isTrue", isTrueMethodNative);
         class_addInstanceMethod(nilClass, vm, "isTrue", isTrueMethodNative);
     }
 
     {
-        block* isFalseMethodNative = block_init_native(vm, NULL, &nil_isFalse_native);
+        block* isFalseMethodNative = block_init_native(vm, 0, 0, &nil_isFalse_native);
         class_addClassMethod(nilClass, vm, "isFalse", isFalseMethodNative);
         class_addInstanceMethod(nilClass, vm, "isFalse", isFalseMethodNative);
     }
 
     {
-        block* deallocMethodNative = block_init_native(vm, NULL, &nil_dealloc_native);
+        block* deallocMethodNative = block_init_native(vm, 0, 0, &nil_dealloc_native);
         class_addClassMethod(nilClass, vm, "dealloc", deallocMethodNative);
         class_addInstanceMethod(nilClass, vm, "dealloc", deallocMethodNative);
     }
 
     {
-        class_addInstanceMethod(nilClass, vm, "retain", block_init_native(vm, NULL, &nil_retain_native));
-        class_addInstanceMethod(nilClass, vm, "release", block_init_native(vm, NULL, &nil_release_native));
+        class_addInstanceMethod(nilClass, vm, "retain", block_init_native(vm, 0, 0, &nil_retain_native));
+        class_addInstanceMethod(nilClass, vm, "release", block_init_native(vm, 0, 0, &nil_release_native));
     }
 
     {
-        local_scope* ls = local_scope_init(vm);
-        local_scope_addLocal(ls, vm, "selector");
-        local_scope_addLocal(ls, vm, "args");
-        block* forwardMethodNative = block_init_native(vm, ls, &nil_forwardMessage_withArguments_native);
+        block* forwardMethodNative = block_init_native(vm, 2, 0, &nil_forwardMessage_withArguments_native);
         class_addInstanceMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
         class_addClassMethod(nilClass, vm, "forwardMessage:withArguments:", forwardMethodNative);
     }
 
     {
-        class_addInstanceMethod(nilClass, vm, "description", block_init_native(vm, NULL, &nil_description_native));
+        class_addInstanceMethod(nilClass, vm, "description", block_init_native(vm, 0, 0, &nil_description_native));
     }
 
 #warning TODO: PUT IN EXCEPTION THROW ON INSTANCE CREATION
@@ -126,7 +126,7 @@ class* nil_class(struct clockwork_vm* vm)
 object* nil_instance(clockwork_vm* vm)
 {
     object* nilSuper = object_init(vm);
-    object* nilObj = object_create_super(vm, nilSuper, (class*)clkwk_getConstant(vm, "Nil"), sizeof(void*) * 3);
+    object* nilObj = object_create_super(vm, nilSuper, (class*)clkwk_getConstant(vm, "Nil"), sizeof(struct object_header));
     return nilObj;
 }
 

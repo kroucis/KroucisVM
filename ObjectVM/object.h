@@ -20,17 +20,20 @@ struct dictionary;
 struct clockwork_vm;
 struct class;
 struct primitive_table;
+struct symbol;
+
 typedef struct str sel;
 typedef struct object object;
 
 struct object_header
 {
-    struct class* isa;
-    object* super;
-    struct primitive_table* ivars;
-    uint32_t size;
-    int32_t retainCount;
-    void* extra;
+    struct class* isa;                  /* 8 */
+    object* super;                      /* 8 */
+    struct primitive_table* ivars;      /* 8 */
+    uint32_t size;                      /* 4 */
+    int32_t retainCount;                /* 4 */
+    void* extra;                        /* 8 */
+                                     /* = 40 */
 };
 
 boolean         object_isKindOfClass_native(object*, struct class*);
@@ -45,15 +48,15 @@ object*         object_create_super(struct clockwork_vm*, object*, struct class*
 uint32_t        object_size(object* instance);
 
 void            object_dealloc(object* instance, struct clockwork_vm*);
-void            object_setIvar(object* instance, struct clockwork_vm*, char*, object*);
-object*         object_getIvar(object* instance, struct clockwork_vm*, char*);
+void            object_setIvar(object* instance, struct clockwork_vm*, struct symbol*, object*);
+object*         object_getIvar(object* instance, struct clockwork_vm*, struct symbol*);
 object*         object_retain(object* instance, struct clockwork_vm*);
 void            object_release(object*, struct clockwork_vm*);
 int             object_isNil(object* instance, struct clockwork_vm*);
 int             object_isFalse(object* instance, struct clockwork_vm*);
 int             object_isTrue(object* instance, struct clockwork_vm*);
-boolean         object_respondsToSelector(object* instance, struct clockwork_vm*, char*);
-struct block*   object_findMethod(object* instance, struct clockwork_vm*, char*);
+boolean         object_respondsToSelector(object* instance, struct clockwork_vm*, struct symbol*);
+struct block*   object_findMethod(object* instance, struct clockwork_vm*, struct symbol*);
 void            object_setSuper(object*, struct clockwork_vm*, object*);
 object*         object_super(object*, struct clockwork_vm*);
 struct class*   object_getClass(object*, struct clockwork_vm*);

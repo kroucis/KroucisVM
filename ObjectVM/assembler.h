@@ -61,12 +61,12 @@ void assembler_return(assembler* ar);
 void assembler_end(assembler* ar);
 void assembler_pushInt(assembler* ar, int64_t value);
 void assembler_pushNumber(assembler* ar, double value);
-void assembler_pushSymbol(assembler* ar, char* sym);
-void assembler_pushString(assembler* ar, char* sym);
+void assembler_pushSymbol(assembler* ar, const char* sym);
+void assembler_pushString(assembler* ar, const char* sym);
 void assembler_jump(assembler* ar, uint64_t loc);
 void assembler_jumpTrue(assembler* ar, uint64_t loc);
 void assembler_jumpFalse(assembler* ar, uint64_t loc);
-void assembler_dispatch(assembler* ar, char* sel, unsigned char args);
+void assembler_dispatch(assembler* ar, const char* sel, unsigned char args);
 void assembler_pushLocal(assembler* ar, uint8_t lcl);
 void assembler_setLocal(assembler* ar, uint8_t lcl);
 void assembler_popToLocal(assembler* ar, uint8_t lcl);
@@ -76,6 +76,5 @@ uint64_t assembled_binary_size(assembled_binary* asm_bin);
 char* assembled_binary_data(assembled_binary* asm_bin);
 void assembled_binary_dealloc(assembled_binary* asm_bin, struct clockwork_vm* vm);
 
-#warning THESE ARE IN THE WRONG PLACE!!!!
-void assembler_run_instruction(instruction*, struct clockwork_vm*);
-void assembler_run_block(block*, struct clockwork_vm*);
+//void assembler_run_instruction(instruction*, struct clockwork_vm*);
+//void assembler_run_block(block*, struct clockwork_vm*);

@@ -40,6 +40,7 @@
 		75A88B6118434127007B7D7A /* input_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B6018434127007B7D7A /* input_stream.c */; };
 		75A88B661847DC14007B7D7A /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B651847DC14007B7D7A /* parser.c */; };
 		75BE503C18ED089B007FBB13 /* memory_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BE503B18ED089B007FBB13 /* memory_manager.c */; };
+		75BE504218EF95E8007FBB13 /* symbols.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BE504118EF95E8007FBB13 /* symbols.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +116,9 @@
 		75A88B651847DC14007B7D7A /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
 		75BE503A18ED07D6007FBB13 /* memory_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_manager.h; sourceTree = "<group>"; };
 		75BE503B18ED089B007FBB13 /* memory_manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memory_manager.c; sourceTree = "<group>"; };
+		75BE504018EF9504007FBB13 /* symbols.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = symbols.h; sourceTree = "<group>"; };
+		75BE504118EF95E8007FBB13 /* symbols.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = symbols.c; sourceTree = "<group>"; };
+		75C1E0FD18F39ADA0074867C /* clkwk_debug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = clkwk_debug.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +272,9 @@
 				75A7CE231852F1D800D155A3 /* array.h */,
 				75A7CE251852F25900D155A3 /* array.c */,
 				75A561411855697F00506F92 /* frame.h */,
+				75BE504018EF9504007FBB13 /* symbols.h */,
+				75BE504118EF95E8007FBB13 /* symbols.c */,
+				75C1E0FD18F39ADA0074867C /* clkwk_debug.h */,
 			);
 			name = vm;
 			sourceTree = "<group>";
@@ -432,6 +439,7 @@
 				7541EAA118371D150082A78F /* str.c in Sources */,
 				75A88B6118434127007B7D7A /* input_stream.c in Sources */,
 				75744057183044D10008416B /* main.m in Sources */,
+				75BE504218EF95E8007FBB13 /* symbols.c in Sources */,
 				7574405E183044D10008416B /* OVMAppDelegate.m in Sources */,
 				7541EAA4183727890082A78F /* dictionary.c in Sources */,
 				75A88B511841EC52007B7D7A /* primitive_table.c in Sources */,

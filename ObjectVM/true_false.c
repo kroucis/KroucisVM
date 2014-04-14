@@ -63,10 +63,10 @@ object* true_instance(clockwork_vm* vm)
 {
     object* trueSuper = object_init(vm);
     class* trueClass = (class*)clkwk_getConstant(vm, "True");
-    object* trueObj = object_create_super(vm, trueSuper, trueClass, sizeof(void*) * 3);
+    object* trueObj = object_create_super(vm, trueSuper, trueClass, sizeof(struct object_header));
 
     {
-        block* descriptionMethodNative = block_init_native(vm, 0x0, &true_description_native);
+        block* descriptionMethodNative = block_init_native(vm, 0, 0, &true_description_native);
         class_addInstanceMethod(trueClass, vm, "description", descriptionMethodNative);
     }
 
@@ -78,25 +78,25 @@ class* false_class(clockwork_vm* vm)
     class* fc = class_init(vm, "False", "Object");
 
     {
-        block* isNilMethodNative = block_init_native(vm, 0x0, &false_is_nil_native);
+        block* isNilMethodNative = block_init_native(vm, 0, 0, &false_is_nil_native);
         class_addClassMethod(fc, vm, "isNil", isNilMethodNative);
         class_addInstanceMethod(fc, vm, "isNil", isNilMethodNative);
     }
 
     {
-        block* isTrueMethodNative = block_init_native(vm, 0x0, &false_is_true_native);
+        block* isTrueMethodNative = block_init_native(vm, 0, 0, &false_is_true_native);
         class_addClassMethod(fc, vm, "isTrue", isTrueMethodNative);
         class_addInstanceMethod(fc, vm, "isTrue", isTrueMethodNative);
     }
 
     {
-        block* isFalseMethodNative = block_init_native(vm, 0x0, &false_is_false_native);
+        block* isFalseMethodNative = block_init_native(vm, 0, 0, &false_is_false_native);
         class_addClassMethod(fc, vm, "isFalse", isFalseMethodNative);
         class_addInstanceMethod(fc, vm, "isFalse", isFalseMethodNative);
     }
 
     {
-        block* descriptionMethodNative = block_init_native(vm, 0x0, &false_description_native);
+        block* descriptionMethodNative = block_init_native(vm, 0, 0, &false_description_native);
         class_addInstanceMethod(fc, vm, "description", descriptionMethodNative);
     }
 
@@ -106,7 +106,7 @@ class* false_class(clockwork_vm* vm)
 object* false_instance(clockwork_vm* vm)
 {
     object* falseSuper = object_init(vm);
-    object* falseObj = object_create_super(vm, falseSuper, (class*)clkwk_getConstant(vm, "False"), sizeof(void*) * 3);
+    object* falseObj = object_create_super(vm, falseSuper, (class*)clkwk_getConstant(vm, "False"), sizeof(struct object_header));
     return falseObj;
 }
 

@@ -110,7 +110,7 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
     _class = (class*)clkwk_pop(_vm);
     clkwk_push(_vm, (object*)_class);
 
-    block* blk = block_init_native(_vm, NULL, &test_instance_method);
+    block* blk = block_init_native(_vm, 0, 0, &test_instance_method);
     clkwk_push(_vm, (object*)blk);
 
     clkwk_makeStringCstr(_vm, "bar");
@@ -121,7 +121,7 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
     clkwk_dispatch(_vm, "init", 0);
 
     object* instance = clkwk_pop(_vm);
-    XCTAssertTrue(object_respondsToSelector(instance, _vm, "bar"));
+    XCTAssertTrue(object_respondsToSelector(instance, _vm, clkwk_getSymbolCstr(_vm, "bar")));
     clkwk_push(_vm, instance);
 
     clkwk_dispatch(_vm, "bar", 0);

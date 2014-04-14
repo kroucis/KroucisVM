@@ -13,6 +13,7 @@
 #include "vm.h"
 #include "block.h"
 #include "str.h"
+#include "symbols.h"
 
 #include <stdlib.h>
 #include <memory.h>
@@ -58,7 +59,7 @@ void class_dealloc(class* klass, struct clockwork_vm* vm)
     clkwk_free(vm, (object*)klass);
 }
 
-void class_addInstanceMethod(class* klass, clockwork_vm* vm, symbol name, block* meth)
+void class_addInstanceMethod(class* klass, clockwork_vm* vm, const char* name, block* meth)
 {
     if (klass->instanceMethods == NULL)
     {
@@ -70,7 +71,7 @@ void class_addInstanceMethod(class* klass, clockwork_vm* vm, symbol name, block*
     primitive_table_set(klass->instanceMethods, vm, name, (object*)meth);
 }
 
-void class_addClassMethod(class* klass, clockwork_vm* vm, char* name, block* meth)
+void class_addClassMethod(class* klass, clockwork_vm* vm, const char* name, block* meth)
 {
     if (klass->classMethods == NULL)
     {
@@ -87,17 +88,17 @@ char* class_name(class* klass, clockwork_vm* vm)
     return klass->name;
 }
 
-block* class_getClassMethod(class* klass, clockwork_vm* vm, char* selector)
+block* class_getClassMethod(class* klass, clockwork_vm* vm, symbol* selector)
 {
     if (klass->classMethods)
     {
-        return (block*)primitive_table_get(klass->classMethods, vm, selector);
+        return (block*)primitive_table_get(klass->classMethods, vm, symbol_cstr(selector));
     }
 
     return NULL;
 }
 
-block* class_getInstanceMethod(class* klass, clockwork_vm* vm, char* selector)
+block* class_getInstanceMethod(class* klass, clockwork_vm* vm, symbol* selector)
 {
     assert(klass);
     assert(vm);
@@ -105,13 +106,13 @@ block* class_getInstanceMethod(class* klass, clockwork_vm* vm, char* selector)
 
     if (klass->instanceMethods)
     {
-        return (block*)primitive_table_get(klass->instanceMethods, vm, selector);
+        return (block*)primitive_table_get(klass->instanceMethods, vm, symbol_cstr(selector));
     }
     
     return NULL;
 }
 
-block* class_findClassMethod(class* klass, clockwork_vm* vm, char* selector)
+block* class_findClassMethod(class* klass, clockwork_vm* vm, symbol* selector)
 {
     assert(klass);
     assert(vm);
@@ -120,7 +121,7 @@ block* class_findClassMethod(class* klass, clockwork_vm* vm, char* selector)
     block* m = NULL;
     if (klass)
     {
-        m = klass->classMethods ? (block*)primitive_table_get(klass->classMethods, vm, selector) : NULL;
+        m = klass->classMethods ? (block*)primitive_table_get(klass->classMethods, vm, symbol_cstr(selector)) : NULL;
         if (!m)
         {
             m = class_findClassMethod((class*)klass->header.super, vm, selector);

@@ -30,7 +30,7 @@ struct primitive_table
     struct primitive_table_entry** entries;
 };
 
-static uint32_t hash_string(char* string)
+static uint32_t hash_string(const char* string)
 {
     uint32_t hashval = 0;
 	int i = 0;
@@ -45,10 +45,10 @@ static uint32_t hash_string(char* string)
 	return hashval;
 }
 
-static struct primitive_table_entry* _new_entry(clockwork_vm* vm, char* key, object* obj)
+static struct primitive_table_entry* _new_entry(clockwork_vm* vm, const char* key, object* obj)
 {
     struct primitive_table_entry* entry = clkwk_allocate(vm, sizeof(struct primitive_table_entry));
-    entry->key = clkwk_allocate(vm, strlen(key));
+    entry->key = clkwk_allocate(vm, strlen(key) + 1);
     strcpy(entry->key, key);
     entry->value = obj;
     entry->next = NULL;
@@ -83,7 +83,7 @@ void primitive_table_dealloc(primitive_table* m_table, clockwork_vm* vm, boolean
     clkwk_free(vm, m_table);
 }
 
-void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, object* obj)
+void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, const char* key, object* obj)
 {
     assert(m_table);
     assert(vm);
@@ -141,7 +141,7 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, char* key, 
     }
 }
 
-object* primitive_table_get(primitive_table* m_table, clockwork_vm* vm, char* key)
+object* primitive_table_get(primitive_table* m_table, clockwork_vm* vm, const char* key)
 {
     assert(m_table);
     assert(vm);
@@ -188,7 +188,7 @@ void primitive_table_purge(primitive_table* table, clockwork_vm* vm)
                     clkwk_dispatch(vm, "release", 0);
                     struct primitive_table_entry* old = entry;
                     entry = entry->next;
-                    clkwk_freeSize(vm, old, sizeof(struct primitive_table_entry));
+                    clkwk_free(vm, old);
                 }
                 table->entries[i] = NULL;
             }

@@ -15,6 +15,8 @@
 #include "block.h"
 #include "str.h"
 
+#include "clkwk_debug.h"
+
 #include <stdio.h>
 
 static char* c_IntegerClassName = "Integer";
@@ -23,16 +25,18 @@ static char* c_IntegerClassName = "Integer";
 
 struct numeric
 {
-    struct object_header header;
+    struct object_header header;        /* 40 */
+                                    /* = 40 */
 };
 
 #pragma mark Integer
 
 struct integer
 {
-    struct object_header header;
+    struct object_header header;        /* 40 */
 
-    int64_t value;
+    int64_t value;                      /* 8 */
+                                    /* = 48 */
 };
 
 #pragma mark - Bound Methods
@@ -160,7 +164,7 @@ static void integer_description(object* self, clockwork_vm* vm)
 {
     integer* self_i = (integer*)self;
     int64_t value = integer_toInt64(self_i, vm);
-    char buffer[value / 10];
+    char buffer[(value / 10) + 1];
     sprintf(buffer, "%lld", value);
     clkwk_makeStringCstr(vm, buffer);
     clkwk_return(vm);
@@ -171,6 +175,10 @@ static void integer_description(object* self, clockwork_vm* vm)
 class* numeric_class(clockwork_vm* vm)
 {
     class* numericClass = class_init(vm, "Numeric", "Object");
+
+#ifdef CLKWK_PRINT_SIZES
+    printf("Numeric: %lu\n", sizeof(numeric));
+#endif
 
 //    {
 //        block* isNilMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_nil_native);
@@ -198,51 +206,43 @@ class* integer_class(clockwork_vm* vm)
     class* integerClass = class_init(vm, "Integer", "Numeric");
 
     {
-        local_scope* add_ls = local_scope_init(vm);
-        local_scope_addLocal(add_ls, vm, "other");
-        block* addMethod = block_init_native(vm, add_ls, &integer_add_native);
+        block* addMethod = block_init_native(vm, 1, 0, &integer_add_native);
         class_addInstanceMethod(integerClass, vm, "add:", addMethod);
     }
 
     {
-        local_scope* sub_ls = local_scope_init(vm);
-        local_scope_addLocal(sub_ls, vm, "other");
-        block* subMethod = block_init_native(vm, sub_ls, &integer_sub_native);
+        block* subMethod = block_init_native(vm, 1, 0, &integer_sub_native);
         class_addInstanceMethod(integerClass, vm, "sub:", subMethod);
     }
 
     {
-        local_scope* mul_ls = local_scope_init(vm);
-        local_scope_addLocal(mul_ls, vm, "other");
-        block* mulMethod = block_init_native(vm, mul_ls, &integer_mul_native);
+        block* mulMethod = block_init_native(vm, 1, 0, &integer_mul_native);
         class_addInstanceMethod(integerClass, vm, "mul:", mulMethod);
     }
 
     {
-        local_scope* div_ls = local_scope_init(vm);
-        local_scope_addLocal(div_ls, vm, "other");
-        block* divMethod = block_init_native(vm, div_ls, &integer_div_native);
+        block* divMethod = block_init_native(vm, 1, 0, &integer_div_native);
         class_addInstanceMethod(integerClass, vm, "div:", divMethod);
     }
 
     {
-        local_scope* lt_ls = local_scope_init(vm);
-        local_scope_addLocal(lt_ls, vm, "other");
-        block* ltMethod = block_init_native(vm, lt_ls, &integer_lessThan_native);
+        block* ltMethod = block_init_native(vm, 1, 0, &integer_lessThan_native);
         class_addInstanceMethod(integerClass, vm, "lessThan:", ltMethod);
     }
 
     {
-        local_scope* gt_ls = local_scope_init(vm);
-        local_scope_addLocal(gt_ls, vm, "other");
-        block* gtMethod = block_init_native(vm, gt_ls, &integer_greaterThan_native);
+        block* gtMethod = block_init_native(vm, 1, 0, &integer_greaterThan_native);
         class_addInstanceMethod(integerClass, vm, "greaterThan:", gtMethod);
     }
 
     {
-        block* to_s_Method = block_init_native(vm, NULL, &integer_description);
+        block* to_s_Method = block_init_native(vm, 0, 0, &integer_description);
         class_addInstanceMethod(integerClass, vm, "description", to_s_Method);
     }
+
+#ifdef CLKWK_PRINT_SIZES
+    printf("Integer: %lu\n", sizeof(integer));
+#endif
 
     //
     //    {

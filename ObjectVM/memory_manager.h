@@ -8,7 +8,8 @@
 
 #pragma once
 
-#define DEBUG_MEMORY
+#define CLKWK_DEBUG_MEMORY
+//#define CLKWK_TRACK_MEMORY
 
 #define MEM_MALLOC(size)    _debug_malloc(__FILE__, __LINE__, (size))
 #define MEM_FREE(ptr)       _debug_free(__FILE__, __LINE__, (ptr))

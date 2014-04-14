@@ -8,7 +8,7 @@
 
 #include "memory_manager.h"
 
-#ifdef DEBUG_MEMORY
+#ifdef CLKWK_DEBUG_MEMORY
     #include <stdio.h>
 #endif
 
@@ -20,7 +20,9 @@ struct mem_block
     void* memory;
 };
 
+#ifdef CLKWK_TRACK_MEMORY
 static size_t s_count = 0;
+#endif
 
 void* _debug_malloc(const char* file, int line, size_t size)
 {
@@ -29,29 +31,40 @@ void* _debug_malloc(const char* file, int line, size_t size)
         return NULL;
     }
 
+    int rem = size % sizeof(void*) != 0;
+    if (rem != 0)
+    {
+        size -= rem;
+        size += sizeof(void*);
+    }
+
+#ifndef CLKWK_TRACK_MEMORY
     void* ptr = calloc(1, size);
     return ptr;
 
-//    void* ptr = calloc(1, size + sizeof(size_t));
-//    if (ptr)
-//    {
-//        s_count += size;
-//
-//#ifdef DEBUG_MEMORY
-//        printf("Allocating %zu bytes. Total: %zu\n", size, s_count);
-//#endif
-//
-//        struct mem_block* mem = (struct mem_block*)ptr;
-//
-//        mem->size = size;
-//        mem->memory = ptr + sizeof(size_t);
-//
-//        return ptr + sizeof(size_t);
-//    }
-//    else
-//    {
-//        return NULL;
-//    }
+#else
+    size = size + sizeof(size_t);
+    void* ptr = calloc(1, size);
+    if (ptr)
+    {
+        s_count += size;
+
+#ifdef CLKWK_DEBUG_MEMORY
+        printf("Allocating %zu bytes. Total: %zu\n", size, s_count);
+#endif
+
+        struct mem_block* mem = (struct mem_block*)ptr;
+
+        mem->size = size;
+        mem->memory = ptr + sizeof(size_t);
+
+        return ptr + sizeof(size_t);
+    }
+    else
+    {
+        return NULL;
+    }
+#endif
 }
 
 void _debug_free(const char* file, int line, void* ptr)
@@ -61,17 +74,22 @@ void _debug_free(const char* file, int line, void* ptr)
         return;
     }
 
+#ifndef CLKWK_TRACK_MEMORY
+
     free(ptr);
 
-//    struct mem_block* mem = (struct mem_block*)(ptr - sizeof(size_t));
-//
-//    s_count -= mem->size;
-//
-//#ifdef DEBUG_MEMORY
-//    printf("Freeing %zu bytes. Total: %zu\n", mem->size, s_count);
-//#endif
-//
-//    free(mem);
+#else
+
+    struct mem_block* mem = (struct mem_block*)(ptr - sizeof(size_t));
+
+    s_count -= mem->size;
+
+#ifdef DEBUG_MEMORY
+    printf("Freeing %zu bytes. Total: %zu\n", mem->size, s_count);
+#endif
+
+    free(mem);
+#endif
 }
 
 //#include <stdlib.h>

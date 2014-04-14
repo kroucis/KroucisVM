@@ -15,6 +15,8 @@
 #include "primitive_table.h"
 #include "integer.h"
 
+#include "clkwk_debug.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -205,41 +207,37 @@ class* array_class(clockwork_vm* vm)
 {
     class* arrayClass = class_init(vm, "Array", "Object");
 
-    class_addClassMethod(arrayClass, vm, "alloc", block_init_native(vm, NULL, &array_alloc_native));
-    class_addInstanceMethod(arrayClass, vm, "dealloc", block_init_native(vm, NULL, &array_dealloc_native));
-    class_addInstanceMethod(arrayClass, vm, "count", block_init_native(vm, NULL, &array_count_native));
+    class_addClassMethod(arrayClass, vm, "alloc", block_init_native(vm, 0, 0, &array_alloc_native));
+    class_addInstanceMethod(arrayClass, vm, "dealloc", block_init_native(vm, 0, 0, &array_dealloc_native));
+    class_addInstanceMethod(arrayClass, vm, "count", block_init_native(vm, 0, 0, &array_count_native));
 
     {
-        local_scope* oai_ls = local_scope_init(vm);
-        local_scope_addLocal(oai_ls, vm, "idx");
-        class_addInstanceMethod(arrayClass, vm, "objectAtIndex:", block_init_native(vm, oai_ls, &array_objectAtIndex_native));
+        class_addInstanceMethod(arrayClass, vm, "objectAtIndex:", block_init_native(vm, 1, 0, &array_objectAtIndex_native));
     }
 
     {
-        local_scope* a_ls = local_scope_init(vm);
-        local_scope_addLocal(a_ls, vm, "obj");
-        class_addInstanceMethod(arrayClass, vm, "add:", block_init_native(vm, a_ls, &array_add_native));
+        class_addInstanceMethod(arrayClass, vm, "add:", block_init_native(vm, 1, 0, &array_add_native));
     }
 
     {
-        local_scope* r_ls = local_scope_init(vm);
-        local_scope_addLocal(r_ls, vm, "obj");
-        class_addInstanceMethod(arrayClass, vm, "remove:", block_init_native(vm, r_ls, &array_remove_native));
+        class_addInstanceMethod(arrayClass, vm, "remove:", block_init_native(vm, 1, 0, &array_remove_native));
     }
     
     {
-        local_scope* c_ls = local_scope_init(vm);
-        local_scope_addLocal(c_ls, vm, "obj");
-        class_addInstanceMethod(arrayClass, vm, "contains:", block_init_native(vm, c_ls, &array_contains_native));
+        class_addInstanceMethod(arrayClass, vm, "contains:", block_init_native(vm, 1, 0, &array_contains_native));
     }
 
     {
-        local_scope* io_ls = local_scope_init(vm);
-        local_scope_addLocal(io_ls, vm, "obj");
-        class_addInstanceMethod(arrayClass, vm, "indexOf:", block_init_native(vm, io_ls, &array_indexOf_native));
+        class_addInstanceMethod(arrayClass, vm, "indexOf:", block_init_native(vm, 1, 0, &array_indexOf_native));
     }
 
-    class_addInstanceMethod(arrayClass, vm, "isEmpty", block_init_native(vm, NULL, &array_isEmpty_native));
+    {
+        class_addInstanceMethod(arrayClass, vm, "isEmpty", block_init_native(vm, 0, 0, &array_isEmpty_native));
+    }
+
+#ifdef CLKWK_PRINT_SIZES
+    printf("Array: %lu\n", sizeof(array));
+#endif
 
     return arrayClass;
 }

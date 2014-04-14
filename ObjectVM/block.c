@@ -15,101 +15,82 @@
 #include "vm.h"
 #include "primitive_table.h"
 
+#include "clkwk_debug.h"
+
 #include <stdlib.h>
 #include <memory.h>
 #include <inttypes.h>
 #include <string.h>
+#include <assert.h>
 
-struct local_scope
-{
-    uint8_t count;
-    char** locals;
-};
+//struct local_scope
+//{
+//    uint8_t count;
+//    char** locals;
+//};
 
 #pragma mark Block
 
-struct block
+enum
 {
-    struct object_header header;
-
-    local_scope* locals;
-    instruction_sequence* instructions;
-    native_block nativeFunc;
+    BlockTypeNative = 0,
+    BlockTypeByteCodeCompiled,
 };
 
-local_scope* local_scope_init(clockwork_vm* vm)
+struct block
 {
-    local_scope* ls = clkwk_allocate(vm, sizeof(local_scope));
-    return ls;
-}
-
-void local_scope_dealloc(local_scope* scope, clockwork_vm* vm)
-{
-    if (scope->count > 0)
+    struct object_header header;            /* 40 */
+    union
     {
-        for (int i = 0; i < scope->count; i++)
-        {
-            clkwk_freeSize(vm, scope->locals[i], strlen(scope->locals[i]));
-        }
-        clkwk_freeSize(vm, scope->locals, sizeof(char*) * scope->count);
-    }
-    clkwk_freeSize(vm, scope, sizeof(local_scope));
-}
+        native_block nativeFunc;
+        uint64_t absPC;
+    } impl;                                 /* 8 */
+    uint8_t localsCount;                    /* 1 */
+    uint8_t upvalsCount;                    /* 1 */
 
-void local_scope_addLocal(local_scope* scope, clockwork_vm* vm, char* localName)
-{
-    if (scope->locals == NULL)
-    {
-        scope->locals = clkwk_allocate(vm, sizeof(char*) * 5);
-    }
+    uint8_t type;
 
-    scope->locals[scope->count] = clkwk_allocate(vm, sizeof(strlen(localName)));
-    strcpy(scope->locals[scope->count], localName);
-    scope->count++;
-}
-
-uint8_t local_scope_count(local_scope* scope, clockwork_vm* vm)
-{
-    return scope ? scope->count : 0;
-}
-
-char* local_scope_localAt(local_scope* scope, clockwork_vm* vm, uint8_t idx)
-{
-    if (idx >= scope->count)
-    {
-        return NULL;
-    }
-
-    return scope->locals[idx];
-}
+    uint8_t _padding[7];                    /* 7 */
+                                        /* = 57 (7) */
+};
 
 #pragma mark - Native Methods
 
 class* block_class(clockwork_vm* vm)
 {
     class* block_class = class_init(vm, "Block", "Object");
+
+#ifdef CLKWK_PRINT_SIZES
+    printf("Block: %lu\n", sizeof(block));
+#endif
+
     return block_class;
 }
 
-block* block_initIseq(clockwork_vm* vm, local_scope* locals, instruction_sequence* iseq)
+block* block_init_native(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, native_block func)
 {
-    block* m = (block*)clkwk_allocate(vm, sizeof(block));
-    m->locals = locals;
-    m->instructions = clkwk_allocate(vm, sizeof(iseq));
-    m->instructions->inst_count = iseq->inst_count;
-    m->instructions->instructions = clkwk_allocate(vm, sizeof(instruction) * iseq->inst_count);
-    m->nativeFunc = NULL;
-    memcpy(m->instructions->instructions, iseq->instructions, sizeof(instruction) * iseq->inst_count);
+    assert(vm);
+    assert(func);
+
+    block* m = clkwk_allocate(vm, sizeof(block));
+    m->localsCount = localsCount;
+    m->upvalsCount = upvalsCount;
+    m->type = BlockTypeNative;
+    m->impl.nativeFunc = func;
+    m->header.size = sizeof(block);
 
     return m;
 }
 
-block* block_init_native(clockwork_vm* vm, local_scope* locals, native_block func)
+block* block_init_compiled(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, uint64_t pc)
 {
-    block* m = (block*)clkwk_allocate(vm, sizeof(block));
-    m->locals = locals;
-    m->instructions = NULL;
-    m->nativeFunc = func;
+    assert(vm);
+
+    block* m = clkwk_allocate(vm, sizeof(block));
+    m->localsCount = localsCount;
+    m->upvalsCount = upvalsCount;
+    m->type = BlockTypeByteCodeCompiled;
+    m->impl.absPC = pc;
     m->header.size = sizeof(block);
 
     return m;
@@ -117,31 +98,54 @@ block* block_init_native(clockwork_vm* vm, local_scope* locals, native_block fun
 
 void block_dealloc(block* instance, clockwork_vm* vm)
 {
-    if (instance->locals)
-    {
-        local_scope_dealloc(instance->locals, vm);
-    }
-
-    if (!instance->nativeFunc)
-    {
-        clkwk_freeSize(vm, instance->instructions->instructions, sizeof(instruction) * instance->instructions->inst_count);
-        clkwk_freeSize(vm, instance->instructions, sizeof(instruction_sequence));
-    }
+    assert(instance);
+    assert(vm);
 
     clkwk_free(vm, (object*)instance);
 }
 
-instruction_sequence* block_instructions(block* instance, clockwork_vm* vm)
+native_block block_nativeFunction(block* blk, clockwork_vm* vm)
 {
-    return instance->instructions;
+    assert(blk);
+    assert(vm);
+
+    if (blk->type == BlockTypeNative)
+    {
+        return blk->impl.nativeFunc;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
-local_scope* block_locals(block* instance, clockwork_vm* vm)
+uint8_t block_localsCount(block* blk, clockwork_vm* vm)
 {
-    return instance->locals;
+    assert(blk);
+    assert(vm);
+
+    return blk->localsCount;
 }
 
-native_block block_native(block* instance, clockwork_vm* vm)
+uint8_t block_upvalsCount(block* blk, clockwork_vm* vm)
 {
-    return instance->nativeFunc;
+    assert(blk);
+    assert(vm);
+
+    return blk->upvalsCount;
+}
+
+uint64_t block_pcLocation(block* blk, clockwork_vm* vm)
+{
+    assert(blk);
+    assert(vm);
+
+    if (blk->type == BlockTypeByteCodeCompiled)
+    {
+        return blk->impl.absPC;
+    }
+    else
+    {
+        return UINT64_MAX;
+    }
 }

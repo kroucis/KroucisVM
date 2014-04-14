@@ -31,10 +31,18 @@ struct assembled_binary
     assembler_output binary_data;
 };
 
+struct unresolved_label
+{
+    char label[255];
+    uint64_t pc;
+};
+
 struct assembler
 {
     assembled_binary* binary;
     primitive_table* labels;
+    struct unresolved_label unresolvedLabels[10];
+    uint8_t unresolvedIndex;
 };
 
 enum {
@@ -43,6 +51,7 @@ enum {
     SYMBOL_TYPE,
     STRING_TYPE,
     CONSTANT_TYPE,
+    UNRESOLVED_TYPE,
 };
 
 struct _result
@@ -89,7 +98,7 @@ static uint64_t read_word(assembler_input input, assembler_input_size length, in
     return index;
 }
 
-static void write_cstr(char* value, uint64_t length, assembled_binary* asm_bin_OUT)
+static void write_cstr(const char* value, uint64_t length, assembled_binary* asm_bin_OUT)
 {
     memcpy(&asm_bin_OUT->binary_data[asm_bin_OUT->bytes], value, length);
     asm_bin_OUT->bytes += length;
@@ -163,6 +172,20 @@ static struct _result read_push_symbol(assembler_input input, assembler_input_si
     return result;
 }
 
+static struct _result read_push_label(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm)
+{
+    struct _result result;
+    index = read_word(input, length, index, result.sym, 254);
+    integer* pc = (integer*)primitive_table_get(labels, vm, result.sym);
+    if (!pc)
+    {
+        printf("Requested label @%s could not be found!\n", result.sym);
+    }
+    result.value.i = integer_toInt64(pc, vm);
+    result.index = index;
+    return result;
+}
+
 static uint64_t next_string_length(assembler_input input, assembler_input_size length, input_index index)
 {
     uint64_t counter = 0;
@@ -174,7 +197,7 @@ static uint64_t next_string_length(assembler_input input, assembler_input_size l
     return counter;
 }
 
-static struct _result read_push(assembler_input input, assembler_input_size length, input_index index)
+static struct _result read_push(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm)
 {
     struct _result result;
     if (input[index] == '#')        // Number constant
@@ -184,9 +207,9 @@ static struct _result read_push(assembler_input input, assembler_input_size leng
     }
     else if (input[index] == ':')   // Symbol constant
     {
-//        printf(":");
-//        index++;
-//        index = read_push_symbol(input, length, index, asm_bin_OUT);
+        index++;
+        result = read_push_symbol(input, length, index);
+        result.type = SYMBOL_TYPE;
     }
     else if (input[index] == '"')   // String constant
     {
@@ -194,9 +217,15 @@ static struct _result read_push(assembler_input input, assembler_input_size leng
         result = read_push_symbol(input, length, index);
         result.type = STRING_TYPE;
     }
+    else if (input[index] == '@')   // Label
+    {
+        index++;
+        result = read_push_label(input, length, index, labels, vm);
+        result.type = INT_TYPE;
+    }
     else                            // Indexed constant (class name, etc.)
     {
-
+        printf("read mneumonic involving unknown type!");
     }
 
     return result;
@@ -207,7 +236,7 @@ static input_index read_label(assembler_input input, assembler_input_size length
     char label[255];
     index = read_word(input, length, index, label, 254);
 
-    printf("%s\n", label);
+    printf("%s -> %lld\n", label, asm_bin->bytes);
 
     primitive_table_set(labels, vm, label, (object*)integer_init(vm, asm_bin->bytes));
 
@@ -224,7 +253,15 @@ static struct _result read_jump(assembler_input input, assembler_input_size leng
     index = read_word(input, length, index, result.sym, 254);
 
     integer* i = (integer*)primitive_table_get(labels, vm, result.sym);
-    result.value.i = integer_toInt64(i, vm);
+    if (!i)
+    {
+        result.type = UNRESOLVED_TYPE;
+    }
+    else
+    {
+        result.type = INT_TYPE;
+        result.value.i = integer_toInt64(i, vm);
+    }
 
     result.index = index;
     return result;
@@ -250,10 +287,8 @@ static struct _result read_pushLocal(assembler_input input, assembler_input_size
 {
     struct _result result;
 
-    index++;    // Skip : in symbol
-
     index = read_word(input, length, index, result.sym, 254);
-
+    result.value.i = cstr_to_uint64(result.sym);
     result.index = index;
     return result;
 }
@@ -295,7 +330,7 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
     else if (strcmp(mneumonic, "push") == 0)
     {
         index++;
-        struct _result push_result = read_push(input, length, index);
+        struct _result push_result = read_push(input, length, index, state->labels, vm);
         index = push_result.index;
         switch (push_result.type)
         {
@@ -346,8 +381,20 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
     {
         index++;
         struct _result result = read_jump(input, length, index, state->labels, vm);
+        if (result.type == UNRESOLVED_TYPE)
+        {
+            uint64_t curPC = state->binary->bytes;
+            uint64_t startOfUnresolved = curPC + sizeof(uint8_t);
+            struct unresolved_label* ul = &(state->unresolvedLabels[state->unresolvedIndex++]);
+            ul->pc = startOfUnresolved;
+            strcpy(ul->label, result.sym);
+            assembler_jump(state, 0);
+        }
+        else
+        {
+            assembler_jump(state, result.value.i);
+        }
         index = result.index;
-        assembler_jump(state, result.value.i);
     }
     else if (strcmp(mneumonic, "jmpt") == 0)
     {
@@ -453,6 +500,22 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
 
     assembled_binary* binary = a->binary;
 
+    // Resolve unresolved label locations.
+    for (int i = 0; i < a->unresolvedIndex; i++)
+	{
+        struct unresolved_label* ul = &(a->unresolvedLabels[i]);
+		uint64_t jumpPCLocation = ul->pc;
+        integer* resolvedPCLocation = (integer*)primitive_table_get(a->labels, vm, ul->label);
+        if (!resolvedPCLocation)
+        {
+            printf("Could not resolve label @%s!\n", ul->label);
+            exit(1);
+        }
+        int64_t resolved = integer_toInt64(resolvedPCLocation, vm);
+
+        memcpy(&(binary->binary_data[jumpPCLocation]), &resolved, sizeof(resolved));
+	}
+
     primitive_table_dealloc(a->labels, vm, Yes);
 //    clkwk_freeSize(vm, a, sizeof(assembler));
     clkwk_free(vm, a);
@@ -543,21 +606,21 @@ void assembler_pushNumber(assembler* ar, double value)
     write_float64(value, ar->binary);
 }
 
-void assembler_pushString(assembler* ar, char* sym)
+void assembler_pushString(assembler* ar, const char* string)
 {
-    printf("push \"%s\n", sym);
+    printf("push \"%s\n", string);
     write_char((char)clkwk_PUSH_STRING, ar->binary);
-    uint64_t len = strlen(sym);
+    uint64_t len = strlen(string);
     write_int64(len, ar->binary);
-    write_cstr(sym, len, ar->binary);
+    write_cstr(string, len, ar->binary);
 }
 
-void assembler_pushSymbol(assembler* ar, symbol sym)
+void assembler_pushSymbol(assembler* ar, const char* sym)
 {
     printf("push :%s\n", sym);
     write_char((char)clkwk_PUSH_SYMBOL, ar->binary);
-    char len = (char)strlen(sym);
-    write_char(len, ar->binary);
+    uint64_t len = strlen(sym);
+    write_int64(len, ar->binary);
     write_cstr(sym, len, ar->binary);
 }
 
@@ -582,7 +645,7 @@ void assembler_jumpFalse(assembler* ar, uint64_t loc)
     write_int64(loc, ar->binary);
 }
 
-void assembler_dispatch(assembler* ar, char* sel, unsigned char args)
+void assembler_dispatch(assembler* ar, const char* sel, unsigned char args)
 {
     printf("disp %s %d\n", sel, args);
     write_char((char)clkwk_DISPATCH, ar->binary);
@@ -618,147 +681,149 @@ void assembler_pushClockwork(assembler *ar)
     write_char((char)clkwk_PUSH_CLOCKWORK, ar->binary);
 }
 
-void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
-{
-    switch (inst->op)
-    {
-        case clkwk_NOOP:
-        {
-            break;
-        }
-        case clkwk_JUMP:
-        {
-            uint64_t location = cstr_to_uint64(inst->params[0]);
-            clkwk_goto(vm, location);
-            break;
-        }
-        case clkwk_JUMP_IF_FALSE:
-        {
-            uint64_t location = cstr_to_uint64(inst->params[0]);
-            clkwk_gotoIfFalse(vm, location);
-            break;
-        }
-        case clkwk_JUMP_IF_TRUE:
-        {
-            uint64_t location = cstr_to_uint64(inst->params[0]);
-            clkwk_gotoIfTrue(vm, location);
-            break;
-        }
-        case clkwk_POP:
-        {
-            clkwk_pop(vm);
-            break;
-        }
-        case clkwk_PUSH_NIL:
-        {
-            clkwk_pushNil(vm);
-            break;
-        }
-        case clkwk_PUSH_FALSE:
-        {
-            clkwk_pushFalse(vm);
-            break;
-        }
-        case clkwk_PUSH_TRUE:
-        {
-            clkwk_pushTrue(vm);
-            break;
-        }
-        case clkwk_PUSH_LOCAL:
-        {
-            clkwk_pushLocal(vm, cstr_to_uint64(inst->params[0]));
-            break;
-        }
-        case clkwk_SET_LOCAL:
-        {
-            clkwk_setLocal(vm, cstr_to_uint64(inst->params[0]));
-            break;
-        }
-        case clkwk_POP_TO_LOCAL:
-        {
-            clkwk_popToLocal(vm, cstr_to_uint64(inst->params[0]));
-            break;
-        }
-        case clkwk_PUSH_SELF:
-        {
-            clkwk_pushSelf(vm);
-            break;
-        }
-        case clkwk_PUSH_SUPER:
-        {
-            clkwk_pushSuper(vm);
-            break;
-        }
-        case clkwk_PUSH_IVAR:
-        {
-            clkwk_pushIvar(vm, inst->params[0]);
-            break;
-        }
-        case clkwk_SET_IVAR:
-        {
-            clkwk_setIvar(vm, inst->params[0]);
-            break;
-        }
-        case clkwk_PRINT:
-        {
-            clkwk_popPrintln(vm);
-            break;
-        }
-        case clkwk_PUSH_STRING:
-        {
-            str* s = str_init(vm, inst->params[0]);
-            clkwk_push(vm, (object*)s);
-            break;
-        }
-        case clkwk_PUSH_INT:
-        {
-            integer* i = integer_init(vm, cstr_to_int64(inst->params[0]));
-            clkwk_push(vm, (object*)i);
-            break;
-        }
-        case clkwk_PUSH_NUMBER:
-        {
-#warning IMPLEMENT
-            break;
-        }
-        case clkwk_PUSH_CONSTANT:
-        {
-#warning IMPLEMENT
-            break;
-        }
-        case clkwk_RETURN:
-        {
-            clkwk_return(vm);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-}
-
-void assembler_run_block(block* block, struct clockwork_vm* vm)
-{
-    instruction_sequence* iseq = block_instructions(block, vm);
-    if (iseq != NULL)
-    {
-        for (int i = 0; i < iseq->inst_count; i++)
-        {
-            assembler_run_instruction(&iseq->instructions[i], vm);
-        }
-    }
-    else
-    {
-        native_block native = block_native(block, vm);
-        if (native != NULL)
-        {
-            native(clkwk_currentSelf(vm), vm);
-        }
-        else
-        {
-#warning TODO: Throw and exception?
-            printf("NATIVE block WAS NULL!");
-        }
-    }
-}
+//void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
+//{
+//    switch (inst->op)
+//    {
+//        case clkwk_NOOP:
+//        {
+//            break;
+//        }
+//        case clkwk_JUMP:
+//        {
+//            uint64_t location = cstr_to_uint64(inst->params[0]);
+//            clkwk_goto(vm, location);
+//            break;
+//        }
+//        case clkwk_JUMP_IF_FALSE:
+//        {
+//            uint64_t location = cstr_to_uint64(inst->params[0]);
+//            clkwk_gotoIfFalse(vm, location);
+//            break;
+//        }
+//        case clkwk_JUMP_IF_TRUE:
+//        {
+//            uint64_t location = cstr_to_uint64(inst->params[0]);
+//            clkwk_gotoIfTrue(vm, location);
+//            break;
+//        }
+//        case clkwk_POP:
+//        {
+//            clkwk_pop(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_NIL:
+//        {
+//            clkwk_pushNil(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_FALSE:
+//        {
+//            clkwk_pushFalse(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_TRUE:
+//        {
+//            clkwk_pushTrue(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_LOCAL:
+//        {
+//            clkwk_pushLocal(vm, cstr_to_uint64(inst->params[0]));
+//            break;
+//        }
+//        case clkwk_SET_LOCAL:
+//        {
+//            clkwk_setLocal(vm, cstr_to_uint64(inst->params[0]));
+//            break;
+//        }
+//        case clkwk_POP_TO_LOCAL:
+//        {
+//            clkwk_popToLocal(vm, cstr_to_uint64(inst->params[0]));
+//            break;
+//        }
+//        case clkwk_PUSH_SELF:
+//        {
+//            clkwk_pushSelf(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_SUPER:
+//        {
+//            clkwk_pushSuper(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_IVAR:
+//        {
+//            clkwk_pushIvar(vm, inst->params[0]);
+//            break;
+//        }
+//        case clkwk_SET_IVAR:
+//        {
+//            clkwk_setIvar(vm, inst->params[0]);
+//            break;
+//        }
+//        case clkwk_PRINT:
+//        {
+//            clkwk_popPrintln(vm);
+//            break;
+//        }
+//        case clkwk_PUSH_STRING:
+//        {
+//            str* s = str_init(vm, inst->params[0]);
+//            clkwk_push(vm, (object*)s);
+//            break;
+//        }
+//        case clkwk_PUSH_INT:
+//        {
+//            integer* i = integer_init(vm, cstr_to_int64(inst->params[0]));
+//            clkwk_push(vm, (object*)i);
+//            break;
+//        }
+//        case clkwk_PUSH_NUMBER:
+//        {
+//#warning IMPLEMENT
+//            break;
+//        }
+//        case clkwk_PUSH_CONSTANT:
+//        {
+//#warning IMPLEMENT
+//            break;
+//        }
+//        case clkwk_RETURN:
+//        {
+//            clkwk_return(vm);
+//            break;
+//        }
+//        default:
+//        {
+//            break;
+//        }
+//    }
+//}
+//
+//#warning  it's time to move this
+//
+//void assembler_run_block(block* block, struct clockwork_vm* vm)
+//{
+//    instruction_sequence* iseq = block_instructions(block, vm);
+//    if (iseq != NULL)
+//    {
+//        for (int i = 0; i < iseq->inst_count; i++)
+//        {
+//            assembler_run_instruction(&iseq->instructions[i], vm);
+//        }
+//    }
+//    else
+//    {
+//        native_block native = block_native(block, vm);
+//        if (native != NULL)
+//        {
+//            native(clkwk_currentSelf(vm), vm);
+//        }
+//        else
+//        {
+//#warning TODO: Throw an exception?
+//            printf("NATIVE block WAS NULL!");
+//        }
+//    }
+//}

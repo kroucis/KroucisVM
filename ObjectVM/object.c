@@ -15,6 +15,7 @@
 #include "str.h"
 #include "integer.h"
 #include "array.h"
+#include "symbols.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,18 +33,24 @@ struct object
 
 static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)clkwk_getLocal(vm, 0);
-    block* impl = (block*)clkwk_getLocal(vm, 1);
-    class_addInstanceMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
+    symbol* name = (symbol*)clkwk_getLocal(vm, 0);
+    integer* numArgs = (integer*)clkwk_getLocal(vm, 1);
+    integer* pcLoc = (integer*)clkwk_getLocal(vm, 2);
+
+    block* impl = block_init_compiled(vm, integer_toInt64(numArgs, vm), 0, integer_toInt64(pcLoc, vm));
+    class_addInstanceMethod((class*)klass, vm, symbol_cstr(name), impl);
     clkwk_push(vm, klass);
     clkwk_return(vm);
 }
 
 static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
 {
-    str* name = (str*)clkwk_getLocal(vm, 0);
-    block* impl = (block*)clkwk_getLocal(vm, 1);
-    class_addClassMethod((class*)klass, vm, str_raw_bytes(name, vm), impl);
+    symbol* name = (symbol*)clkwk_getLocal(vm, 0);
+    integer* numArgs = (integer*)clkwk_getLocal(vm, 1);
+    integer* pcLoc = (integer*)clkwk_getLocal(vm, 2);
+
+    block* impl = block_init_compiled(vm, integer_toInt64(numArgs, vm), 0, integer_toInt64(pcLoc, vm));
+    class_addClassMethod((class*)klass, vm, symbol_cstr(name), impl);
     clkwk_push(vm, klass);
     clkwk_return(vm);
 }
@@ -81,13 +88,7 @@ static void object_init_native(object* instance, clockwork_vm* vm)
 
 static void object_dealloc_native(object* obj, clockwork_vm* vm)
 {
-#warning ITERATE OVER ALL IVARS AND RELEASE THEM (IF NOT WEAK).
-    printf("Deallocating instance 0x%lld\n", (uint64_t)obj);
-    if (obj->header.ivars)
-    {
-        primitive_table_dealloc(obj->header.ivars, vm, Yes);
-    }
-    clkwk_free(vm, obj);
+    object_dealloc(obj, vm);
 
     clkwk_pushNil(vm);
 
@@ -154,10 +155,17 @@ static void object_description_native(object* instance, clockwork_vm* vm)
     }
 }
 
+static void object_class_native(object* instance, clockwork_vm* vm)
+{
+    clkwk_push(vm, (object*)object_getClass(instance, vm));
+    clkwk_return(vm);
+}
+
 static void object_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
 {
 #warning THROW EXCEPTION
-    printf("Object %s does not respond to selector\n", class_name(object_getClass(klass, vm), vm));
+    symbol* msg = (symbol*)clkwk_getLocal(vm, 0);
+    printf("Object %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
 
     exit(1);
 }
@@ -255,7 +263,7 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
 static void object_respondsToSelector_native(object* instance, clockwork_vm* vm)
 {
     sel* selector = (sel*)clkwk_getLocal(vm, 0);
-    if (object_respondsToSelector(instance, vm, str_raw_bytes(selector, vm)))
+    if (object_respondsToSelector(instance, vm, clkwk_getSymbol(vm, selector)))
     {
         clkwk_pushTrue(vm);
     }
@@ -297,111 +305,101 @@ class* object_class(clockwork_vm* vm)
     class* objectClass = class_init(vm, "Object", NULL);
 
     {
-        block* initMethodNative = block_init_native(vm, NULL, &object_init_native);
+        block* initMethodNative = block_init_native(vm, 0, 0, &object_init_native);
         class_addInstanceMethod(objectClass, vm, "init", initMethodNative);
     }
 
     {
-        local_scope* fmwa_ls = local_scope_init(vm);
-        local_scope_addLocal(fmwa_ls, vm, "message");
-        local_scope_addLocal(fmwa_ls, vm, "args");
-        class_addClassMethod(objectClass, vm, "forwardMessage:withArguments:", block_init_native(vm, fmwa_ls, &class_forwardMessage_withArguments_native));
+        class_addClassMethod(objectClass, vm, "forwardMessage:withArguments:", block_init_native(vm, 2, 0, &class_forwardMessage_withArguments_native));
     }
 
     {
-        class_addClassMethod(objectClass, vm, "alloc", block_init_native(vm, NULL, &class_alloc_native));
+        class_addClassMethod(objectClass, vm, "alloc", block_init_native(vm, 0, 0, &class_alloc_native));
     }
 
     {
-        class_addClassMethod(objectClass, vm, "dealloc", block_init_native(vm, NULL, &class_dealloc_native));
+        class_addClassMethod(objectClass, vm, "dealloc", block_init_native(vm, 0, 0, &class_dealloc_native));
     }
 
     {
-        class_addClassMethod(objectClass, vm, "retain", block_init_native(vm, NULL, &class_retain_native));
-        class_addClassMethod(objectClass, vm, "release", block_init_native(vm, NULL, &class_release_native));
+        class_addClassMethod(objectClass, vm, "retain", block_init_native(vm, 0, 0, &class_retain_native));
+        class_addClassMethod(objectClass, vm, "release", block_init_native(vm, 0, 0, &class_release_native));
     }
 
     {
-        block* deallocMethodNative = block_init_native(vm, NULL, &object_dealloc_native);
+        block* deallocMethodNative = block_init_native(vm, 0, 0, &object_dealloc_native);
         class_addInstanceMethod(objectClass, vm, "dealloc", deallocMethodNative);
     }
 
     {
-        block* isNilMethodNative = block_init_native(vm, NULL, &object_isNil_native);
+        block* isNilMethodNative = block_init_native(vm, 0, 0, &object_isNil_native);
         class_addClassMethod(objectClass, vm, "isNil", isNilMethodNative);
         class_addInstanceMethod(objectClass, vm, "isNil", isNilMethodNative);
     }
 
     {
-        block* isTrueMethodNative = block_init_native(vm, NULL, &object_isTrue_native);
+        block* isTrueMethodNative = block_init_native(vm, 0, 0, &object_isTrue_native);
         class_addClassMethod(objectClass, vm, "isTrue", isTrueMethodNative);
         class_addInstanceMethod(objectClass, vm, "isTrue", isTrueMethodNative);
     }
 
     {
-        block* isFalseMethodNative = block_init_native(vm, NULL, &object_isFalse_native);
+        block* isFalseMethodNative = block_init_native(vm, 0, 0, &object_isFalse_native);
         class_addClassMethod(objectClass, vm, "isFalse", isFalseMethodNative);
         class_addInstanceMethod(objectClass, vm, "isFalse", isFalseMethodNative);
     }
 
     {
-        block* retainMethod = block_init_native(vm, NULL, &object_retain_native);
+        block* retainMethod = block_init_native(vm, 0, 0, &object_retain_native);
         class_addInstanceMethod(objectClass, vm, "retain", retainMethod);
     }
 
     {
-        block* releaseMethod = block_init_native(vm, NULL, &object_release_native);
+        block* releaseMethod = block_init_native(vm, 0, 0, &object_release_native);
         class_addInstanceMethod(objectClass, vm, "release", releaseMethod);
     }
 
     {
-        local_scope* rts_ls = local_scope_init(vm);
-        local_scope_addLocal(rts_ls, vm, "selector");
-        block* respondsMethod = block_init_native(vm, rts_ls, &object_respondsToSelector_native);
+        block* respondsMethod = block_init_native(vm, 1, 0, &object_respondsToSelector_native);
         class_addInstanceMethod(objectClass, vm, "respondsToSelector:", respondsMethod);
     }
 
     {
-        block* hashMethod = block_init_native(vm, NULL, &object_hash_native);
+        block* hashMethod = block_init_native(vm, 0, 0, &object_hash_native);
         class_addInstanceMethod(objectClass, vm, "hash", hashMethod);
     }
 
     {
-        local_scope* aim_ls = local_scope_init(vm);
-        local_scope_addLocal(aim_ls, vm, "selector");
-        local_scope_addLocal(aim_ls, vm, "impl");
-        block* addInstanceMethod = block_init_native(vm, aim_ls, &class_addInstanceMethod_native);
-        class_addClassMethod(objectClass, vm, "addInstanceMethod:withImpl:", addInstanceMethod);
+        block* addInstanceMethod = block_init_native(vm, 3, 0, &class_addInstanceMethod_native);
+        class_addClassMethod(objectClass, vm, "addInstanceMethod:withNumArguments:atPC:", addInstanceMethod);
     }
 
     {
-        local_scope* acm_ls = local_scope_init(vm);
-        local_scope_addLocal(acm_ls, vm, "selector");
-        local_scope_addLocal(acm_ls, vm, "impl");
-        block* addClassMethod = block_init_native(vm, acm_ls, &class_addClassMethod_native);
-        class_addClassMethod(objectClass, vm, "addClassMethod:withImpl:", addClassMethod);
+        block* addClassMethod = block_init_native(vm, 3, 0, &class_addClassMethod_native);
+        class_addClassMethod(objectClass, vm, "addClassMethod:withNumArguments:atPC:", addClassMethod);
     }
 
     {
-        block* descriptionMethod = block_init_native(vm, NULL, &object_description_native);
+        block* descriptionMethod = block_init_native(vm, 0, 0, &object_description_native);
         class_addClassMethod(objectClass, vm, "description", descriptionMethod);
         class_addInstanceMethod(objectClass, vm, "description", descriptionMethod);
     }
 
     {
-        local_scope* fm_ls = local_scope_init(vm);
-        local_scope_addLocal(fm_ls, vm, "message");
-        local_scope_addLocal(fm_ls, vm, "args");
-        block* forwardMessageMethod = block_init_native(vm, fm_ls, &object_forwardMessage_withArguments_native);
+        block* forwardMessageMethod = block_init_native(vm, 2, 0, &object_forwardMessage_withArguments_native);
         class_addInstanceMethod(objectClass, vm, "forwardMessage:withArguments:", forwardMessageMethod);
     }
 
     {
-        local_scope* ie_ls = local_scope_init(vm);
-        local_scope_addLocal(ie_ls, vm, "obj");
-        block* isEqualMethod = block_init_native(vm, ie_ls, &object_isEqual_native);
+        block* isEqualMethod = block_init_native(vm, 1, 0, &object_isEqual_native);
         class_addInstanceMethod(objectClass, vm, "isEqual:", isEqualMethod);
         class_addClassMethod(objectClass, vm, "isEqual:", isEqualMethod);
+    }
+
+    {
+        block* classMethod = block_init_native(vm, 0, 0, &object_class_native);
+        class_addInstanceMethod(objectClass, vm, "class", classMethod);
+        class_addClassMethod(objectClass, vm, "class", classMethod);
     }
 
 #warning -isKindOfClass:
@@ -464,7 +462,10 @@ uint32_t object_size(object* instance)
 
 void object_dealloc(object* instance, clockwork_vm* vm)
 {
-    printf("Deallocating instance 0x%lld\n", (uint64_t)instance);
+    char s[50];
+    int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
+    s[chars] = '\0';
+    printf("Deallocating instance %s\n", s);
     if (instance->header.ivars)
     {
         primitive_table_dealloc(instance->header.ivars, vm, Yes);
@@ -472,7 +473,7 @@ void object_dealloc(object* instance, clockwork_vm* vm)
     clkwk_free(vm, instance);
 }
 
-void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* value)
+void object_setIvar(object* instance, clockwork_vm* vm, symbol* ivar, object* value)
 {
     if (instance->header.ivars == NULL)
     {
@@ -480,10 +481,10 @@ void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* valu
     }
 #warning GROW ivar TABLE WHEN NEEDED
 
-    object* old = primitive_table_get(instance->header.ivars, vm, ivar);
+    object* old = primitive_table_get(instance->header.ivars, vm, symbol_cstr(ivar));
     if (value != old)
     {
-        primitive_table_set(instance->header.ivars, vm, ivar, value);
+        primitive_table_set(instance->header.ivars, vm, symbol_cstr(ivar), value);
         if (old)
         {
             object_release(old, vm);
@@ -493,7 +494,7 @@ void object_setIvar(object* instance, clockwork_vm* vm, char* ivar, object* valu
 #warning TODO: LOOK IN SUPER FOR ivars IF WE CANNOT FIND THEM HERE.
 }
 
-object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
+object* object_getIvar(object* instance, clockwork_vm* vm, symbol* ivar)
 {
     assert(instance);
     assert(vm);
@@ -502,7 +503,7 @@ object* object_getIvar(object* instance, clockwork_vm* vm, char* ivar)
     object* value = NULL;
     if (instance->header.ivars != NULL)
     {
-        value = primitive_table_get(instance->header.ivars, vm, ivar);
+        value = primitive_table_get(instance->header.ivars, vm, symbol_cstr(ivar));
     }
 
 #warning TODO: LOOK IN SUPER FOR ivars IF WE CANNOT FIND THEM HERE.
@@ -539,7 +540,7 @@ void object_release(object* instance, clockwork_vm* vm)
     }
 }
 
-boolean object_respondsToSelector(object* instance, clockwork_vm* vm, char* selector)
+boolean object_respondsToSelector(object* instance, clockwork_vm* vm, symbol* selector)
 {
     int yn = No;
     if (instance)
@@ -569,8 +570,9 @@ boolean object_respondsToSelector(object* instance, clockwork_vm* vm, char* sele
     return yn;
 }
 
-block* object_findInstanceMethod(object* instance, clockwork_vm* vm, char* selector)
+block* object_findInstanceMethod(object* instance, clockwork_vm* vm, symbol* selector)
 {
+
     block* m = NULL;
     if (instance)
     {
@@ -584,7 +586,7 @@ block* object_findInstanceMethod(object* instance, clockwork_vm* vm, char* selec
     return m;
 }
 
-block* object_findMethod(object* instance, clockwork_vm* vm, char* selector)
+block* object_findMethod(object* instance, clockwork_vm* vm, symbol* selector)
 {
     if (instance != (object*)instance->header.isa)
     {

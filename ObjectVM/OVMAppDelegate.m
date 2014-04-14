@@ -23,6 +23,9 @@
 #import "ast.h"
 
 #import "memory_manager.h"
+#import "symbols.h"
+
+#import "primitive_table.h"
 
 #import <string.h>
 
@@ -42,7 +45,11 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 //    memory_manager* mm = memory_manager_init(1024);
 
+
     clockwork_vm* vm = clkwk_init();
+
+    primitive_table* tbl = primitive_table_init(vm, 10);
+    primitive_table_dealloc(tbl, vm, Yes);
 
     FILE* file = fopen("/Users/kyleroucis/Desktop/test.clkwkasm", "r");
     fseek(file, 0L, SEEK_END);
@@ -54,6 +61,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 //    char* s = "push \"foo!\ndisp print 0\npush #5\npush #3\nreturn\nend\n";
     assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
+    printf("[[----------]]\n");
     clkwk_runBinary(vm, asm_bin);
 
     assembled_binary_dealloc(asm_bin, vm);
@@ -90,7 +98,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     clkwk_openClass(vm, "Foo", "Object");
 
-    block* blk = block_init_native(vm, NULL, &test_class_method);
+    block* blk = block_init_native(vm, 0, 0, &test_class_method);
     clkwk_push(vm, (object*)blk);
 
     clkwk_makeStringCstr(vm, "bar");
@@ -114,7 +122,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     clkwk_openClass(vm, "Foo", "Object");
 
-    block* blk = block_init_native(vm, NULL, &test_class_method);
+    block* blk = block_init_native(vm, 0, 0, &test_class_method);
     clkwk_push(vm, (object*)blk);
 
     clkwk_makeStringCstr(vm, "bar");
@@ -134,8 +142,9 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 {
     clockwork_vm* vm = clkwk_init();
 
-    instruction inst = (instruction){ .op = clkwk_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
-    assembler_run_instruction(&inst, vm);
+//    instruction inst = (instruction){ .op = clkwk_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
+//    assembler_run_instruction(&inst, vm);
+    clkwk_makeStringCstr(vm, "Foobar");
 
     clkwk_popPrintln(vm);
 

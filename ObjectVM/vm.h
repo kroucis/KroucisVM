@@ -13,9 +13,9 @@
 struct object;
 struct str;
 struct assembled_binary;
+struct symbol;
 
 typedef struct clockwork_vm clockwork_vm;
-typedef char* symbol;
 typedef uint8_t local_index;
 
 /**
@@ -147,17 +147,17 @@ void clkwk_pushLocal(clockwork_vm* vm, local_index local);
 struct object* clkwk_getLocal(clockwork_vm* vm, local_index local);
 
 // --- IVARS ---
-void clkwk_setIvar(clockwork_vm* vm, symbol ivar);
-void clkwk_pushIvar(clockwork_vm* vm, symbol ivar);
+void clkwk_setIvar(clockwork_vm* vm, struct symbol* ivar);
+void clkwk_pushIvar(clockwork_vm* vm, struct symbol* ivar);
 
 // --- SELF AND SUPER ---
 void clkwk_pushSelf(clockwork_vm* vm);
 void clkwk_pushSuper(clockwork_vm* vm);
 
 // --- CONSTANTS ---
-void clkwk_pushConst(clockwork_vm* vm, symbol name);
-void clkwk_setConst(clockwork_vm* vm, symbol name);
-struct object* clkwk_getConstant(clockwork_vm* vm, symbol name);
+void clkwk_pushConst(clockwork_vm* vm, const char* name);
+void clkwk_setConst(clockwork_vm* vm, const char* name);
+struct object* clkwk_getConstant(clockwork_vm* vm, const char* name);
 
 // --- CLASSES ---
 void clkwk_openClass(clockwork_vm* vm, char*, char*);
@@ -173,3 +173,6 @@ void clkwk_return(clockwork_vm* vm);
 
 // --- HELPERS ---
 void clkwk_makeStringCstr(clockwork_vm* vm, const char* const string);
+struct symbol* clkwk_getSymbolCstr(clockwork_vm* vm, const char* const sym_str);
+struct symbol* clkwk_getSymbol(clockwork_vm* vm, struct str* sym);
+uint8_t clkwk_stackLimit(clockwork_vm* vm);

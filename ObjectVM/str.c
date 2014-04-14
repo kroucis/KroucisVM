@@ -15,6 +15,8 @@
 #include "primitive_table.h"
 #include "integer.h"
 
+#include "clkwk_debug.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,10 +26,11 @@
 
 struct str
 {
-    struct object_header header;
+    struct object_header header;    /* 40 */
 
-    uint32_t length;
-    char* data;
+    uint32_t length;                /* 8 */
+    char* data;                     /* 8 */
+                                 /* = 56 */
 };
 
 #pragma mark - Bound Methods
@@ -84,11 +87,15 @@ struct class* string_class(clockwork_vm* vm)
 {
     class* stringClass = class_init(vm, "String", "Object");
 
-    class_addClassMethod(stringClass, vm, "alloc", block_init_native(vm, NULL, &string_alloc_native));
-    class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, NULL, &string_length_native));
-    class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, NULL, &string_dealloc_native));
-    class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, NULL, &string_hash_native));
-    class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, NULL, &string_print_native));
+    class_addClassMethod(stringClass, vm, "alloc", block_init_native(vm, 0, 0, &string_alloc_native));
+    class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, 0, 0, &string_length_native));
+    class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, 0, 0, &string_dealloc_native));
+    class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, 0, 0, &string_hash_native));
+    class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, 0, 0, &string_print_native));
+
+#ifdef CLKWK_PRINT_SIZES
+    printf("String: %lu\n", sizeof(str));
+#endif
 
     return stringClass;
 }

@@ -12,19 +12,23 @@
 
 static const uint8_t c_LocalsLimit = 8;
 static const uint8_t c_UpValsLimit = c_LocalsLimit;
+static const uint8_t c_StackLimit = 32;
 
 struct object;
 
 typedef struct frame
 {
-    object* frameSelf;
-    uint64_t returnPC;
-    object* locals[c_LocalsLimit];
-    object* upvals[c_UpValsLimit];
+    object* frameSelf;                  /* 8 */
+    uint64_t returnPC;                  /* 8 */
+    object* locals[c_LocalsLimit];      /* 8 x 8 = 64 */
+    object* upvals[c_UpValsLimit];      /* 8 x 8 = 64 */
+                                    /* = 144 */
 } frame;
 
 typedef struct frame_stack
 {
-    frame frames[32];
-    uint8_t idx;
+    frame frames[c_StackLimit];                   /* 144 x 32 = 4608 */
+    uint8_t idx;                        /* 1 */
+//    uint8_t padding[7];               /* 7 */
+                                /* = 4616 */
 } frame_stack;
