@@ -62,6 +62,7 @@ void assembler_pushInt(assembler* ar, int64_t value);
 void assembler_pushNumber(assembler* ar, double value);
 void assembler_pushSymbol(assembler* ar, const char* sym);
 void assembler_pushString(assembler* ar, const char* sym);
+void assembler_pushConstant(assembler* ar, const char* sym);
 void assembler_jump(assembler* ar, uint64_t loc);
 void assembler_jumpTrue(assembler* ar, uint64_t loc);
 void assembler_jumpFalse(assembler* ar, uint64_t loc);

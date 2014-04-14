@@ -78,8 +78,8 @@ symbol_table* symbol_table_init(clockwork_vm* vm)
 {
     symbol_table* st = clkwk_allocate(vm, sizeof(symbol_table));
     st->count = 0;
-    st->symbols = clkwk_allocate(vm, sizeof(symbol) * 10);
-    st->capacity = 10;
+    st->symbols = clkwk_allocate(vm, sizeof(symbol) * 16);
+    st->capacity = 16;
 
     return st;
 }

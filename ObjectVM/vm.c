@@ -118,6 +118,14 @@ static void _clkwk_run_block(clockwork_vm* vm, block* blk)
 }
 
 #pragma mark - Bound Methods
+void clkwk_openClass_native(object* slf, clockwork_vm* vm)
+{
+    symbol* name = (symbol*)clkwk_getLocal(vm, 0);
+    printf("CLASS NAME: %s\n", symbol_cstr(name));
+    class* klass = clkwk_openClass(vm, symbol_cstr(name), "Object");
+    clkwk_push(vm, (object*)klass);
+    clkwk_return(vm);
+}
 
 #pragma mark - Native Methods
 
@@ -182,6 +190,10 @@ clockwork_vm* clkwk_init(void)
     vm->header.extra = NULL;
 
     vm->currentSelf = (object*)vm;
+
+    {
+        class_addInstanceMethod(clockworkClass, vm, "openClass:", block_init_native(vm, 1, 0, &clkwk_openClass_native));
+    }
 
     return vm;
 }
@@ -368,7 +380,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 string[len] = '\0';
                 vm->pc += len;
 
-                CLKWK_DBGPRNT("PUSH_STRING %lld \"%s\"\n", len, string);
+                CLKWK_DBGPRNT("PUSH_STRING %lld '%s'\n", len, string);
 
                 clkwk_makeStringCstr(vm, string);       // Makes and pushes string literal.
                 break;
@@ -384,10 +396,26 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 sym[len] = '\0';
                 vm->pc += len;
 
-                CLKWK_DBGPRNT("PUSH_SYMBOL %lld \"%s\"\n", len, sym);
+                CLKWK_DBGPRNT("PUSH_SYMBOL %lld '%s'\n", len, sym);
 
                 symbol* theSymbol = symbol_table_get(vm->symbols, sym, vm);
                 clkwk_push(vm, (object*)theSymbol);
+                break;
+            }
+            case clkwk_PUSH_CONSTANT:
+            {
+                uint64_t len;
+                memcpy(&len, &data[vm->pc], sizeof(uint64_t));
+                vm->pc += sizeof(uint64_t);
+
+                char constant[len + 1];
+                memcpy(constant, &data[vm->pc], len);
+                constant[len] = '\0';
+                vm->pc += len;
+
+                CLKWK_DBGPRNT("PUSH_CONSTANT %lld '%s'\n", len, constant);
+
+                clkwk_pushConst(vm, constant);
                 break;
             }
             case clkwk_JUMP:
@@ -644,6 +672,8 @@ void clkwk_pushConst(clockwork_vm* vm, const char* cnst)
     else
     {
 #warning THROW EXCEPTION!
+        printf("Could not find constant '%s'!\n", cnst);
+        exit(1);
     }
 }
 
@@ -668,11 +698,11 @@ struct object* clkwk_getConstant(clockwork_vm* vm, const char* name)
 
 #pragma mark - CLASSES
 
-void clkwk_openClass(clockwork_vm* vm, char* newName, char* superName)
+class* clkwk_openClass(clockwork_vm* vm, char* newName, char* superName)
 {
     class* newClass = class_init(vm, newName, superName);
     primitive_table_set(vm->constants, vm, newName, (object*)newClass);
-    clkwk_push(vm, (object*)newClass);
+    return newClass;
 }
 
 #pragma mark - DISPATCH

@@ -146,7 +146,7 @@ void clkwk_setConst(clockwork_vm* vm, const char* name);
 struct object* clkwk_getConstant(clockwork_vm* vm, const char* name);
 
 // --- CLASSES ---
-void clkwk_openClass(clockwork_vm* vm, char*, char*);
+struct class* clkwk_openClass(clockwork_vm* vm, char*, char*);
 //void clkwk_openClassWithMixins(clockwork_vm*, char*, char*, char**, uint8_t);
 
 // --- BLOCKS ---

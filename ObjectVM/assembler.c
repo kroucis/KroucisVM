@@ -79,10 +79,10 @@ static uint64_t cstr_to_uint64(char* string)
     return value;
 }
 
-static int64_t cstr_to_int64(char* string)
-{
-   return atoll(string);
-}
+//static int64_t cstr_to_int64(char* string)
+//{
+//   return atoll(string);
+//}
 
 static uint64_t read_word(assembler_input input, assembler_input_size length, input_index index, char* word_OUT, uint16_t max_length)
 {
@@ -174,6 +174,14 @@ static struct _result read_push_symbol(assembler_input input, assembler_input_si
     return result;
 }
 
+static struct _result read_push_constant(assembler_input input, assembler_input_size length, input_index index)
+{
+    struct _result result;
+    index = read_word(input, length, index, result.sym, 254);
+    result.index = index;
+    return result;
+}
+
 static struct _result read_push_label(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm)
 {
     struct _result result;
@@ -186,17 +194,6 @@ static struct _result read_push_label(assembler_input input, assembler_input_siz
     result.value.i = integer_toInt64(pc, vm);
     result.index = index;
     return result;
-}
-
-static uint64_t next_string_length(assembler_input input, assembler_input_size length, input_index index)
-{
-    uint64_t counter = 0;
-    while (index + counter < length && input[index + counter] != '\n')
-    {
-        counter++;
-    }
-
-    return counter;
 }
 
 static struct _result read_push(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm)
@@ -227,7 +224,8 @@ static struct _result read_push(assembler_input input, assembler_input_size leng
     }
     else                            // Indexed constant (class name, etc.)
     {
-        printf("read mneumonic involving unknown type!");
+        result = read_push_constant(input, length, index);
+        result.type = CONSTANT_TYPE;
     }
 
     return result;
@@ -358,7 +356,7 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
             }
             case CONSTANT_TYPE:
             {
-                exit(1);
+                assembler_pushConstant(state, push_result.sym);
                 break;
             }
             default:
@@ -619,6 +617,15 @@ void assembler_pushSymbol(assembler* ar, const char* sym)
 {
     CLKWK_DBGPRNT("push :%s\n", sym);
     write_char((char)clkwk_PUSH_SYMBOL, ar->binary);
+    uint64_t len = strlen(sym);
+    write_int64(len, ar->binary);
+    write_cstr(sym, len, ar->binary);
+}
+
+void assembler_pushConstant(assembler* ar, const char* sym)
+{
+    CLKWK_DBGPRNT("push %s\n", sym);
+    write_char((char)clkwk_PUSH_CONSTANT, ar->binary);
     uint64_t len = strlen(sym);
     write_int64(len, ar->binary);
     write_cstr(sym, len, ar->binary);

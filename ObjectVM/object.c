@@ -164,7 +164,7 @@ static void object_forwardMessage_withArguments_native(object* klass, clockwork_
 {
 #warning THROW EXCEPTION
     symbol* msg = (symbol*)clkwk_getLocal(vm, 0);
-    printf("Object %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
+    printf("Object of class %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
 
     exit(1);
 }
