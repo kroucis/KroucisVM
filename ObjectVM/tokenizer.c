@@ -84,32 +84,6 @@ static boolean is_operator(char c)
     return No;
 }
 
-static boolean single_binary(char c)
-{
-	switch(c)
-    {
-		case '[': case '(': case '{': case ')': case ']': case '}':
-        {
-            return Yes;
-        }
-        default:
-            break;
-	}
-
-	return No;
-}
-
-static boolean binary_second(char c)
-{
-	if (isalpha(c) || isdigit(c) || isspace(c) || is_closing(c) ||
-		single_binary(c))
-    {
-		return No;
-    }
-
-	return Yes;
-}
-
 static token tokenizer_findNext(tokenizer* tizer)
 {
     token tok;

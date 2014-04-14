@@ -177,26 +177,8 @@ class* numeric_class(clockwork_vm* vm)
     class* numericClass = class_init(vm, "Numeric", "Object");
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("Numeric: %lu\n", sizeof(numeric));
+    CLKWK_DBGPRNT("Numeric: %lu\n", sizeof(numeric));
 #endif
-
-//    {
-//        block* isNilMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_nil_native);
-//        class_addClassMethod(nilClass, vm, "isNil", isNilMethodNative);
-//        class_addInstanceMethod(nilClass, vm, "isNil", isNilMethodNative);
-//    }
-//
-//    {
-//        block* isTrueMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_true_native);
-//        class_addClassMethod(nilClass, vm, "isTrue", isTrueMethodNative);
-//        class_addInstanceMethod(nilClass, vm, "isTrue", isTrueMethodNative);
-//    }
-//
-//    {
-//        block* isFalseMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_false_native);
-//        class_addClassMethod(nilClass, vm, "isFalse", isFalseMethodNative);
-//        class_addInstanceMethod(nilClass, vm, "isFalse", isFalseMethodNative);
-//    }
 
     return numericClass;
 }
@@ -241,21 +223,8 @@ class* integer_class(clockwork_vm* vm)
     }
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("Integer: %lu\n", sizeof(integer));
+    CLKWK_DBGPRNT("Integer: %lu\n", sizeof(integer));
 #endif
-
-    //
-    //    {
-    //        block* isTrueMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_true_native);
-    //        class_addClassMethod(nilClass, vm, "isTrue", isTrueMethodNative);
-    //        class_addInstanceMethod(nilClass, vm, "isTrue", isTrueMethodNative);
-    //    }
-    //
-    //    {
-    //        block* isFalseMethodNative = block_init_native(vm, (struct local_scope){ .count = 0 }, &nil_is_false_native);
-    //        class_addClassMethod(nilClass, vm, "isFalse", isFalseMethodNative);
-    //        class_addInstanceMethod(nilClass, vm, "isFalse", isFalseMethodNative);
-    //    }
     
     return integerClass;
 }

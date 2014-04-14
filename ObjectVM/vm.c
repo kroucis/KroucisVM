@@ -126,7 +126,7 @@ class* clockwork_class(clockwork_vm* vm)
     class* clockworkClass = class_init(vm, "Clockwork", "Object");
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("Clockwork: %lu\n", sizeof(clockwork_vm));
+    CLKWK_DBGPRNT("Clockwork: %lu\n", sizeof(clockwork_vm));
 #endif
 
     return clockworkClass;
@@ -136,7 +136,6 @@ clockwork_vm* clkwk_init(void)
 {
     clockwork_vm* vm = MEM_MALLOC(sizeof(clockwork_vm));
     vm->stack = stack_init();
-//    vm->locals = primitive_table_init(vm, 10);
     vm->constants = primitive_table_init(vm, 16);
     vm->symbols = symbol_table_init(vm);
 
@@ -183,8 +182,6 @@ clockwork_vm* clkwk_init(void)
     vm->header.extra = NULL;
 
     vm->currentSelf = (object*)vm;
-
-    printf("<-------->\n");
 
     return vm;
 }
@@ -260,16 +257,6 @@ void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes)
 void clkwk_free(clockwork_vm* vm, void* obj)
 {
     MEM_FREE(obj);
-//    clkwk_freeSize(vm, obj, object_size(obj));
-}
-
-void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes)
-{
-    assert(0);
-//    vm->allocatedMemory -= bytes;
-//    free(memory);
-//
-//    printf("Was %llu. Freeing %llu bytes. Total %llu\n", vm->allocatedMemory + bytes, bytes, vm->allocatedMemory);
 }
 
 #pragma mark - EXECUTION
@@ -410,7 +397,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
 
                 CLKWK_DBGPRNT("JUMP %lld\n", loc);
 
-                vm->pc = loc;
+                clkwk_jump(vm, loc);
                 break;
             }
             case clkwk_JUMP_IF_TRUE:
@@ -420,11 +407,11 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 {
                     uint64_t loc;
                     memcpy(&loc, &data[vm->pc], sizeof(uint64_t));
-                    vm->pc = loc;
+                    clkwk_jump(vm, loc);
                 }
                 else
                 {
-                    vm->pc += sizeof(uint64_t);
+                    clkwk_jump(vm, vm->pc + sizeof(uint64_t));
                 }
                 break;
             }
@@ -435,11 +422,11 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 {
                     uint64_t loc;
                     memcpy(&loc, &data[vm->pc], sizeof(uint64_t));
-                    vm->pc = loc;
+                    clkwk_jump(vm, loc);
                 }
                 else
                 {
-                    vm->pc += sizeof(uint64_t);
+                    clkwk_jump(vm, vm->pc + sizeof(uint64_t));
                 }
                 break;
             }
@@ -515,39 +502,38 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
         }
     }
 
-    printf("VM TERMINATING\n");
+    CLKWK_DBGPRNT("VM TERMINATING\n");
 }
 
 #pragma mark - PROGRAM COUNTER
 
-void clkwk_goto(clockwork_vm* vm, uint64_t location)
+void clkwk_jump(clockwork_vm* vm, uint64_t location)
 {
     vm->pc = location;
 }
 
-void clkwk_gotoIfFalse(clockwork_vm* vm, uint64_t location)
+void clkwk_jumpIfFalse(clockwork_vm* vm, uint64_t location)
 {
-//    object* obj = stack_pop(vm->stack);
-//    if (object_is_false(obj))
-//    {
-//        vm->pc = location;
-//    }
+    object* obj = stack_pop(vm->stack);
+    if (object_isFalse(obj, vm))
+    {
+        clkwk_jump(vm, location);
+    }
 }
 
-void clkwk_gotoIfTrue(clockwork_vm* vm, uint64_t location)
+void clkwk_jumpIfTrue(clockwork_vm* vm, uint64_t location)
 {
-//    object* obj = stack_pop(vm->stack);
-//    if (object_is_true(obj))
-//    {
-//        vm->pc = location;
-//    }
+    object* obj = stack_pop(vm->stack);
+    if (object_isTrue(obj, vm))
+    {
+        clkwk_jump(vm, location);
+    }
 }
 
 #pragma mark - PUSH / POP
 
 void clkwk_push(clockwork_vm* vm, object* obj)
 {
-#warning TODO: This was trashing the instanceMethods table in pushed classes. Need to rethink this.
     object_retain(obj, vm);
     stack_push(vm->stack, obj);
 }

@@ -55,7 +55,7 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
 
 void class_dealloc(class* klass, struct clockwork_vm* vm)
 {
-    clkwk_freeSize(vm, klass->name, klass->nameLength);
+    clkwk_free(vm, klass->name);
     clkwk_free(vm, (object*)klass);
 }
 

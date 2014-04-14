@@ -17,6 +17,8 @@
 #include "array.h"
 #include "symbols.h"
 
+#include "clkwk_debug.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -136,23 +138,20 @@ static void object_isFalse_native(object* klass, clockwork_vm* vm)
 
 static void object_description_native(object* instance, clockwork_vm* vm)
 {
-#warning IMPLEMENT FULLY?
+    char s[50];
+    int chars = 0;
     if (instance->header.isa != (class*)instance)
     {
-        char s[50];
-        int chars = sprintf(s, "<%s@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
-        s[chars] = '\0';
-        clkwk_makeStringCstr(vm, s);
-        clkwk_return(vm);
+        chars = sprintf(s, "<%s@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
     }
     else
     {
-        char s[50];
-        int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
-        s[chars] = '\0';
-        clkwk_makeStringCstr(vm, s);
-        clkwk_return(vm);
+        chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
     }
+
+    s[chars] = '\0';
+    clkwk_makeStringCstr(vm, s);
+    clkwk_return(vm);
 }
 
 static void object_class_native(object* instance, clockwork_vm* vm)
@@ -402,6 +401,8 @@ class* object_class(clockwork_vm* vm)
         class_addClassMethod(objectClass, vm, "class", classMethod);
     }
 
+    CLKWK_DBGPRNT("Object: %lu", sizeof(object));
+
 #warning -isKindOfClass:
 #warning -isMemberOfClass:
 
@@ -465,7 +466,7 @@ void object_dealloc(object* instance, clockwork_vm* vm)
     char s[50];
     int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
     s[chars] = '\0';
-    printf("Deallocating instance %s\n", s);
+    CLKWK_DBGPRNT("Deallocating instance %s\n", s);
     if (instance->header.ivars)
     {
         primitive_table_dealloc(instance->header.ivars, vm, Yes);

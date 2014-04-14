@@ -61,7 +61,7 @@ static void array_dealloc_native(object* instance, clockwork_vm* vm)
             clkwk_pop(vm);
         }
 
-        clkwk_freeSize(vm, ary->contents, sizeof(object*) * count);
+        clkwk_free(vm, ary->contents);
     }
     clkwk_pushSuper(vm);
     clkwk_dispatch(vm, "dealloc", 0);
@@ -236,7 +236,7 @@ class* array_class(clockwork_vm* vm)
     }
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("Array: %lu\n", sizeof(array));
+    CLKWK_DBGPRNT("Array: %lu\n", sizeof(array));
 #endif
 
     return arrayClass;
@@ -285,8 +285,9 @@ object* array_objectAtIndex(array* ary, clockwork_vm* vm, uint64_t index)
     }
     else
     {
-#warning THROW EXCEPTION?
+#ifdef CLKWK_DEBUG
         printf("ARRAY INDEX %llu OUT OF RANGE %llu", index, ary->count);
+#endif
         return NULL;
     }
 }

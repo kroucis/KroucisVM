@@ -105,33 +105,19 @@ void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes);
  *  AFTER   [ ... ]
  *
  *  @note This does not call -release or -dealloc on any of the object's members, it simply calls
- *      clkwk_freeSize(3) to deallocate the object's memory.
+ *      clkwk_free(2) to deallocate the object's memory.
  *  @param vm The VM instance to work with.
  *  @param obj The object to free.
  */
 void clkwk_free(clockwork_vm* vm, void* obj);
 
-/**
- *  Deallocates the memory pointed to by <memory>.
- *
- *  BEFORE  [ ... ]
- *  AFTER   [ ... ]
- *
- *  @note This does not call -release or -dealloc and does not ensure the memory was previously
- *      allocated by the VM.
- *  @param vm The VM instance to work with.
- *  @param memory Pointer to the memory chunk to be freed.
- *  @param bytes The number of bytes being freed.
- */
-void clkwk_freeSize(clockwork_vm* vm, void* memory, uint64_t bytes);
-
 // --- EXECUTION ---
 void clkwk_runBinary(clockwork_vm* vm, struct assembled_binary* binary);
 
-// --- PROGRAM COUNTER --- >> SHOULD THIS BE HERE? THIS IS A FUNCTION OF THE ASSEMBLER, RIGHT?
-void clkwk_goto(clockwork_vm* vm, uint64_t location);
-void clkwk_gotoIfFalse(clockwork_vm* vm, uint64_t location);
-void clkwk_gotoIfTrue(clockwork_vm* vm, uint64_t location);
+// --- PROGRAM COUNTER ---
+void clkwk_jump(clockwork_vm* vm, uint64_t location);
+void clkwk_jumpIfFalse(clockwork_vm* vm, uint64_t location);
+void clkwk_jumpIfTrue(clockwork_vm* vm, uint64_t location);
 
 // --- PUSH / POP ---
 void clkwk_push(clockwork_vm* vm, struct object* obj);

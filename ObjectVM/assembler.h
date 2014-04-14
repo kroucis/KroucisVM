@@ -32,7 +32,6 @@ enum
     clkwk_PUSH_SUPER,       // super
     clkwk_PUSH_IVAR,        // pushi :
     clkwk_SET_IVAR,         // seti :
-    clkwk_PRINT,            // ?
     clkwk_PUSH_STRING,      // push "
     clkwk_PUSH_INT,         // push #
     clkwk_PUSH_NUMBER,      // push #
@@ -75,6 +74,3 @@ void assembler_pushClockwork(assembler *ar);
 uint64_t assembled_binary_size(assembled_binary* asm_bin);
 char* assembled_binary_data(assembled_binary* asm_bin);
 void assembled_binary_dealloc(assembled_binary* asm_bin, struct clockwork_vm* vm);
-
-//void assembler_run_instruction(instruction*, struct clockwork_vm*);
-//void assembler_run_block(block*, struct clockwork_vm*);

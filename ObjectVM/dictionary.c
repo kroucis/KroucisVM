@@ -73,8 +73,8 @@ void dictionary_dealloc(dictionary* table, clockwork_vm* vm)
     assert(vm);
 
     dictionary_purge(table, vm);
-    clkwk_freeSize(vm, table->entries, sizeof(struct dictionary_entry*) * table->capacity);
-    clkwk_freeSize(vm, table, sizeof(dictionary));
+    clkwk_free(vm, table->entries);
+    clkwk_free(vm, table);
 }
 
 void dictionary_set(dictionary* table, clockwork_vm* vm, str* key, object* value)
@@ -175,7 +175,7 @@ void dictionary_remove(dictionary* table, clockwork_vm* vm, str* key)
         {
             previous->next = entry->next;
         }
-        clkwk_freeSize(vm, entry, sizeof(struct dictionary_entry));
+        clkwk_free(vm, entry);
         table->count--;
 	}
 }
@@ -194,9 +194,9 @@ void dictionary_purge(dictionary* table, clockwork_vm* vm)
             {
                 object_release(table->entries[i]->value, vm);
                 entry = entry->next;
-                clkwk_freeSize(vm, entry, sizeof(struct dictionary_entry));
+                clkwk_free(vm, entry);
             }
-            clkwk_freeSize(vm, table->entries[i], sizeof(struct dictionary_entry));
+            clkwk_free(vm, table->entries[i]);
             table->entries[i] = NULL;
         }
 	}

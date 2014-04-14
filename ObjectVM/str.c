@@ -54,7 +54,7 @@ static void string_dealloc_native(object* instance, clockwork_vm* vm)
     str* string = (str*)instance;
     if (str_length(string, vm) > 0)
     {
-        clkwk_freeSize(vm, string->data, string->length);
+        clkwk_free(vm, string->data);
     }
     clkwk_pushSuper(vm);
     clkwk_dispatch(vm, "dealloc", 0);
@@ -76,6 +76,14 @@ static void string_hash_native(object* instance, clockwork_vm* vm)
 static void string_print_native(object* instance, clockwork_vm* vm)
 {
     str* string = (str*)instance;
+    printf("%.*s", str_length(string, vm), str_raw_bytes(string, vm));
+    clkwk_pushNil(vm);
+    clkwk_return(vm);
+}
+
+static void string_puts_native(object* instance, clockwork_vm* vm)
+{
+    str* string = (str*)instance;
     printf("%.*s\n", str_length(string, vm), str_raw_bytes(string, vm));
     clkwk_pushNil(vm);
     clkwk_return(vm);
@@ -92,9 +100,10 @@ struct class* string_class(clockwork_vm* vm)
     class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, 0, 0, &string_dealloc_native));
     class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, 0, 0, &string_hash_native));
     class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, 0, 0, &string_print_native));
+    class_addInstanceMethod(stringClass, vm, "puts", block_init_native(vm, 0, 0, &string_puts_native));
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("String: %lu\n", sizeof(str));
+    CLKWK_DBGPRNT("String: %lu\n", sizeof(str));
 #endif
 
     return stringClass;
@@ -134,7 +143,7 @@ void str_dealloc(str* string, clockwork_vm* vm)
 
     if (str_length(string, vm) > 0)
     {
-        clkwk_freeSize(vm, string->data, string->length);
+        clkwk_free(vm, string->data);
     }
     clkwk_free(vm, (object*)string);
 }

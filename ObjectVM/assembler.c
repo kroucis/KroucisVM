@@ -14,6 +14,8 @@
 #include "object.h"
 #include "integer.h"
 
+#include "clkwk_debug.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -236,7 +238,7 @@ static input_index read_label(assembler_input input, assembler_input_size length
     char label[255];
     index = read_word(input, length, index, label, 254);
 
-    printf("%s -> %lld\n", label, asm_bin->bytes);
+    CLKWK_DBGPRNT("%s -> %lld\n", label, asm_bin->bytes);
 
     primitive_table_set(labels, vm, label, (object*)integer_init(vm, asm_bin->bytes));
 
@@ -487,7 +489,6 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
         index = consume_whitespace(input, length, index);
         if (input[index] == '@')
         {
-            printf("@");
             index++;    // Skip @ for label declaration
             index = read_label(input, length, index, a->labels, vm, a->binary);
         }
@@ -517,7 +518,6 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
 	}
 
     primitive_table_dealloc(a->labels, vm, Yes);
-//    clkwk_freeSize(vm, a, sizeof(assembler));
     clkwk_free(vm, a);
 
     return binary;
@@ -538,61 +538,61 @@ assembler* assembler_init(struct clockwork_vm* vm)
 
 void assembler_noop(assembler* ar)
 {
-    printf("noop\n");
+    CLKWK_DBGPRNT("noop\n");
     write_char((char)clkwk_NOOP, ar->binary);
 }
 
 void assembler_pop(assembler* ar)
 {
-    printf("pop\n");
+    CLKWK_DBGPRNT("pop\n");
     write_char((char)clkwk_POP, ar->binary);
 }
 
 void assembler_nil(assembler* ar)
 {
-    printf("nil\n");
+    CLKWK_DBGPRNT("nil\n");
     write_char((char)clkwk_PUSH_NIL, ar->binary);
 }
 
 void assembler_true(assembler* ar)
 {
-    printf("true\n");
+    CLKWK_DBGPRNT("true\n");
     write_char((char)clkwk_PUSH_TRUE, ar->binary);
 }
 
 void assembler_false(assembler* ar)
 {
-    printf("false\n");
+    CLKWK_DBGPRNT("false\n");
     write_char((char)clkwk_PUSH_FALSE, ar->binary);
 }
 
 void assembler_self(assembler* ar)
 {
-    printf("self\n");
+    CLKWK_DBGPRNT("self\n");
     write_char((char)clkwk_PUSH_SELF, ar->binary);
 }
 
 void assembler_super(assembler* ar)
 {
-    printf("super\n");
+    CLKWK_DBGPRNT("super\n");
     write_char((char)clkwk_PUSH_SUPER, ar->binary);
 }
 
 void assembler_return(assembler* ar)
 {
-    printf("return\n");
+    CLKWK_DBGPRNT("return\n");
     write_char((char)clkwk_RETURN, ar->binary);
 }
 
 void assembler_end(assembler* ar)
 {
-    printf("end\n");
+    CLKWK_DBGPRNT("end\n");
     write_char((char)clkwk_SHUTDOWN, ar->binary);
 }
 
 void assembler_pushInt(assembler* ar, int64_t value)
 {
-    printf("push #%lld\n", value);
+    CLKWK_DBGPRNT("push #%lld\n", value);
     // Write PUSH_INT instruction
     write_char((char)clkwk_PUSH_INT, ar->binary);
     write_int64(value, ar->binary);
@@ -600,7 +600,7 @@ void assembler_pushInt(assembler* ar, int64_t value)
 
 void assembler_pushNumber(assembler* ar, double value)
 {
-    printf("push #%1.10f\n", value);
+    CLKWK_DBGPRNT("push #%1.10f\n", value);
     // Write PUSH_NUMBER instruction
     write_char((char)clkwk_PUSH_NUMBER, ar->binary);
     write_float64(value, ar->binary);
@@ -608,7 +608,7 @@ void assembler_pushNumber(assembler* ar, double value)
 
 void assembler_pushString(assembler* ar, const char* string)
 {
-    printf("push \"%s\n", string);
+    CLKWK_DBGPRNT("push \"%s\n", string);
     write_char((char)clkwk_PUSH_STRING, ar->binary);
     uint64_t len = strlen(string);
     write_int64(len, ar->binary);
@@ -617,7 +617,7 @@ void assembler_pushString(assembler* ar, const char* string)
 
 void assembler_pushSymbol(assembler* ar, const char* sym)
 {
-    printf("push :%s\n", sym);
+    CLKWK_DBGPRNT("push :%s\n", sym);
     write_char((char)clkwk_PUSH_SYMBOL, ar->binary);
     uint64_t len = strlen(sym);
     write_int64(len, ar->binary);
@@ -626,28 +626,28 @@ void assembler_pushSymbol(assembler* ar, const char* sym)
 
 void assembler_jump(assembler* ar, uint64_t loc)
 {
-    printf("jump %llu\n", loc);
+    CLKWK_DBGPRNT("jump %llu\n", loc);
     write_char((char)clkwk_JUMP, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_jumpTrue(assembler* ar, uint64_t loc)
 {
-    printf("jmpt %llu\n", loc);
+    CLKWK_DBGPRNT("jmpt %llu\n", loc);
     write_char((char)clkwk_JUMP_IF_TRUE, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_jumpFalse(assembler* ar, uint64_t loc)
 {
-    printf("jmpf %llu\n", loc);
+    CLKWK_DBGPRNT("jmpf %llu\n", loc);
     write_char((char)clkwk_JUMP_IF_FALSE, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_dispatch(assembler* ar, const char* sel, unsigned char args)
 {
-    printf("disp %s %d\n", sel, args);
+    CLKWK_DBGPRNT("disp %s %d\n", sel, args);
     write_char((char)clkwk_DISPATCH, ar->binary);
     write_char(args, ar->binary);
     write_char(strlen(sel), ar->binary);
@@ -656,174 +656,27 @@ void assembler_dispatch(assembler* ar, const char* sel, unsigned char args)
 
 void assembler_pushLocal(assembler* ar, uint8_t lcl)
 {
-    printf("pushl %d\n", lcl);
+    CLKWK_DBGPRNT("pushl %d\n", lcl);
     write_char((char)clkwk_PUSH_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_setLocal(assembler* ar, uint8_t lcl)
 {
-    printf("setl %d\n", lcl);
+    CLKWK_DBGPRNT("setl %d\n", lcl);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_popToLocal(assembler* ar, uint8_t lcl)
 {
-    printf("popl %d\n", lcl);
+    CLKWK_DBGPRNT("popl %d\n", lcl);
     write_char((char)clkwk_SET_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_pushClockwork(assembler *ar)
 {
-    printf("clkwk\n");
+    CLKWK_DBGPRNT("clkwk\n");
     write_char((char)clkwk_PUSH_CLOCKWORK, ar->binary);
 }
-
-//void assembler_run_instruction(instruction* inst, clockwork_vm* vm)
-//{
-//    switch (inst->op)
-//    {
-//        case clkwk_NOOP:
-//        {
-//            break;
-//        }
-//        case clkwk_JUMP:
-//        {
-//            uint64_t location = cstr_to_uint64(inst->params[0]);
-//            clkwk_goto(vm, location);
-//            break;
-//        }
-//        case clkwk_JUMP_IF_FALSE:
-//        {
-//            uint64_t location = cstr_to_uint64(inst->params[0]);
-//            clkwk_gotoIfFalse(vm, location);
-//            break;
-//        }
-//        case clkwk_JUMP_IF_TRUE:
-//        {
-//            uint64_t location = cstr_to_uint64(inst->params[0]);
-//            clkwk_gotoIfTrue(vm, location);
-//            break;
-//        }
-//        case clkwk_POP:
-//        {
-//            clkwk_pop(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_NIL:
-//        {
-//            clkwk_pushNil(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_FALSE:
-//        {
-//            clkwk_pushFalse(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_TRUE:
-//        {
-//            clkwk_pushTrue(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_LOCAL:
-//        {
-//            clkwk_pushLocal(vm, cstr_to_uint64(inst->params[0]));
-//            break;
-//        }
-//        case clkwk_SET_LOCAL:
-//        {
-//            clkwk_setLocal(vm, cstr_to_uint64(inst->params[0]));
-//            break;
-//        }
-//        case clkwk_POP_TO_LOCAL:
-//        {
-//            clkwk_popToLocal(vm, cstr_to_uint64(inst->params[0]));
-//            break;
-//        }
-//        case clkwk_PUSH_SELF:
-//        {
-//            clkwk_pushSelf(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_SUPER:
-//        {
-//            clkwk_pushSuper(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_IVAR:
-//        {
-//            clkwk_pushIvar(vm, inst->params[0]);
-//            break;
-//        }
-//        case clkwk_SET_IVAR:
-//        {
-//            clkwk_setIvar(vm, inst->params[0]);
-//            break;
-//        }
-//        case clkwk_PRINT:
-//        {
-//            clkwk_popPrintln(vm);
-//            break;
-//        }
-//        case clkwk_PUSH_STRING:
-//        {
-//            str* s = str_init(vm, inst->params[0]);
-//            clkwk_push(vm, (object*)s);
-//            break;
-//        }
-//        case clkwk_PUSH_INT:
-//        {
-//            integer* i = integer_init(vm, cstr_to_int64(inst->params[0]));
-//            clkwk_push(vm, (object*)i);
-//            break;
-//        }
-//        case clkwk_PUSH_NUMBER:
-//        {
-//#warning IMPLEMENT
-//            break;
-//        }
-//        case clkwk_PUSH_CONSTANT:
-//        {
-//#warning IMPLEMENT
-//            break;
-//        }
-//        case clkwk_RETURN:
-//        {
-//            clkwk_return(vm);
-//            break;
-//        }
-//        default:
-//        {
-//            break;
-//        }
-//    }
-//}
-//
-//#warning  it's time to move this
-//
-//void assembler_run_block(block* block, struct clockwork_vm* vm)
-//{
-//    instruction_sequence* iseq = block_instructions(block, vm);
-//    if (iseq != NULL)
-//    {
-//        for (int i = 0; i < iseq->inst_count; i++)
-//        {
-//            assembler_run_instruction(&iseq->instructions[i], vm);
-//        }
-//    }
-//    else
-//    {
-//        native_block native = block_native(block, vm);
-//        if (native != NULL)
-//        {
-//            native(clkwk_currentSelf(vm), vm);
-//        }
-//        else
-//        {
-//#warning TODO: Throw an exception?
-//            printf("NATIVE block WAS NULL!");
-//        }
-//    }
-//}

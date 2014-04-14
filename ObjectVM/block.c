@@ -61,7 +61,7 @@ class* block_class(clockwork_vm* vm)
     class* block_class = class_init(vm, "Block", "Object");
 
 #ifdef CLKWK_PRINT_SIZES
-    printf("Block: %lu\n", sizeof(block));
+    CLKWK_DBGPRNT("Block: %lu\n", sizeof(block));
 #endif
 
     return block_class;

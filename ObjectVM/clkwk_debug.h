@@ -12,10 +12,12 @@
 
 #define CLKWK_DEBUG
 
-#define CLKWK_PRINT_SIZES
+#ifdef CLKWK_DEBUG
+#   define CLKWK_PRINT_SIZES
+#endif
 
 #ifdef CLKWK_DEBUG
-#   define CLKWK_DBGPRNT(fmt, args...)     fprintf(stdout, fmt, ## args)
+#   define CLKWK_DBGPRNT(fmt, args...)     fprintf(stdout, "CLKWK: ");fprintf(stdout, fmt, ## args)
 #else
 #   define CLKWK_DBGPRNT(fmt, args...)
 #endif
