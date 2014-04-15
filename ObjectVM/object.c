@@ -389,7 +389,9 @@ class* object_class(clockwork_vm* vm)
         class_addClassMethod(objectClass, vm, "class", classMethod);
     }
 
-    CLKWK_DBGPRNT("Object: %lu", sizeof(object));
+#ifdef CLKWK_PRINT_SIZES
+    CLKWK_DBGPRNT("Object: %lu\n", sizeof(object));
+#endif
 
 #warning -isKindOfClass:
 #warning -isMemberOfClass:
