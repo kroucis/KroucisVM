@@ -24,10 +24,10 @@ enum
     clkwk_PUSH_NIL,         // nil
     clkwk_PUSH_TRUE,        // true
     clkwk_PUSH_FALSE,       // false
-    clkwk_PUSH_LOCAL,       // pushl :
+    clkwk_PUSH_LOCAL,       // pushl N
     clkwk_PUSH_CLOCKWORK,   // clkwk
-    clkwk_SET_LOCAL,        // setl :
-    clkwk_POP_TO_LOCAL,     // popl :
+    clkwk_SET_LOCAL,        // setl N
+    clkwk_POP_TO_LOCAL,     // popl N
     clkwk_PUSH_SELF,        // self
     clkwk_PUSH_SUPER,       // super
     clkwk_PUSH_IVAR,        // pushi :
@@ -37,8 +37,8 @@ enum
     clkwk_PUSH_NUMBER,      // push #
     clkwk_PUSH_SYMBOL,      // push :
     clkwk_PUSH_CONSTANT,    // push <>
-    clkwk_DISPATCH,         // disp sel #
-    clkwk_DISPATCH_STACK,   // disps #
+    clkwk_DISPATCH,         // disp S N
+    clkwk_DISPATCH_STACK,   // disps N
     clkwk_RETURN,           // return
     clkwk_SHUTDOWN,         // end
 };
@@ -47,7 +47,7 @@ typedef struct assembled_binary assembled_binary;
 typedef struct assembler assembler;
 
 //assembled_binary* assembler_assemble_str(struct str* input);
-assembled_binary* assembler_assemble_cstr(char* input, uint64_t length, struct clockwork_vm* vm);
+assembled_binary* assembler_assemble_cstr(const char* input, uint64_t length, struct clockwork_vm* vm);
 assembler* assembler_init(struct clockwork_vm* vm);
 void assembler_noop(assembler* ar);
 void assembler_pop(assembler* ar);

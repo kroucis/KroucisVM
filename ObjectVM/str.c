@@ -33,6 +33,16 @@ struct str
                                  /* = 56 */
 };
 
+/*
+ + alloc
+ 
+ - length
+ - dealloc
+ - hash
+ - print
+ - puts
+ */
+
 #pragma mark - Bound Methods
 
 static void string_alloc_native(object* klass, clockwork_vm* vm)
@@ -95,12 +105,19 @@ struct class* string_class(clockwork_vm* vm)
 {
     class* stringClass = class_init(vm, "String", "Object");
 
-    class_addClassMethod(stringClass, vm, "alloc", block_init_native(vm, 0, 0, &string_alloc_native));
-    class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, 0, 0, &string_length_native));
-    class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, 0, 0, &string_dealloc_native));
-    class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, 0, 0, &string_hash_native));
-    class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, 0, 0, &string_print_native));
-    class_addInstanceMethod(stringClass, vm, "puts", block_init_native(vm, 0, 0, &string_puts_native));
+    // Class Methods
+    {
+        class_addClassMethod(stringClass, vm, "alloc", block_init_native(vm, 0, 0, &string_alloc_native));
+    }
+
+    // Instance Methods
+    {
+        class_addInstanceMethod(stringClass, vm, "length", block_init_native(vm, 0, 0, &string_length_native));
+        class_addInstanceMethod(stringClass, vm, "dealloc", block_init_native(vm, 0, 0, &string_dealloc_native));
+        class_addInstanceMethod(stringClass, vm, "hash", block_init_native(vm, 0, 0, &string_hash_native));
+        class_addInstanceMethod(stringClass, vm, "print", block_init_native(vm, 0, 0, &string_print_native));
+        class_addInstanceMethod(stringClass, vm, "puts", block_init_native(vm, 0, 0, &string_puts_native));
+    }
 
 #ifdef CLKWK_PRINT_SIZES
     CLKWK_DBGPRNT("String: %lu\n", sizeof(str));

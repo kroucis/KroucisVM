@@ -21,7 +21,7 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef char* assembler_input;
+typedef const char* assembler_input;
 typedef uint64_t input_index;
 typedef uint64_t assembler_input_size;
 typedef uint64_t assembler_output_size;
@@ -361,7 +361,7 @@ static input_index read_mneumonic(assembler_input input, assembler_input_size le
             }
             default:
             {
-                exit(1);
+                exit(EXIT_FAILURE);
                 break;
             }
         }
@@ -508,7 +508,7 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
         if (!resolvedPCLocation)
         {
             printf("Could not resolve label @%s!\n", ul->label);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         int64_t resolved = integer_toInt64(resolvedPCLocation, vm);
 

@@ -31,6 +31,33 @@ struct object
     struct object_header header;
 };
 
+/*
+ + alloc
+ + forwardMessage:withArguments:
+ + isNil
+ + isTrue
+ + isFalse
+ + retain
+ + release
+ + addInstanceMethod:withNumArguments:atPC:
+ + addClassMethod:withNumArguments:atPC:
+ + description
+ + class
+
+ - init
+ - dealloc
+ - retain
+ - release
+ - isNil
+ - isTrue
+ - isFalse
+ - hash
+ - isEqual
+ - respondsToSelector:
+ - description
+ - class
+ */
+
 #pragma mark - Bound Methods
 
 static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
@@ -166,7 +193,7 @@ static void object_forwardMessage_withArguments_native(object* klass, clockwork_
     symbol* msg = (symbol*)clkwk_getLocal(vm, 0);
     printf("Object of class %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
 
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 static void class_alloc_native(object* klass, clockwork_vm* vm)
@@ -303,99 +330,60 @@ class* object_class(clockwork_vm* vm)
 {
     class* objectClass = class_init(vm, "Object", NULL);
 
-    {
-        block* initMethodNative = block_init_native(vm, 0, 0, &object_init_native);
-        class_addInstanceMethod(objectClass, vm, "init", initMethodNative);
-    }
-
+    // Class Methods
     {
         class_addClassMethod(objectClass, vm, "forwardMessage:withArguments:", block_init_native(vm, 2, 0, &class_forwardMessage_withArguments_native));
-    }
 
-    {
         class_addClassMethod(objectClass, vm, "alloc", block_init_native(vm, 0, 0, &class_alloc_native));
-    }
 
-    {
         class_addClassMethod(objectClass, vm, "dealloc", block_init_native(vm, 0, 0, &class_dealloc_native));
-    }
 
-    {
         class_addClassMethod(objectClass, vm, "retain", block_init_native(vm, 0, 0, &class_retain_native));
         class_addClassMethod(objectClass, vm, "release", block_init_native(vm, 0, 0, &class_release_native));
+
+        class_addClassMethod(objectClass, vm, "addInstanceMethod:withNumArguments:atPC:", block_init_native(vm, 3, 0, &class_addInstanceMethod_native));
+
+        class_addClassMethod(objectClass, vm, "addClassMethod:withNumArguments:atPC:", block_init_native(vm, 3, 0, &class_addClassMethod_native));
     }
 
+    // Instance Methods
     {
-        block* deallocMethodNative = block_init_native(vm, 0, 0, &object_dealloc_native);
-        class_addInstanceMethod(objectClass, vm, "dealloc", deallocMethodNative);
+        class_addInstanceMethod(objectClass, vm, "init", block_init_native(vm, 0, 0, &object_init_native));
+
+        class_addInstanceMethod(objectClass, vm, "dealloc", block_init_native(vm, 0, 0, &object_dealloc_native));
+
+        class_addInstanceMethod(objectClass, vm, "retain", block_init_native(vm, 0, 0, &object_retain_native));
+        class_addInstanceMethod(objectClass, vm, "release", block_init_native(vm, 0, 0, &object_release_native));
+
+        class_addInstanceMethod(objectClass, vm, "respondsToSelector:", block_init_native(vm, 1, 0, &object_respondsToSelector_native));
+
+        class_addInstanceMethod(objectClass, vm, "hash", block_init_native(vm, 0, 0, &object_hash_native));
+
+        class_addInstanceMethod(objectClass, vm, "forwardMessage:withArguments:", block_init_native(vm, 2, 0, &object_forwardMessage_withArguments_native));
     }
 
+    // BOTH Methods
     {
         block* isNilMethodNative = block_init_native(vm, 0, 0, &object_isNil_native);
         class_addClassMethod(objectClass, vm, "isNil", isNilMethodNative);
         class_addInstanceMethod(objectClass, vm, "isNil", isNilMethodNative);
-    }
 
-    {
         block* isTrueMethodNative = block_init_native(vm, 0, 0, &object_isTrue_native);
         class_addClassMethod(objectClass, vm, "isTrue", isTrueMethodNative);
         class_addInstanceMethod(objectClass, vm, "isTrue", isTrueMethodNative);
-    }
 
-    {
         block* isFalseMethodNative = block_init_native(vm, 0, 0, &object_isFalse_native);
         class_addClassMethod(objectClass, vm, "isFalse", isFalseMethodNative);
         class_addInstanceMethod(objectClass, vm, "isFalse", isFalseMethodNative);
-    }
 
-    {
-        block* retainMethod = block_init_native(vm, 0, 0, &object_retain_native);
-        class_addInstanceMethod(objectClass, vm, "retain", retainMethod);
-    }
-
-    {
-        block* releaseMethod = block_init_native(vm, 0, 0, &object_release_native);
-        class_addInstanceMethod(objectClass, vm, "release", releaseMethod);
-    }
-
-    {
-        block* respondsMethod = block_init_native(vm, 1, 0, &object_respondsToSelector_native);
-        class_addInstanceMethod(objectClass, vm, "respondsToSelector:", respondsMethod);
-    }
-
-    {
-        block* hashMethod = block_init_native(vm, 0, 0, &object_hash_native);
-        class_addInstanceMethod(objectClass, vm, "hash", hashMethod);
-    }
-
-    {
-        block* addInstanceMethod = block_init_native(vm, 3, 0, &class_addInstanceMethod_native);
-        class_addClassMethod(objectClass, vm, "addInstanceMethod:withNumArguments:atPC:", addInstanceMethod);
-    }
-
-    {
-        block* addClassMethod = block_init_native(vm, 3, 0, &class_addClassMethod_native);
-        class_addClassMethod(objectClass, vm, "addClassMethod:withNumArguments:atPC:", addClassMethod);
-    }
-
-    {
         block* descriptionMethod = block_init_native(vm, 0, 0, &object_description_native);
         class_addClassMethod(objectClass, vm, "description", descriptionMethod);
         class_addInstanceMethod(objectClass, vm, "description", descriptionMethod);
-    }
 
-    {
-        block* forwardMessageMethod = block_init_native(vm, 2, 0, &object_forwardMessage_withArguments_native);
-        class_addInstanceMethod(objectClass, vm, "forwardMessage:withArguments:", forwardMessageMethod);
-    }
-
-    {
         block* isEqualMethod = block_init_native(vm, 1, 0, &object_isEqual_native);
         class_addInstanceMethod(objectClass, vm, "isEqual:", isEqualMethod);
         class_addClassMethod(objectClass, vm, "isEqual:", isEqualMethod);
-    }
 
-    {
         block* classMethod = block_init_native(vm, 0, 0, &object_class_native);
         class_addInstanceMethod(objectClass, vm, "class", classMethod);
         class_addClassMethod(objectClass, vm, "class", classMethod);

@@ -366,7 +366,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 memcpy(&d, &data[vm->pc], sizeof(double));
                 vm->pc += sizeof(double);
                 printf("FLOATING NUMBER NOT IMPLEMENTED YET!\n");
-                exit(1);
+                exit(EXIT_FAILURE);
                 break;
             }
             case clkwk_PUSH_STRING:
@@ -673,7 +673,7 @@ void clkwk_pushConst(clockwork_vm* vm, const char* cnst)
     {
 #warning THROW EXCEPTION!
         printf("Could not find constant '%s'!\n", cnst);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 

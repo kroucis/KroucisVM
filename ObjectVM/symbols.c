@@ -29,6 +29,11 @@ struct symbol
     char* sym;
 };
 
+/*
+ - toString
+ - description
+ */
+
 struct symbol_table
 {
     uint64_t count;
@@ -66,6 +71,7 @@ class* symbol_class(clockwork_vm* vm)
 {
     class* sym_class = class_init(vm, "Symbol", "Object");
 
+    // Instance Methods
     {
         class_addInstanceMethod(sym_class, vm, "toString", block_init_native(vm, 0, 0, &symbol_toString_native));
         class_addInstanceMethod(sym_class, vm, "description", block_init_native(vm, 0, 0, &symbol_toString_native));

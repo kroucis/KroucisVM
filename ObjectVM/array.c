@@ -41,6 +41,20 @@ struct array
     uint64_t capacity;
 };
 
+/*
+ + alloc
+
+ - dealloc
+ - count
+ - objectAtIndex:
+ - add:
+ - remove:
+ - contains:
+ - isEmpty
+ - indexOf:
+
+ */
+
 #pragma mark - Bound Methods
 
 static void array_alloc_native(object* klass, clockwork_vm* vm)

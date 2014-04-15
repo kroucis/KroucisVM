@@ -39,6 +39,16 @@ struct integer
                                     /* = 48 */
 };
 
+/*
+ - add:
+ - sub:
+ - mul:
+ - div:
+ - lessThan:
+ - greaterThan:
+ - description:
+ */
+
 #pragma mark - Bound Methods
 
 static void integer_add_native(object* self, clockwork_vm* vm)
@@ -187,39 +197,15 @@ class* integer_class(clockwork_vm* vm)
 {
     class* integerClass = class_init(vm, "Integer", "Numeric");
 
+    // Instance Methods
     {
-        block* addMethod = block_init_native(vm, 1, 0, &integer_add_native);
-        class_addInstanceMethod(integerClass, vm, "add:", addMethod);
-    }
-
-    {
-        block* subMethod = block_init_native(vm, 1, 0, &integer_sub_native);
-        class_addInstanceMethod(integerClass, vm, "sub:", subMethod);
-    }
-
-    {
-        block* mulMethod = block_init_native(vm, 1, 0, &integer_mul_native);
-        class_addInstanceMethod(integerClass, vm, "mul:", mulMethod);
-    }
-
-    {
-        block* divMethod = block_init_native(vm, 1, 0, &integer_div_native);
-        class_addInstanceMethod(integerClass, vm, "div:", divMethod);
-    }
-
-    {
-        block* ltMethod = block_init_native(vm, 1, 0, &integer_lessThan_native);
-        class_addInstanceMethod(integerClass, vm, "lessThan:", ltMethod);
-    }
-
-    {
-        block* gtMethod = block_init_native(vm, 1, 0, &integer_greaterThan_native);
-        class_addInstanceMethod(integerClass, vm, "greaterThan:", gtMethod);
-    }
-
-    {
-        block* to_s_Method = block_init_native(vm, 0, 0, &integer_description);
-        class_addInstanceMethod(integerClass, vm, "description", to_s_Method);
+        class_addInstanceMethod(integerClass, vm, "add:", block_init_native(vm, 1, 0, &integer_add_native));
+        class_addInstanceMethod(integerClass, vm, "sub:", block_init_native(vm, 1, 0, &integer_sub_native));
+        class_addInstanceMethod(integerClass, vm, "mul:", block_init_native(vm, 1, 0, &integer_mul_native));
+        class_addInstanceMethod(integerClass, vm, "div:", block_init_native(vm, 1, 0, &integer_div_native));
+        class_addInstanceMethod(integerClass, vm, "lessThan:", block_init_native(vm, 1, 0, &integer_lessThan_native));
+        class_addInstanceMethod(integerClass, vm, "greaterThan:", block_init_native(vm, 1, 0, &integer_greaterThan_native));
+        class_addInstanceMethod(integerClass, vm, "description", block_init_native(vm, 0, 0, &integer_description));
     }
 
 #ifdef CLKWK_PRINT_SIZES
