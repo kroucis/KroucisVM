@@ -150,6 +150,9 @@ clockwork_vm* clkwk_init(void)
     class* objectClass = object_class(vm);
     primitive_table_set(vm->constants, vm, class_name(objectClass, vm), (object*)objectClass);
 
+    class* symbolClass = symbol_class(vm);
+    primitive_table_set(vm->constants, vm, class_name(symbolClass, vm), (object*)symbolClass);
+
     class* strClass = string_class(vm);
     primitive_table_set(vm->constants, vm, class_name(strClass, vm), (object*)strClass);
 

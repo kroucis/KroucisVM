@@ -20,13 +20,14 @@
 
 struct symbol
 {
-    struct object_header header;
+    struct object_header header;        /* 40 */
+    char* sym;                          /* 8 */
 
 #ifdef SYM_CACHE_HASH
-    uint32_t hash;
+    uint32_t hash;                      /* 4 */
+    char _padding[4];                   /* 4 */
 #endif
-
-    char* sym;
+                                    /* = 48 | 56  */
 };
 
 /*
@@ -67,6 +68,43 @@ static void symbol_toString_native(object* slf, clockwork_vm* vm)
     clkwk_return(vm);
 }
 
+static void symbol_description_native(object* slf, clockwork_vm* vm)
+{
+    symbol* sym = (symbol*)slf;
+    char desc[strlen(sym->sym) + 1];
+    sprintf(desc, ":%s", sym->sym);
+    clkwk_makeStringCstr(vm, desc);
+    clkwk_return(vm);
+}
+
+#pragma mark - Private Methods
+
+static symbol* symbol_init(const char* s, clockwork_vm* vm)
+{
+    object* symSuper = object_init(vm);
+    symbol* sym = (symbol*)object_create_super(vm, symSuper, (class*)clkwk_getConstant(vm, "Symbol"), sizeof(symbol));
+    sym->sym = clkwk_allocate(vm, strlen(s) + 1);
+    strcpy(sym->sym, s);
+#ifdef SYM_CACHE_HASH
+    sym->hash = sym_hash(s);
+#endif
+
+    return sym;
+}
+
+static symbol* symbol_initWithHash(const char* s, uint32_t hash, clockwork_vm* vm)
+{
+    object* symSuper = object_init(vm);
+    symbol* sym = (symbol*)object_create_super(vm, symSuper, (class*)clkwk_getConstant(vm, "Symbol"), sizeof(symbol));
+    sym->sym = clkwk_allocate(vm, strlen(s) + 1);
+    strcpy(sym->sym, s);
+#ifdef SYM_CACHE_HASH
+    sym->hash = hash;
+#endif
+
+    return sym;
+}
+
 class* symbol_class(clockwork_vm* vm)
 {
     class* sym_class = class_init(vm, "Symbol", "Object");
@@ -74,8 +112,12 @@ class* symbol_class(clockwork_vm* vm)
     // Instance Methods
     {
         class_addInstanceMethod(sym_class, vm, "toString", block_init_native(vm, 0, 0, &symbol_toString_native));
-        class_addInstanceMethod(sym_class, vm, "description", block_init_native(vm, 0, 0, &symbol_toString_native));
+        class_addInstanceMethod(sym_class, vm, "description", block_init_native(vm, 0, 0, &symbol_description_native));
     }
+
+#ifdef CLKWK_PRINT_SIZES
+    CLKWK_DBGPRNT("Symbol: %lu\n", sizeof(symbol));
+#endif
 
     return sym_class;
 }
@@ -127,12 +169,7 @@ symbol* symbol_table_get(symbol_table* table, const char* s, clockwork_vm* vm)
 
     if (!sym)
     {
-        sym = clkwk_allocate(vm, sizeof(symbol));
-#ifdef SYM_CACHE_HASH
-        sym->hash = hash;
-#endif
-        sym->sym = clkwk_allocate(vm, strlen(s) + 1);
-        strcpy(sym->sym, s);
+        sym = symbol_initWithHash(s, hash, vm);
 
         if (table->count + 1 < table->capacity)
         {
