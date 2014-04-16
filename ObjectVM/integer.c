@@ -61,13 +61,14 @@ static void integer_add_native(object* self, clockwork_vm* vm)
         int64_t result = integer_toInt64(self_i, vm) + integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         clkwk_push(vm, result_obj);
-        clkwk_return(vm);
     }
     else
     {
         printf("SHIT WENT WRONG!");
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
 static void integer_sub_native(object* self, clockwork_vm* vm)
@@ -80,12 +81,13 @@ static void integer_sub_native(object* self, clockwork_vm* vm)
         int64_t result = integer_toInt64(self_i, vm) - integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         clkwk_push(vm, result_obj);
-        clkwk_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
 static void integer_mul_native(object* self, clockwork_vm* vm)
@@ -98,12 +100,13 @@ static void integer_mul_native(object* self, clockwork_vm* vm)
         int64_t result = integer_toInt64(self_i, vm) * integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         clkwk_push(vm, result_obj);
-        clkwk_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
 static void integer_div_native(object* self, clockwork_vm* vm)
@@ -116,12 +119,13 @@ static void integer_div_native(object* self, clockwork_vm* vm)
         int64_t result = integer_toInt64(self_i, vm) / integer_toInt64(other_i, vm);
         object* result_obj = (object*)integer_init(vm, result);
         clkwk_push(vm, result_obj);
-        clkwk_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
 static void integer_lessThan_native(object* self, clockwork_vm* vm)
@@ -139,12 +143,13 @@ static void integer_lessThan_native(object* self, clockwork_vm* vm)
         {
             clkwk_pushFalse(vm);
         }
-        clkwk_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
 static void integer_greaterThan_native(object* self, clockwork_vm* vm)
@@ -162,15 +167,16 @@ static void integer_greaterThan_native(object* self, clockwork_vm* vm)
         {
             clkwk_pushFalse(vm);
         }
-        clkwk_return(vm);
     }
     else
     {
 #warning THROW EXCEPTION!
     }
+
+    clkwk_return(vm);
 }
 
-static void integer_description(object* self, clockwork_vm* vm)
+static void integer_description_native(object* self, clockwork_vm* vm)
 {
     integer* self_i = (integer*)self;
     int64_t value = integer_toInt64(self_i, vm);
@@ -205,7 +211,7 @@ class* integer_class(clockwork_vm* vm)
         class_addInstanceMethod(integerClass, vm, "div:", block_init_native(vm, 1, 0, &integer_div_native));
         class_addInstanceMethod(integerClass, vm, "lessThan:", block_init_native(vm, 1, 0, &integer_lessThan_native));
         class_addInstanceMethod(integerClass, vm, "greaterThan:", block_init_native(vm, 1, 0, &integer_greaterThan_native));
-        class_addInstanceMethod(integerClass, vm, "description", block_init_native(vm, 0, 0, &integer_description));
+        class_addInstanceMethod(integerClass, vm, "description", block_init_native(vm, 0, 0, &integer_description_native));
     }
 
 #ifdef CLKWK_PRINT_SIZES
