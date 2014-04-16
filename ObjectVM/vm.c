@@ -289,24 +289,25 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
 
     // Verify binary signature
     {
-        char* magic_byes = "CLKWK1";
-        assert(len > strlen(magic_byes));
-        if (len < strlen(magic_byes))
+        char* magic_bytes = "CLKWK1";
+        size_t magic_len = strlen(magic_bytes);
+        assert(len > magic_len);
+        if (len < magic_len)
         {
             printf("ClockworkVM: Incompatible binary.\n");
             return;
         }
 
-        for (int i = 0; i < strlen(magic_byes); i++)
+        for (int i = 0; i < magic_len; i++)
         {
-            if (data[i] != magic_byes[i])
+            if (data[i] != magic_bytes[i])
             {
                 printf("ClockworkVM: Incompatible binary.\n");
                 return;
             }
         }
 
-        vm->pc += strlen(magic_byes);
+        vm->pc += magic_len;
     }
 
     while (vm->pc < len)
