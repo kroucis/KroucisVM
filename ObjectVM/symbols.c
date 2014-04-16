@@ -79,18 +79,18 @@ static void symbol_description_native(object* slf, clockwork_vm* vm)
 
 #pragma mark - Private Methods
 
-static symbol* symbol_init(const char* s, clockwork_vm* vm)
-{
-    object* symSuper = object_init(vm);
-    symbol* sym = (symbol*)object_create_super(vm, symSuper, (class*)clkwk_getConstant(vm, "Symbol"), sizeof(symbol));
-    sym->sym = clkwk_allocate(vm, strlen(s) + 1);
-    strcpy(sym->sym, s);
-#ifdef SYM_CACHE_HASH
-    sym->hash = sym_hash(s);
-#endif
-
-    return sym;
-}
+//static symbol* symbol_init(const char* s, clockwork_vm* vm)
+//{
+//    object* symSuper = object_init(vm);
+//    symbol* sym = (symbol*)object_create_super(vm, symSuper, (class*)clkwk_getConstant(vm, "Symbol"), sizeof(symbol));
+//    sym->sym = clkwk_allocate(vm, strlen(s) + 1);
+//    strcpy(sym->sym, s);
+//#ifdef SYM_CACHE_HASH
+//    sym->hash = sym_hash(s);
+//#endif
+//
+//    return sym;
+//}
 
 static symbol* symbol_initWithHash(const char* s, uint32_t hash, clockwork_vm* vm)
 {
@@ -177,8 +177,14 @@ symbol* symbol_table_get(symbol_table* table, const char* s, clockwork_vm* vm)
         }
         else
         {
-#warning GROW SYMBOL TABLE
-            printf("NEED TO EXPAND SYMBOL TABLE!");
+            uint64_t oldCap = table->capacity;
+            table->capacity *= 2;
+            symbol** newTable = clkwk_allocate(vm, sizeof(symbol) * table->capacity);
+            memcpy(newTable, table->symbols, sizeof(symbol) * oldCap);
+            clkwk_free(vm, table->symbols);
+            table->symbols = newTable;
+
+            table->symbols[table->count++] = sym;
         }
     }
 
