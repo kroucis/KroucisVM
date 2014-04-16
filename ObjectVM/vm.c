@@ -83,12 +83,17 @@ static frame* _clkwk_push_frame(clockwork_vm* vm)
     {
         return NULL;
     }
-    
+
     return &vm->frameStack.frames[vm->frameStack.idx++];
 }
 
 static frame* _clkwk_pop_frame(clockwork_vm* vm)
 {
+    if (vm->frameStack.idx == 0)
+    {
+        return NULL;
+    }
+
     return &vm->frameStack.frames[--vm->frameStack.idx];
 }
 
@@ -720,9 +725,8 @@ void clkwk_forward(clockwork_vm* vm, object* target, char* message, object** arg
         return;
     }
 
-#warning PACKAGE args INTO ARRAY
     symbol* messageSym = symbol_table_get(vm->symbols, message, vm);
-    object* argsArray = (object*)array_initWithObjects(vm, args, arg_count);     // REPLACE WITH arg ARRAY OBJECT
+    object* argsArray = (object*)array_initWithObjects(vm, args, arg_count);
 
     uint8_t localsCount = block_localsCount(m, vm);
     assert(localsCount == 2);
