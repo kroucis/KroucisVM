@@ -104,8 +104,8 @@ void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes);
  *  BEFORE  [ ... ]
  *  AFTER   [ ... ]
  *
- *  @note This does not call -release or -dealloc on any of the object's members, it simply calls
- *      clkwk_free(2) to deallocate the object's memory.
+ *  @note This does not call -release or -dealloc on any of the object's members, it simply returns
+ *      the memory to the free pool.
  *  @param vm The VM instance to work with.
  *  @param obj The object to free.
  */

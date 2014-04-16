@@ -23,6 +23,7 @@
 
 static uint8_t const c_array_baseStorage = 10;
 static uint8_t const c_array_growthFactor = 2;
+#pragma unused(c_array_growthFactor)
 
 //struct array_entry
 //{

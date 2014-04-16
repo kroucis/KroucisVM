@@ -194,6 +194,8 @@ static void object_forwardMessage_withArguments_native(object* klass, clockwork_
     printf("Object of class %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
 
     exit(EXIT_FAILURE);
+
+    clkwk_return(vm);
 }
 
 static void class_alloc_native(object* klass, clockwork_vm* vm)
@@ -204,16 +206,16 @@ static void class_alloc_native(object* klass, clockwork_vm* vm)
         clkwk_pushSuper(vm);
         clkwk_dispatch(vm, "alloc", 0);
         super = clkwk_pop(vm);
+        object* allocd = object_create_super(vm, super, (class*)klass, object_instanceSize());
+        clkwk_push(vm, allocd);
+        clkwk_return(vm);
     }
     else
     {
         object* obj = object_init(vm);
         clkwk_push(vm, obj);
-        return;
+        clkwk_return(vm);
     }
-    object* allocd = object_create_super(vm, super, (class*)klass, object_instanceSize());
-    clkwk_push(vm, allocd);
-    clkwk_return(vm);
 }
 
 static void class_dealloc_native(object* klass, clockwork_vm* vm)
