@@ -221,18 +221,6 @@ static void class_alloc_native(object* klass, clockwork_vm* vm)
 static void class_dealloc_native(object* klass, clockwork_vm* vm)
 {
     class* klazz = (class*)klass;
-    printf("Deallocating class %s (0x%lld)\n", class_name(klazz, vm), (uint64_t)klass);
-#warning FIX THIS: DEALLOCATE INSTANCE METHODS AND SUCH
-//    if (klazz->instanceMethods)
-//    {
-//        primitive_table_dealloc(klazz->instanceMethods, vm);
-//    }
-//
-//    if (klazz->classMethods)
-//    {
-//        primitive_table_dealloc(klazz->classMethods, vm);
-//    }
-
     class_dealloc(klazz, vm);
 
     clkwk_pushNil(vm);
@@ -277,7 +265,6 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
             {
                 clkwk_push(vm, array_objectAtIndex(argsArray, vm, i));
             }
-#warning ITERATE OVER argsArray AND PUSH EACH VALUE ONTO THE STACK.
         }
 
         initMessage[len + 1] = '\0';

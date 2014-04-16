@@ -25,3 +25,4 @@ struct object* array_objectAtIndex(array*, struct clockwork_vm*, uint64_t);
 void array_add(array*, struct clockwork_vm*, struct object*);
 void array_remove(array* ary, struct clockwork_vm* vm, struct object* obj);
 void array_removeAtIndex(array* ary, struct clockwork_vm* vm, uint64_t idx);
+void array_each(array* ary, struct clockwork_vm* vm, void(*itr_func)(uint64_t, struct object*));

@@ -20,10 +20,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <memory.h>
 
 static uint8_t const c_array_baseStorage = 10;
 static uint8_t const c_array_growthFactor = 2;
-#pragma unused(c_array_growthFactor)
 
 //struct array_entry
 //{
@@ -320,7 +320,12 @@ void array_add(array* ary, clockwork_vm* vm, object* obj)
     }
     else if (ary->count + 1 > ary->capacity)
     {
-#warning GROW ARRAY
+        uint64_t old_cap = ary->capacity;
+        ary->capacity *= c_array_growthFactor;
+        object** new_storage = clkwk_allocate(vm, sizeof(object*) * ary->capacity);
+        memcpy(new_storage, ary->contents, old_cap * sizeof(object*));
+        clkwk_free(vm, ary->contents);
+        ary->contents = new_storage;
     }
 
     clkwk_push(vm, obj);
@@ -363,5 +368,21 @@ void array_removeAtIndex(array* ary, clockwork_vm* vm, uint64_t idx)
 
     ary->count--;
 
-#warning SHRINK contents?
+    if (ary->count < ary->capacity / (c_array_growthFactor * 2) && ary->capacity > c_array_baseStorage)
+    {
+        uint64_t old_cap = ary->capacity;
+        ary->capacity /= c_array_growthFactor;
+        object** new_storage = clkwk_allocate(vm, sizeof(object*) * ary->capacity);
+        memcpy(new_storage, ary->contents, old_cap * sizeof(object*));
+        clkwk_free(vm, ary->contents);
+        ary->contents = new_storage;
+    }
+}
+
+void array_each(array* ary, struct clockwork_vm* vm, void(*itr_func)(uint64_t, struct object*))
+{
+    for (uint64_t i = 0; i < array_count(ary, vm); i++)
+	{
+		itr_func(i, ary->contents[i]);
+	}
 }

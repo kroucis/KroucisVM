@@ -14,6 +14,7 @@
 #include "block.h"
 #include "str.h"
 #include "symbols.h"
+#include "clkwk_debug.h"
 
 #include <stdlib.h>
 #include <memory.h>
@@ -55,6 +56,18 @@ class* class_init(clockwork_vm* vm, char* name, char* superclass)
 
 void class_dealloc(class* klass, struct clockwork_vm* vm)
 {
+    if (klass->instanceMethods)
+    {
+        primitive_table_dealloc(klass->instanceMethods, vm, Yes);
+    }
+
+    if (klass->classMethods)
+    {
+        primitive_table_dealloc(klass->classMethods, vm, Yes);
+    }
+
+    CLKWK_DBGPRNT("Deallocating class %s (0x%lld)\n", class_name(klass, vm), (uint64_t)klass);
+
     clkwk_free(vm, klass->name);
     clkwk_free(vm, (object*)klass);
 }
@@ -66,8 +79,6 @@ void class_addInstanceMethod(class* klass, clockwork_vm* vm, const char* name, b
         klass->instanceMethods = primitive_table_init(vm, 16);
     }
 
-#warning GROW INSTANCE METHOD TABLE AS NEEDED.
-
     primitive_table_set(klass->instanceMethods, vm, name, (object*)meth);
 }
 
@@ -77,8 +88,6 @@ void class_addClassMethod(class* klass, clockwork_vm* vm, const char* name, bloc
     {
         klass->classMethods = primitive_table_init(vm, 16);
     }
-
-#warning GROW CLASS METHOD TABLE AS NEEDED.
 
     primitive_table_set(klass->classMethods, vm, name, (object*)meth);
 }
