@@ -16,6 +16,8 @@ static const uint8_t c_StackLimit = 32;
 
 struct object;
 
+#warning Consider making call frames dynamically allocated? This is a LOT of up-front memory...
+
 typedef struct frame
 {
     object* frameSelf;                  /* 8 */

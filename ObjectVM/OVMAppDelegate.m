@@ -16,6 +16,7 @@
 #import "tokenizer.h"
 #import "input_stream.h"
 #import "assembler.h"
+#import "disassembler.h"
 #import "block.h"
 #import "array.h"
 
@@ -59,12 +60,9 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     char* s = malloc(size);
     fread(s, sizeof(char), size, file);
 
-//    char* s = "push \"foo!\ndisp print 0\npush #5\npush #3\nreturn\nend\n";
     assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
-//    printf("[[----------]]\n");
+    printf("[[----------]]\n");
     clkwk_runBinary(vm, asm_bin);
-
-    assembled_binary_dealloc(asm_bin, vm);
 
 //    [self testForwardCrash];
 }

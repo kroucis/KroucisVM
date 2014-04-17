@@ -19,6 +19,7 @@
 		7551789A1864202B00168532 /* OVMArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 755178991864202B00168532 /* OVMArrayTests.m */; };
 		7551789C18645E3100168532 /* OVMStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7551789B18645E3100168532 /* OVMStringTests.m */; };
 		7551789E1865592000168532 /* OVMVMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7551789D1865592000168532 /* OVMVMTests.m */; };
+		7553CD0F18FE5BF30047FE18 /* disassembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 7553CD0E18FE5BF30047FE18 /* disassembler.c */; };
 		7574404B183044D10008416B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7574404A183044D10008416B /* Cocoa.framework */; };
 		75744055183044D10008416B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75744053183044D10008416B /* InfoPlist.strings */; };
 		75744057183044D10008416B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75744056183044D10008416B /* main.m */; };
@@ -73,6 +74,8 @@
 		755178991864202B00168532 /* OVMArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OVMArrayTests.m; sourceTree = "<group>"; };
 		7551789B18645E3100168532 /* OVMStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OVMStringTests.m; sourceTree = "<group>"; };
 		7551789D1865592000168532 /* OVMVMTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OVMVMTests.m; sourceTree = "<group>"; };
+		7553CD0C18FE5AD40047FE18 /* disassembler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = disassembler.h; sourceTree = "<group>"; };
+		7553CD0E18FE5BF30047FE18 /* disassembler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = disassembler.c; sourceTree = "<group>"; };
 		75744047183044D10008416B /* ObjectVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectVM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7574404A183044D10008416B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		7574404D183044D10008416B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -147,6 +150,8 @@
 			children = (
 				7541EAA618383AFC0082A78F /* assembler.h */,
 				7541EAA818383C800082A78F /* assembler.c */,
+				7553CD0C18FE5AD40047FE18 /* disassembler.h */,
+				7553CD0E18FE5BF30047FE18 /* disassembler.c */,
 			);
 			name = Assembler;
 			sourceTree = "<group>";
@@ -443,6 +448,7 @@
 				7574405E183044D10008416B /* OVMAppDelegate.m in Sources */,
 				7541EAA4183727890082A78F /* dictionary.c in Sources */,
 				75A88B511841EC52007B7D7A /* primitive_table.c in Sources */,
+				7553CD0F18FE5BF30047FE18 /* disassembler.c in Sources */,
 				75A88B4E183F0B40007B7D7A /* true_false.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
