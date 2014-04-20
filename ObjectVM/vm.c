@@ -756,21 +756,21 @@ void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     object* args[arg_count];
     for (local_index i = 0; i < arg_count; i++)
 	{
-		args[i] = clkwk_pop(vm);
+		args[(arg_count - 1) - i] = clkwk_pop(vm);
 	}
 
     object* target = clkwk_pop(vm);
     assert(target);
     if (!target)
     {
-        printf("Could not find target on stack... wtf?");
+        printf("Could not find target on stack... wtf?\n");
     }
     block* m = object_findMethod(target, vm, clkwk_getSymbolCstr(vm, selector));
     
     frame* nextFrame = _clkwk_push_frame(vm);
     if (nextFrame == NULL)
     {
-        printf("Clockwork: Stack overflow.");
+        printf("Clockwork: Stack overflow.\n");
         return;
     }
     nextFrame->frameSelf = vm->currentSelf;

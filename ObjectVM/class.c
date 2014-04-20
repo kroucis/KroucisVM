@@ -35,7 +35,7 @@ struct class
 
 #pragma mark - Native Methods
 
-class* class_init(clockwork_vm* vm, char* name, char* superclass)
+class* class_init(clockwork_vm* vm, const char* name, const char* superclass)
 {
     class* klass = clkwk_allocate(vm, sizeof(class));
 
@@ -123,7 +123,6 @@ block* class_getInstanceMethod(class* klass, clockwork_vm* vm, symbol* selector)
 
 block* class_findClassMethod(class* klass, clockwork_vm* vm, symbol* selector)
 {
-    assert(klass);
     assert(vm);
     assert(selector);
 
@@ -131,7 +130,7 @@ block* class_findClassMethod(class* klass, clockwork_vm* vm, symbol* selector)
     if (klass)
     {
         m = klass->classMethods ? (block*)primitive_table_get(klass->classMethods, vm, symbol_cstr(selector)) : NULL;
-        if (!m)
+        if (!m && klass->header.super)
         {
             m = class_findClassMethod((class*)klass->header.super, vm, selector);
         }

@@ -1,3 +1,4 @@
+
 //
 //  object.c
 //  ObjectVM
@@ -60,26 +61,20 @@ struct object
 
 #pragma mark - Bound Methods
 
-static void class_addInstanceMethod_native(object* klass, clockwork_vm* vm)
+static void class_addInstanceMethod_withImplBlock_native(object* klass, clockwork_vm* vm)
 {
     symbol* name = (symbol*)clkwk_getLocal(vm, 0);
-    integer* numArgs = (integer*)clkwk_getLocal(vm, 1);
-    integer* pcLoc = (integer*)clkwk_getLocal(vm, 2);
-
-    block* impl = block_init_compiled(vm, integer_toInt64(numArgs, vm), 0, integer_toInt64(pcLoc, vm));
-    class_addInstanceMethod((class*)klass, vm, symbol_cstr(name), impl);
+    block* blk = (block*)clkwk_getLocal(vm, 1);
+    class_addInstanceMethod((class*)klass, vm, symbol_cstr(name), blk);
     clkwk_push(vm, klass);
     clkwk_return(vm);
 }
 
-static void class_addClassMethod_native(object* klass, clockwork_vm* vm)
+static void class_addClassMethod_withImplBlock_native(object* klass, clockwork_vm* vm)
 {
     symbol* name = (symbol*)clkwk_getLocal(vm, 0);
-    integer* numArgs = (integer*)clkwk_getLocal(vm, 1);
-    integer* pcLoc = (integer*)clkwk_getLocal(vm, 2);
-
-    block* impl = block_init_compiled(vm, integer_toInt64(numArgs, vm), 0, integer_toInt64(pcLoc, vm));
-    class_addClassMethod((class*)klass, vm, symbol_cstr(name), impl);
+    block* blk = (block*)clkwk_getLocal(vm, 1);
+    class_addClassMethod((class*)klass, vm, symbol_cstr(name), blk);
     clkwk_push(vm, klass);
     clkwk_return(vm);
 }
@@ -229,9 +224,9 @@ static void class_dealloc_native(object* klass, clockwork_vm* vm)
 
 static void class_forwardMessage_withArguments_native(object* klass, clockwork_vm* vm)
 {
-    str* message = (str*)clkwk_getLocal(vm, 0);
+    symbol* message = (symbol*)clkwk_getLocal(vm, 0);
     array* argsArray = (array*)clkwk_getLocal(vm, 1);
-    char* msgBytes = str_raw_bytes(message, vm);
+    char* msgBytes = symbol_cstr(message);
     if (strncmp(msgBytes, "new", 3) != 0)
     {
         if (klass->header.super)
@@ -253,7 +248,8 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
 
         clkwk_dispatch(vm, "alloc", 0);
 
-        uint32_t len = str_length(message, vm);
+        size_t len = strlen(msgBytes
+                            );
         uint64_t argCount = 0;
         char initMessage[len + 2];
         initMessage[0] = 'i'; initMessage[1] = 'n'; initMessage[2] = 'i'; initMessage[3] = 't';
@@ -330,9 +326,9 @@ class* object_class(clockwork_vm* vm)
         class_addClassMethod(objectClass, vm, "retain", block_init_native(vm, 0, 0, &class_retain_native));
         class_addClassMethod(objectClass, vm, "release", block_init_native(vm, 0, 0, &class_release_native));
 
-        class_addClassMethod(objectClass, vm, "addInstanceMethod:withNumArguments:atPC:", block_init_native(vm, 3, 0, &class_addInstanceMethod_native));
+        class_addClassMethod(objectClass, vm, "addInstanceMethod:withImplBlock:", block_init_native(vm, 2, 0, &class_addInstanceMethod_withImplBlock_native));
 
-        class_addClassMethod(objectClass, vm, "addClassMethod:withNumArguments:atPC:", block_init_native(vm, 3, 0, &class_addClassMethod_native));
+        class_addClassMethod(objectClass, vm, "addClassMethod:withImplBlock:", block_init_native(vm, 2, 0, &class_addClassMethod_withImplBlock_native));
     }
 
     // Instance Methods

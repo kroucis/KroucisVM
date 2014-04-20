@@ -263,8 +263,6 @@
 				75744082183046E90008416B /* vm.c */,
 				75744086183048F50008416B /* stack.h */,
 				75744087183048F50008416B /* stack.c */,
-				7541EA9F18371C750082A78F /* str.h */,
-				7541EAA018371D150082A78F /* str.c */,
 				7541EAA2183726950082A78F /* dictionary.h */,
 				7541EAA3183727890082A78F /* dictionary.c */,
 				7541EAA718383B3D0082A78F /* instruction.h */,
@@ -272,10 +270,6 @@
 				7541EAAC1839A07C0082A78F /* block.c */,
 				75A88B4F1841EBD0007B7D7A /* primitive_table.h */,
 				75A88B501841EC52007B7D7A /* primitive_table.c */,
-				75A88B521842BE21007B7D7A /* integer.h */,
-				75A88B531842BF53007B7D7A /* integer.c */,
-				75A7CE231852F1D800D155A3 /* array.h */,
-				75A7CE251852F25900D155A3 /* array.c */,
 				75A561411855697F00506F92 /* frame.h */,
 				75BE504018EF9504007FBB13 /* symbols.h */,
 				75BE504118EF95E8007FBB13 /* symbols.c */,
@@ -317,6 +311,12 @@
 				7501CBEA183DD97600CCFF42 /* nil.c */,
 				75A88B4C183F0A7A007B7D7A /* true_false.h */,
 				75A88B4D183F0B40007B7D7A /* true_false.c */,
+				75A88B521842BE21007B7D7A /* integer.h */,
+				75A88B531842BF53007B7D7A /* integer.c */,
+				75A7CE231852F1D800D155A3 /* array.h */,
+				75A7CE251852F25900D155A3 /* array.c */,
+				7541EA9F18371C750082A78F /* str.h */,
+				7541EAA018371D150082A78F /* str.c */,
 			);
 			name = "Basic Objects";
 			sourceTree = "<group>";

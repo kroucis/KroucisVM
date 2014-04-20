@@ -15,7 +15,7 @@ struct symbol;
 
 typedef struct class class;
 
-class* class_init(struct clockwork_vm* vm, char* name, char* superclass);
+class* class_init(struct clockwork_vm* vm, const char* name, const char* superclass);
 void class_dealloc(class* klass, struct clockwork_vm* vm);
 
 void class_addInstanceMethod(class*, struct clockwork_vm*, const char* name, struct block*);
