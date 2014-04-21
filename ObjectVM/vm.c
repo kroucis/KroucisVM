@@ -46,9 +46,8 @@ struct clockwork_vm
 {
     struct object_header header;            /* 40 */
 
-    uint64_t pc;                            /* 8 */
+    vm_address pc;                            /* 8 */
     stack* stack;                           /* 8 */
-//    object* locals[c_VMLocalsLimit];
     primitive_table* constants;             /* 8 */
     object* currentSelf;                    /* 8 */
 
@@ -126,7 +125,6 @@ static void _clkwk_run_block(clockwork_vm* vm, block* blk)
 void clkwk_openClass_native(object* slf, clockwork_vm* vm)
 {
     symbol* name = (symbol*)clkwk_getLocal(vm, 0);
-    printf("CLASS NAME: %s\n", symbol_cstr(name));
     class* klass = clkwk_openClass(vm, symbol_cstr(name), "Object");
     clkwk_push(vm, (object*)klass);
     clkwk_return(vm);
@@ -200,7 +198,8 @@ clockwork_vm* clkwk_init(void)
     vm->currentSelf = (object*)vm;
 
     {
-        class_addInstanceMethod(clockworkClass, vm, "openClass:", block_init_native(vm, 1, 0, &clkwk_openClass_native));
+
+        (clockworkClass, vm, "openClass:", block_init_native(vm, 1, 0, &clkwk_openClass_native));
     }
 
     return vm;
@@ -256,7 +255,7 @@ object* clkwk_currentSelf(clockwork_vm* vm)
 
 #pragma mark - MEMORY MANAGEMENT
 
-void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes)
+void* clkwk_allocate(clockwork_vm* vm, vm_size bytes)
 {
     void* value = MEM_MALLOC(bytes);
     assert(value);
@@ -429,8 +428,8 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
             }
             case clkwk_JUMP:
             {
-                uint64_t loc;
-                memcpy(&loc, &data[vm->pc], sizeof(uint64_t));
+                vm_address loc;
+                memcpy(&loc, &data[vm->pc], sizeof(vm_address));
 
                 CLKWK_DBGPRNT("JUMP %lld\n", loc);
 
@@ -442,13 +441,13 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 object* o = clkwk_pop(vm);
                 if (object_isTrue(o, vm))
                 {
-                    uint64_t loc;
-                    memcpy(&loc, &data[vm->pc], sizeof(uint64_t));
+                    vm_address loc;
+                    memcpy(&loc, &data[vm->pc], sizeof(vm_address));
                     clkwk_jump(vm, loc);
                 }
                 else
                 {
-                    clkwk_jump(vm, vm->pc + sizeof(uint64_t));
+                    clkwk_jump(vm, vm->pc + sizeof(vm_address));
                 }
                 break;
             }
@@ -457,13 +456,13 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
                 object* o = clkwk_pop(vm);
                 if (object_isFalse(o, vm))
                 {
-                    uint64_t loc;
-                    memcpy(&loc, &data[vm->pc], sizeof(uint64_t));
+                    vm_address loc;
+                    memcpy(&loc, &data[vm->pc], sizeof(vm_address));
                     clkwk_jump(vm, loc);
                 }
                 else
                 {
-                    clkwk_jump(vm, vm->pc + sizeof(uint64_t));
+                    clkwk_jump(vm, vm->pc + sizeof(vm_address));
                 }
                 break;
             }
@@ -544,12 +543,12 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
 
 #pragma mark - PROGRAM COUNTER
 
-void clkwk_jump(clockwork_vm* vm, uint64_t location)
+void clkwk_jump(clockwork_vm* vm, vm_address location)
 {
     vm->pc = location;
 }
 
-void clkwk_jumpIfFalse(clockwork_vm* vm, uint64_t location)
+void clkwk_jumpIfFalse(clockwork_vm* vm, vm_address location)
 {
     object* obj = stack_pop(vm->stack);
     if (object_isFalse(obj, vm))
@@ -558,7 +557,7 @@ void clkwk_jumpIfFalse(clockwork_vm* vm, uint64_t location)
     }
 }
 
-void clkwk_jumpIfTrue(clockwork_vm* vm, uint64_t location)
+void clkwk_jumpIfTrue(clockwork_vm* vm, vm_address location)
 {
     object* obj = stack_pop(vm->stack);
     if (object_isTrue(obj, vm))

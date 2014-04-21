@@ -17,6 +17,8 @@ struct symbol;
 
 typedef struct clockwork_vm clockwork_vm;
 typedef uint8_t local_index;
+typedef uint64_t vm_address;
+typedef uint64_t vm_size;
 
 /**
  *  Allocate and initialize a new ClockworkVM instance.
@@ -96,7 +98,7 @@ struct object* clkwk_currentSelf(clockwork_vm* vm);
  *
  *  @return An allocated chunk that is at least <bytes> in size.
  */
-void* clkwk_allocate(clockwork_vm* vm, uint64_t bytes);
+void* clkwk_allocate(clockwork_vm* vm, vm_size bytes);
 
 /**
  *  Deallocates the memory backing <obj>.
@@ -115,15 +117,62 @@ void clkwk_free(clockwork_vm* vm, void* obj);
 void clkwk_runBinary(clockwork_vm* vm, struct assembled_binary* binary);
 
 // --- PROGRAM COUNTER ---
-void clkwk_jump(clockwork_vm* vm, uint64_t location);
-void clkwk_jumpIfFalse(clockwork_vm* vm, uint64_t location);
-void clkwk_jumpIfTrue(clockwork_vm* vm, uint64_t location);
+void clkwk_jump(clockwork_vm* vm, vm_address location);
+void clkwk_jumpIfFalse(clockwork_vm* vm, vm_address location);
+void clkwk_jumpIfTrue(clockwork_vm* vm, vm_address location);
 
 // --- PUSH / POP ---
+/**
+ *  Push the given object <obj> onto the <vm>'s stack.
+ *
+ *  BEFORE  [ ... ]
+ *  AFTER   [ obj, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *  @param obj The object to push onto the stack.
+ */
 void clkwk_push(clockwork_vm* vm, struct object* obj);
+
+/**
+ *  Pop the top object off of the stack and return it.
+ *
+ *  BEFORE  [ obj0, obj1, ... ]
+ *  AFTER   [ obj1, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ *
+ *  @return The object at the top of the stack.
+ */
 struct object* clkwk_pop(clockwork_vm* vm);
+
+/**
+ *  Push the special singleton object 'nil' onto the stack.
+ *
+ *  BEFORE [ ... ]
+ *  AFTER [ nil, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ */
 void clkwk_pushNil(clockwork_vm* vm);
+
+/**
+ *  Push the special singleton object 'true' onto the stack.
+ *
+ *  BEFORE [ ... ]
+ *  AFTER [ true, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ */
 void clkwk_pushTrue(clockwork_vm* vm);
+
+/**
+ *  Push the special singleton object 'false' onto the stack.
+ *
+ *  BEFORE [ ... ]
+ *  AFTER [ false, ... ]
+ *
+ *  @param vm The VM instance to work with.
+ */
 void clkwk_pushFalse(clockwork_vm* vm);
 
 // --- LOCALS ---
