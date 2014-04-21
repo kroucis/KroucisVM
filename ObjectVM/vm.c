@@ -198,8 +198,7 @@ clockwork_vm* clkwk_init(void)
     vm->currentSelf = (object*)vm;
 
     {
-
-        (clockworkClass, vm, "openClass:", block_init_native(vm, 1, 0, &clkwk_openClass_native));
+        class_addInstanceMethod(clockworkClass, vm, "openClass:", block_init_native(vm, 1, 0, &clkwk_openClass_native));
     }
 
     return vm;
