@@ -14,10 +14,11 @@
 
 #ifdef CLKWK_DEBUG
 #   define CLKWK_PRINT_SIZES
-#endif
-
-#ifdef CLKWK_DEBUG
-#   define CLKWK_DBGPRNT(fmt, args...)     fprintf(stdout, "CLKWK: ");fprintf(stdout, fmt, ## args)
+#   define CLKWK_DBGPRNT(fmt, args...)      fprintf(stdout, "CLKWK: ");fprintf(stdout, fmt, ## args)
+#   define CLKWK_MARK_CALL                  CLKWK_DBGPRNT(__FUNCTION__)
+#   define CLKWK_DBG_ASSERT(stmnt)          assert((stmnt) != 0)
 #else
 #   define CLKWK_DBGPRNT(fmt, args...)
 #endif
+
+#define CLKWK_ASSERT_NOT_NULL(stmnt)        assert((stmnt) != NULL)

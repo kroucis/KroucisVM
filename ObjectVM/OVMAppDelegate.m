@@ -39,10 +39,11 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-//    [self testPrints];
-//    [self testAddClassMethod];
-//    [self testInputStream];
-//    [self testTokenizer];
+    [self testPrints];
+    [self testAddInstanceMethod];
+    [self testAddClassMethod];
+    [self testInputStream];
+    [self testTokenizer];
 
 //    memory_manager* mm = memory_manager_init(1024);
 
@@ -52,7 +53,9 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     primitive_table* tbl = primitive_table_init(vm, 10);
     primitive_table_dealloc(tbl, vm, Yes);
 
-    FILE* file = fopen("/Users/kyleroucis/Desktop/test.clkwkasm", "r");
+    NSString* path = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"clkwkasm"];
+
+    FILE* file = fopen([path UTF8String], "r");
     fseek(file, 0L, SEEK_END);
     long size = ftell(file);
     rewind(file);
@@ -62,6 +65,16 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
     printf("[[----------]]\n");
+
+    char* d = malloc(size * 2);
+    uint64_t disLen = disassembler_disassembleBinary(asm_bin, vm, d, size * 2);
+
+    for (int i = 0; i < disLen; i++)
+    {
+        printf("%c", d[i]);
+    }
+    printf("[[----------]]\n");
+
     clkwk_runBinary(vm, asm_bin);
 
 //    [self testForwardCrash];
@@ -94,14 +107,16 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 {
     clockwork_vm* vm = clkwk_init();
 
-    clkwk_openClass(vm, "Foo", "Object");
+    class* foo_class = clkwk_openClass(vm, "Foo", "Object");
+    clkwk_push(vm, (object*)foo_class);
+
+    symbol* bar_symbol = clkwk_getSymbolCstr(vm, "bar");
+    clkwk_push(vm, (object*)bar_symbol);
 
     block* blk = block_init_native(vm, 0, 0, &test_class_method);
     clkwk_push(vm, (object*)blk);
 
-    clkwk_makeStringCstr(vm, "bar");
-
-    clkwk_dispatch(vm, "addInstanceMethod:withImpl:", 2);
+    clkwk_dispatch(vm, "addInstanceMethod:withImplBlock:", 2);
 
     clkwk_dispatch(vm, "alloc", 0);
     clkwk_dispatch(vm, "init", 0);
@@ -118,14 +133,16 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 {
     clockwork_vm* vm = clkwk_init();
 
-    clkwk_openClass(vm, "Foo", "Object");
+    class* foo_class = clkwk_openClass(vm, "Foo", "Object");
+    clkwk_push(vm, (object*)foo_class);
+
+    symbol* bar_symbol = clkwk_getSymbolCstr(vm, "bar");
+    clkwk_push(vm, (object*)bar_symbol);
 
     block* blk = block_init_native(vm, 0, 0, &test_class_method);
     clkwk_push(vm, (object*)blk);
 
-    clkwk_makeStringCstr(vm, "bar");
-
-    clkwk_dispatch(vm, "addClassMethod:withImpl:", 2);
+    clkwk_dispatch(vm, "addClassMethod:withImplBlock:", 2);
 
     clkwk_push(vm, clkwk_getConstant(vm, "Foo"));
     clkwk_dispatch(vm, "bar", 0);
@@ -142,7 +159,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
 //    instruction inst = (instruction){ .op = clkwk_PUSH_STRING, .param_count = 1, .params[0] = "Foobar" };
 //    assembler_run_instruction(&inst, vm);
-    clkwk_makeStringCstr(vm, "Foobar");
+    clkwk_pushStringCstr(vm, "Foobar");
 
     clkwk_popPrintln(vm);
 

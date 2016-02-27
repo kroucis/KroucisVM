@@ -69,7 +69,7 @@ static void nil_forwardMessage_withArguments_native(object* obj, clockwork_vm* v
 
 static void nil_description_native(object* obj, clockwork_vm* vm)
 {
-    clkwk_makeStringCstr(vm, "nil");
+    clkwk_pushStringCstr(vm, "nil");
     clkwk_return(vm);
 }
 

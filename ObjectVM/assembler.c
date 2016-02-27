@@ -13,6 +13,7 @@
 #include "primitive_table.h"
 #include "object.h"
 #include "integer.h"
+#include "binary_internal.h"
 
 #include "clkwk_debug.h"
 
@@ -26,6 +27,10 @@ typedef uint64_t input_index;
 typedef uint64_t assembler_input_size;
 typedef uint64_t assembler_output_size;
 typedef char* assembler_output;
+
+#ifdef VERIFY_BINARY_SIGNATURE
+static const char* magic_bytes = "CLKWK1";
+#endif
 
 struct assembled_binary
 {
@@ -126,6 +131,11 @@ static void write_char(char value, assembled_binary* asm_bin_OUT)
 static void write_unsigned_char(unsigned char value, assembled_binary* asm_bin_OUT)
 {
     asm_bin_OUT->binary_data[asm_bin_OUT->bytes++] = value;
+}
+
+static void write_op(char op, assembled_binary* asm_bin_OUT)
+{
+    write_char(op, asm_bin_OUT);
 }
 
 static struct _result read_push_number(assembler_input input, assembler_input_size length, input_index index)
@@ -461,6 +471,15 @@ static input_index consume_whitespace(assembler_input input, assembler_input_siz
     return index;
 }
 
+static int64_t calculateLocationOffset(int64_t loc)
+{
+#ifdef VERIFY_BINARY_SIGNATURE
+    return loc - strlen(magic_bytes);
+#else
+    return loc;
+#endif
+}
+
 uint64_t assembled_binary_size(assembled_binary* asm_bin)
 {
     return asm_bin->bytes;
@@ -511,12 +530,16 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
             exit(EXIT_FAILURE);
         }
         int64_t resolved = integer_toInt64(resolvedPCLocation, vm);
+        resolved = calculateLocationOffset(resolved);
+        printf("Resolving %s @ %lld\n", ul->label, resolved);
 
         memcpy(&(binary->binary_data[jumpPCLocation]), &resolved, sizeof(resolved));
 	}
 
     primitive_table_dealloc(a->labels, vm, Yes);
     clkwk_free(vm, a);
+
+    printf("Assembled size: %lld\n", binary->bytes);
 
     return binary;
 }
@@ -526,9 +549,10 @@ assembler* assembler_init(struct clockwork_vm* vm)
     assembler* a = clkwk_allocate(vm, sizeof(assembler));
     a->binary = clkwk_allocate(vm, sizeof(assembled_binary));
     a->binary->binary_data = clkwk_allocate(vm, 1000);      // ?
-    char* magic_byes = "CLKWK1";
-    memcpy(a->binary->binary_data, magic_byes, strlen(magic_byes));
-    a->binary->bytes = strlen(magic_byes);
+#ifdef VERIFY_BINARY_SIGNATURE
+    memcpy(a->binary->binary_data, magic_bytes, strlen(magic_bytes));
+    a->binary->bytes = strlen(magic_bytes);
+#endif
     a->labels = primitive_table_init(vm, 5);        // ?
 
     return a;
@@ -537,62 +561,62 @@ assembler* assembler_init(struct clockwork_vm* vm)
 void assembler_noop(assembler* ar)
 {
     CLKWK_DBGPRNT("noop\n");
-    write_char((char)clkwk_NOOP, ar->binary);
+    write_op((char)clkwk_NOOP, ar->binary);
 }
 
 void assembler_pop(assembler* ar)
 {
     CLKWK_DBGPRNT("pop\n");
-    write_char((char)clkwk_POP, ar->binary);
+    write_op((char)clkwk_POP, ar->binary);
 }
 
 void assembler_nil(assembler* ar)
 {
     CLKWK_DBGPRNT("nil\n");
-    write_char((char)clkwk_PUSH_NIL, ar->binary);
+    write_op((char)clkwk_PUSH_NIL, ar->binary);
 }
 
 void assembler_true(assembler* ar)
 {
     CLKWK_DBGPRNT("true\n");
-    write_char((char)clkwk_PUSH_TRUE, ar->binary);
+    write_op((char)clkwk_PUSH_TRUE, ar->binary);
 }
 
 void assembler_false(assembler* ar)
 {
     CLKWK_DBGPRNT("false\n");
-    write_char((char)clkwk_PUSH_FALSE, ar->binary);
+    write_op((char)clkwk_PUSH_FALSE, ar->binary);
 }
 
 void assembler_self(assembler* ar)
 {
     CLKWK_DBGPRNT("self\n");
-    write_char((char)clkwk_PUSH_SELF, ar->binary);
+    write_op((char)clkwk_PUSH_SELF, ar->binary);
 }
 
 void assembler_super(assembler* ar)
 {
     CLKWK_DBGPRNT("super\n");
-    write_char((char)clkwk_PUSH_SUPER, ar->binary);
+    write_op((char)clkwk_PUSH_SUPER, ar->binary);
 }
 
 void assembler_return(assembler* ar)
 {
     CLKWK_DBGPRNT("return\n");
-    write_char((char)clkwk_RETURN, ar->binary);
+    write_op((char)clkwk_RETURN, ar->binary);
 }
 
 void assembler_end(assembler* ar)
 {
     CLKWK_DBGPRNT("end\n");
-    write_char((char)clkwk_SHUTDOWN, ar->binary);
+    write_op((char)clkwk_SHUTDOWN, ar->binary);
 }
 
 void assembler_pushInt(assembler* ar, int64_t value)
 {
     CLKWK_DBGPRNT("push #%lld\n", value);
     // Write PUSH_INT instruction
-    write_char((char)clkwk_PUSH_INT, ar->binary);
+    write_op((char)clkwk_PUSH_INT, ar->binary);
     write_int64(value, ar->binary);
 }
 
@@ -600,14 +624,14 @@ void assembler_pushNumber(assembler* ar, double value)
 {
     CLKWK_DBGPRNT("push #%1.10f\n", value);
     // Write PUSH_NUMBER instruction
-    write_char((char)clkwk_PUSH_NUMBER, ar->binary);
+    write_op((char)clkwk_PUSH_NUMBER, ar->binary);
     write_float64(value, ar->binary);
 }
 
 void assembler_pushString(assembler* ar, const char* string)
 {
     CLKWK_DBGPRNT("push \"%s\n", string);
-    write_char((char)clkwk_PUSH_STRING, ar->binary);
+    write_op((char)clkwk_PUSH_STRING, ar->binary);
     uint64_t len = strlen(string);
     write_int64(len, ar->binary);
     write_cstr(string, len, ar->binary);
@@ -616,7 +640,7 @@ void assembler_pushString(assembler* ar, const char* string)
 void assembler_pushSymbol(assembler* ar, const char* sym)
 {
     CLKWK_DBGPRNT("push :%s\n", sym);
-    write_char((char)clkwk_PUSH_SYMBOL, ar->binary);
+    write_op((char)clkwk_PUSH_SYMBOL, ar->binary);
     uint64_t len = strlen(sym);
     write_int64(len, ar->binary);
     write_cstr(sym, len, ar->binary);
@@ -625,7 +649,7 @@ void assembler_pushSymbol(assembler* ar, const char* sym)
 void assembler_pushConstant(assembler* ar, const char* sym)
 {
     CLKWK_DBGPRNT("push %s\n", sym);
-    write_char((char)clkwk_PUSH_CONSTANT, ar->binary);
+    write_op((char)clkwk_PUSH_CONSTANT, ar->binary);
     uint64_t len = strlen(sym);
     write_int64(len, ar->binary);
     write_cstr(sym, len, ar->binary);
@@ -634,28 +658,28 @@ void assembler_pushConstant(assembler* ar, const char* sym)
 void assembler_jump(assembler* ar, uint64_t loc)
 {
     CLKWK_DBGPRNT("jump %llu\n", loc);
-    write_char((char)clkwk_JUMP, ar->binary);
+    write_op((char)clkwk_JUMP, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_jumpTrue(assembler* ar, uint64_t loc)
 {
     CLKWK_DBGPRNT("jmpt %llu\n", loc);
-    write_char((char)clkwk_JUMP_IF_TRUE, ar->binary);
+    write_op((char)clkwk_JUMP_IF_TRUE, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_jumpFalse(assembler* ar, uint64_t loc)
 {
     CLKWK_DBGPRNT("jmpf %llu\n", loc);
-    write_char((char)clkwk_JUMP_IF_FALSE, ar->binary);
+    write_op((char)clkwk_JUMP_IF_FALSE, ar->binary);
     write_int64(loc, ar->binary);
 }
 
 void assembler_dispatch(assembler* ar, const char* sel, unsigned char args)
 {
     CLKWK_DBGPRNT("disp %s %d\n", sel, args);
-    write_char((char)clkwk_DISPATCH, ar->binary);
+    write_op((char)clkwk_DISPATCH, ar->binary);
     write_char(args, ar->binary);
     write_char(strlen(sel), ar->binary);
     write_cstr(sel, strlen(sel), ar->binary);
@@ -664,26 +688,26 @@ void assembler_dispatch(assembler* ar, const char* sel, unsigned char args)
 void assembler_pushLocal(assembler* ar, uint8_t lcl)
 {
     CLKWK_DBGPRNT("pushl %d\n", lcl);
-    write_char((char)clkwk_PUSH_LOCAL, ar->binary);
+    write_op((char)clkwk_PUSH_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_setLocal(assembler* ar, uint8_t lcl)
 {
     CLKWK_DBGPRNT("setl %d\n", lcl);
-    write_char((char)clkwk_SET_LOCAL, ar->binary);
+    write_op((char)clkwk_SET_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_popToLocal(assembler* ar, uint8_t lcl)
 {
     CLKWK_DBGPRNT("popl %d\n", lcl);
-    write_char((char)clkwk_SET_LOCAL, ar->binary);
+    write_op((char)clkwk_SET_LOCAL, ar->binary);
     write_unsigned_char(lcl, ar->binary);
 }
 
 void assembler_pushClockwork(assembler *ar)
 {
     CLKWK_DBGPRNT("clkwk\n");
-    write_char((char)clkwk_PUSH_CLOCKWORK, ar->binary);
+    write_op((char)clkwk_PUSH_CLOCKWORK, ar->binary);
 }

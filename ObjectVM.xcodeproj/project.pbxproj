@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7501CBE6183DD08C00CCFF42 /* class.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBE5183DD08C00CCFF42 /* class.c */; };
 		7501CBEB183DD97600CCFF42 /* nil.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBEA183DD97600CCFF42 /* nil.c */; };
+		752A321419BB9AEF008AC2BE /* test.clkwkasm in Resources */ = {isa = PBXBuildFile; fileRef = 752A321319BB9AEF008AC2BE /* test.clkwkasm */; };
 		7541EAA118371D150082A78F /* str.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA018371D150082A78F /* str.c */; };
 		7541EAA4183727890082A78F /* dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA3183727890082A78F /* dictionary.c */; };
 		7541EAA918383C800082A78F /* assembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA818383C800082A78F /* assembler.c */; };
@@ -59,6 +60,8 @@
 		7501CBE5183DD08C00CCFF42 /* class.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = class.c; sourceTree = "<group>"; };
 		7501CBE7183DD8DA00CCFF42 /* nil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nil.h; sourceTree = "<group>"; };
 		7501CBEA183DD97600CCFF42 /* nil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nil.c; sourceTree = "<group>"; };
+		752A321319BB9AEF008AC2BE /* test.clkwkasm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.clkwkasm; sourceTree = "<group>"; };
+		752A321519BBD0FB008AC2BE /* binary_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_internal.h; sourceTree = "<group>"; };
 		7541EA9F18371C750082A78F /* str.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = str.h; sourceTree = "<group>"; };
 		7541EAA018371D150082A78F /* str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = str.c; sourceTree = "<group>"; };
 		7541EAA2183726950082A78F /* dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dictionary.h; sourceTree = "<group>"; };
@@ -152,6 +155,7 @@
 				7541EAA818383C800082A78F /* assembler.c */,
 				7553CD0C18FE5AD40047FE18 /* disassembler.h */,
 				7553CD0E18FE5BF30047FE18 /* disassembler.c */,
+				752A321519BBD0FB008AC2BE /* binary_internal.h */,
 			);
 			name = Assembler;
 			sourceTree = "<group>";
@@ -211,6 +215,7 @@
 		75744051183044D10008416B /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				752A321319BB9AEF008AC2BE /* test.clkwkasm */,
 				75744052183044D10008416B /* ObjectVM-Info.plist */,
 				75744053183044D10008416B /* InfoPlist.strings */,
 				75744056183044D10008416B /* main.m */,
@@ -408,6 +413,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75744055183044D10008416B /* InfoPlist.strings in Resources */,
+				752A321419BB9AEF008AC2BE /* test.clkwkasm in Resources */,
 				75744063183044D10008416B /* Images.xcassets in Resources */,
 				7574405B183044D10008416B /* Credits.rtf in Resources */,
 				75744061183044D10008416B /* MainMenu.xib in Resources */,

@@ -172,7 +172,7 @@ static void object_description_native(object* instance, clockwork_vm* vm)
     }
 
     s[chars] = '\0';
-    clkwk_makeStringCstr(vm, s);
+    clkwk_pushStringCstr(vm, s);
     clkwk_return(vm);
 }
 
@@ -227,6 +227,11 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
     symbol* message = (symbol*)clkwk_getLocal(vm, 0);
     array* argsArray = (array*)clkwk_getLocal(vm, 1);
     char* msgBytes = symbol_cstr(message);
+
+    CLKWK_ASSERT_NOT_NULL(message);
+    CLKWK_ASSERT_NOT_NULL(argsArray);
+    CLKWK_ASSERT_NOT_NULL(msgBytes);
+
     if (strncmp(msgBytes, "new", 3) != 0)
     {
         if (klass->header.super)
@@ -239,6 +244,7 @@ static void class_forwardMessage_withArguments_native(object* klass, clockwork_v
         else
         {
 #warning THROW EXCEPTION
+            CLKWK_DBGPRNT("COULD NOT FIND HANLDER FOR FORWARDED MESSAGE %s. EXITING WITH FAILURE!\n", symbol_cstr(message));
             exit(EXIT_FAILURE);
         }
     }
@@ -439,7 +445,7 @@ uint32_t object_size(object* instance)
 void object_dealloc(object* instance, clockwork_vm* vm)
 {
     char s[50];
-    int chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
+    int chars = sprintf(s, "<%s@%#016llx>", class_name(instance->header.isa, vm), (uint64_t)instance);
     s[chars] = '\0';
     CLKWK_DBGPRNT("Deallocating instance %s\n", s);
     if (instance->header.ivars)

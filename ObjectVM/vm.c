@@ -23,8 +23,8 @@
 #include "array.h"
 #include "frame.h"
 #include "assembler.h"
-
 #include "symbols.h"
+#include "binary_internal.h"
 
 #include "memory_manager.h"
 
@@ -36,6 +36,7 @@
 #include <assert.h>
 
 #define MEM_ALLOC
+//#define VERIFY_BINARY_SIGNATURE 1
 
 #pragma mark Clockwork
 
@@ -60,7 +61,10 @@ struct clockwork_vm
     object* trueObject;                     /* 8 */
     object* falseObject;                    /* 8 */
 
-    frame_stack frameStack;                 /* 4616 */
+//    frame_stack frameStack;                 /* 4616 */
+
+    frame* executionFrameStack;
+    uint8_t executionFrameDepth;
 
     // TODO: Internal memory for the VM?
 //    void* memoryPage;
@@ -73,27 +77,31 @@ struct clockwork_vm
 
 static frame* _clkwk_current_frame(clockwork_vm* vm)
 {
-    return &vm->frameStack.frames[vm->frameStack.idx];
+    return &vm->executionFrameStack[vm->executionFrameDepth - 1];
 }
 
 static frame* _clkwk_push_frame(clockwork_vm* vm)
 {
-    if (vm->frameStack.idx + 1 >= clkwk_stackLimit(vm))
+    if (vm->executionFrameDepth + 1 >= clkwk_stackLimit(vm))
     {
+        assert(1);
         return NULL;
     }
 
-    return &vm->frameStack.frames[vm->frameStack.idx++];
+    return &vm->executionFrameStack[vm->executionFrameDepth++];
 }
 
 static frame* _clkwk_pop_frame(clockwork_vm* vm)
 {
-    if (vm->frameStack.idx == 0)
+    if (vm->executionFrameDepth <= 0)
     {
         return NULL;
     }
 
-    return &vm->frameStack.frames[--vm->frameStack.idx];
+    frame* oldFrame = _clkwk_current_frame(vm);
+    vm->executionFrameDepth--;
+
+    return oldFrame;
 }
 
 static void _clkwk_run_block(clockwork_vm* vm, block* blk)
@@ -149,6 +157,7 @@ clockwork_vm* clkwk_init(void)
     vm->stack = stack_init();
     vm->constants = primitive_table_init(vm, 16);
     vm->symbols = symbol_table_init(vm);
+    vm->executionFrameStack = clkwk_allocate(vm, sizeof(frame) * clkwk_stackLimit(vm));
 
     class* objectClass = object_class(vm);
     primitive_table_set(vm->constants, vm, class_name(objectClass, vm), (object*)objectClass);
@@ -213,6 +222,7 @@ void clkwk_dealloc(clockwork_vm* vm)
 	}
     stack_dealloc(vm->stack);
     symbol_table_dealloc(vm->symbols, vm);
+
 #warning FIX THIS: NEED TO FREE ALL ALLOCATED MEMORY (CLASSES, LOCALS, AND ALL OBJECT GRAPHS)
 
 //    primitive_table_each(vm->locals, vm, dealloc_primitive_table_contents);
@@ -259,16 +269,6 @@ void* clkwk_allocate(clockwork_vm* vm, vm_size bytes)
     void* value = MEM_MALLOC(bytes);
     assert(value);
 
-//    void* value = calloc(1, bytes);
-//    if (!value)
-//    {
-//        printf("clkwk_allocate FAILED TO RETURN VIABLE MEMORY!");
-//    }
-
-//    vm->allocatedMemory += bytes;
-
-//    printf("Was %llu. Allocating %llu bytes. Total %llu\n", vm->allocatedMemory - bytes, bytes, vm->allocatedMemory);
-
     return value;
 }
 
@@ -285,6 +285,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
     char* data = assembled_binary_data(vm->binary);
     uint64_t len = assembled_binary_size(vm->binary);
 
+#ifdef VERIFY_BINARY_SIGNATURE
     // Verify binary signature
     {
         char* magic_bytes = "CLKWK1";
@@ -305,8 +306,10 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
             }
         }
 
-        vm->pc += magic_len;
+        data += magic_len;
+        len -= magic_len;
     }
+#endif
 
     while (vm->pc < len)
     {
@@ -389,7 +392,7 @@ void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
 
                 CLKWK_DBGPRNT("PUSH_STRING %lld '%s'\n", len, string);
 
-                clkwk_makeStringCstr(vm, string);       // Makes and pushes string literal.
+                clkwk_pushStringCstr(vm, string);       // Makes and pushes string literal.
                 break;
             }
             case clkwk_PUSH_SYMBOL:
@@ -721,6 +724,7 @@ void clkwk_forward(clockwork_vm* vm, object* target, char* message, object** arg
     {
 #warning THROW EXCEPTION
         printf("EXCEPTION: Could not find forwardMessage:withArguments:\n");
+        CLKWK_ASSERT_NOT_NULL(m);
         return;
     }
 
@@ -748,6 +752,7 @@ void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count)
     if (stack_count(vm->stack) < arg_count + 1)
     {
         printf("Not enough objects on the stack to satisfy target and %d arguments for selector %s!\n", arg_count, selector);
+        CLKWK_DBG_ASSERT(stack_count(vm->stack) < arg_count + 1);
         return;
     }
 
@@ -804,7 +809,7 @@ void clkwk_return(clockwork_vm* vm)
 
 #pragma mark - HELPERS
 
-void clkwk_makeStringCstr(clockwork_vm* vm, const char* const string)
+void clkwk_pushStringCstr(clockwork_vm* vm, const char* const string)
 {
     str* s = str_init(vm, string);
     clkwk_push(vm, (object*)s);
@@ -828,4 +833,73 @@ struct symbol* clkwk_getSymbol(clockwork_vm* vm, struct str* sym)
 uint8_t clkwk_stackLimit(clockwork_vm* vm)
 {
     return c_VMStackLimit;
+}
+
+#pragma mark - DEBUG AND INTERNAL
+
+// String
+void _clkwk_printString(str* string, clockwork_vm* vm)
+{
+    char s[50];
+    str_into_cstr(string, vm, (char*)&s);
+    printf(" |- \"%s\"\n", s);
+}
+
+// Generic
+void _clkwk_printObject(object* instance, clockwork_vm* vm)
+{
+    char s[50];
+    int chars = 0;
+    class* klass = object_getClass(instance, vm);
+    if (klass != (class*)instance)
+    {
+        class* str_cls = (class*)primitive_table_get(vm->constants, vm, "String");
+        if (klass == str_cls)
+        {
+            _clkwk_printString((str*)instance, vm);
+            return;
+        }
+        else
+        {
+            chars = sprintf(s, "<%s@%#016llx>", class_name(klass, vm), (uint64_t)instance);
+        }
+    }
+    else
+    {
+        chars = sprintf(s, "<%s (Class)@%#016llx>", class_name(klass, vm), (uint64_t)instance);
+    }
+    printf(" |- %s\n", s);
+}
+
+void _clkwk_printPCAddressInfo(clockwork_vm* vm)
+{
+    printf("- PC Address: %llu\n", vm->pc);
+}
+
+void _clkwk_printStack(clockwork_vm* vm)
+{
+    unsigned int count = stack_count(vm->stack);
+    printf("- Stack:\n");
+    printf("|- Pointer: %p\n", vm->stack);
+    printf("|- Depth: %u\n", count);
+    printf("|- Contents:\n");
+
+    for (int i = 0; i < count; i++)
+    {
+        object* obj = stack_pop(vm->stack);
+        _clkwk_printObject(obj, vm);
+    }
+}
+
+void _clkwk_printVMState(clockwork_vm* vm)
+{
+    printf("---- Clockwork VM State ----\n");
+    _clkwk_printPCAddressInfo(vm);
+    _clkwk_printStack(vm);
+    printf("++++++++++++++++++++++++++++\n");
+}
+
+void clkwk_crash(clockwork_vm* vm)
+{
+    _clkwk_printVMState(vm);
 }

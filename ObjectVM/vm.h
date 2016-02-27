@@ -207,7 +207,7 @@ void clkwk_dispatch(clockwork_vm* vm, char* selector, uint8_t arg_count);
 void clkwk_return(clockwork_vm* vm);
 
 // --- HELPERS ---
-void clkwk_makeStringCstr(clockwork_vm* vm, const char* const string);
+void clkwk_pushStringCstr(clockwork_vm* vm, const char* const string);
 struct symbol* clkwk_getSymbolCstr(clockwork_vm* vm, const char* const sym_str);
 struct symbol* clkwk_getSymbol(clockwork_vm* vm, struct str* sym);
 uint8_t clkwk_stackLimit(clockwork_vm* vm);

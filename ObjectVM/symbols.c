@@ -64,7 +64,7 @@ static uint32_t sym_hash(const char* s)
 static void symbol_toString_native(object* slf, clockwork_vm* vm)
 {
     symbol* sym = (symbol*)slf;
-    clkwk_makeStringCstr(vm, symbol_cstr(sym));
+    clkwk_pushStringCstr(vm, symbol_cstr(sym));
     clkwk_return(vm);
 }
 
@@ -73,7 +73,7 @@ static void symbol_description_native(object* slf, clockwork_vm* vm)
     symbol* sym = (symbol*)slf;
     char desc[strlen(sym->sym) + 1];
     sprintf(desc, ":%s", sym->sym);
-    clkwk_makeStringCstr(vm, desc);
+    clkwk_pushStringCstr(vm, desc);
     clkwk_return(vm);
 }
 

@@ -40,13 +40,13 @@ static void false_is_false_native(object* obj, clockwork_vm* vm)
 
 static void false_description_native(object* obj, clockwork_vm* vm)
 {
-    clkwk_makeStringCstr(vm, "false");
+    clkwk_pushStringCstr(vm, "false");
     clkwk_return(vm);
 }
 
 static void true_description_native(object* obj, clockwork_vm* vm)
 {
-    clkwk_makeStringCstr(vm, "true");
+    clkwk_pushStringCstr(vm, "true");
     clkwk_return(vm);
 }
 

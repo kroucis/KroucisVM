@@ -88,7 +88,7 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
 //    block* blk = block_init_native(_vm, NULL, &test_class_method);
 //    clkwk_push(_vm, (object*)blk);
 //
-//    clkwk_makeStringCstr(_vm, "bar");
+//    clkwk_pushStringCstr(_vm, "bar");
 //
 //    clkwk_dispatch(_vm, "addClassMethod:withImpl:", 2);
 //
@@ -113,7 +113,7 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
     block* blk = block_init_native(_vm, 0, 0, &test_instance_method);
     clkwk_push(_vm, (object*)blk);
 
-    clkwk_makeStringCstr(_vm, "bar");
+    clkwk_pushStringCstr(_vm, "bar");
 
     clkwk_dispatch(_vm, "addInstanceMethod:withImpl:", 2);
 

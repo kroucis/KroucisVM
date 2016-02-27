@@ -106,7 +106,7 @@ static void foo_initWithArgs_native(object* instance, clockwork_vm* vm)
     block* blk = block_init_native(_vm, iwa_ls, &foo_initWithArgs_native);
     clkwk_push(_vm, (object*)blk);
 
-    clkwk_makeStringCstr(_vm, "initWithArgs:");
+    clkwk_pushStringCstr(_vm, "initWithArgs:");
 
     clkwk_dispatch(_vm, "addInstanceMethod:withImpl:", 2);
 

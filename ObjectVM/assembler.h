@@ -16,7 +16,7 @@ struct clockwork_vm;
 
 enum
 {
-    clkwk_NOOP = 0,         // noop
+    clkwk_NOOP = 1,         // noop
     clkwk_JUMP,             // jump @
     clkwk_JUMP_IF_FALSE,    // jmpf @
     clkwk_JUMP_IF_TRUE,     // jmpt @

@@ -61,7 +61,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "add:");
+    clkwk_pushStringCstr(_vm, "add:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);
@@ -84,7 +84,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "sub:");
+    clkwk_pushStringCstr(_vm, "sub:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);
@@ -107,7 +107,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "mul:");
+    clkwk_pushStringCstr(_vm, "mul:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);
@@ -130,7 +130,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "div:");
+    clkwk_pushStringCstr(_vm, "div:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);
@@ -153,7 +153,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "lessThan:");
+    clkwk_pushStringCstr(_vm, "lessThan:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);
@@ -184,7 +184,7 @@
 {
     integer* i = integer_init(_vm, 42);
     clkwk_push(_vm, (object*)i);
-    clkwk_makeStringCstr(_vm, "greaterThan:");
+    clkwk_pushStringCstr(_vm, "greaterThan:");
     clkwk_dispatch(_vm, "respondsToSelector:", 1);
 
     object* torf = clkwk_pop(_vm);

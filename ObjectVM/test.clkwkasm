@@ -1,0 +1,27 @@
+jump @start
+@_Foo_IM_bar
+self
+disp description 0
+disp puts 0
+return
+@start
+clkwk
+push :Foo
+disp openClass: 1
+push :bar
+push Block
+push #0
+nil
+push @_Foo_IM_bar
+self
+super
+disp newWithNumArgs:upVals:atPC:enclosedSelf:enclosedSuper: 5
+disp addInstanceMethod:withImplBlock: 2
+disp description 0
+disp puts 0
+pop
+push Foo
+disp new 0
+setl 0
+disp bar 0
+end

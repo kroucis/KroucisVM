@@ -107,7 +107,7 @@ void primitive_table_set(primitive_table* m_table, clockwork_vm* vm, const char*
         clkwk_push(vm, next->value);
         clkwk_dispatch(vm, "release", 0);
         clkwk_pop(vm);
-        
+
         next->value = obj;
     }
     // Create new pair and insert
