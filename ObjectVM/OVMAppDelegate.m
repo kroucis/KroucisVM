@@ -64,8 +64,16 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     fread(s, sizeof(char), size, file);
 
     assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
-    printf("[[----------]]\n");
+    printf("[[-- Start ASM --]]\n");
+    unsigned long long len = assembled_binary_size(asm_bin);
+    const char* const asm_data = assembled_binary_data(asm_bin);
+    for (int i = 0; i < len; i++)
+    {
+        printf("%d ", asm_data[i]);
+    }
+    printf("\n[[-- End ASM --]]\n");
 
+    printf("[[-- Start DIS --]]\n");
     char* d = malloc(size * 2);
     uint64_t disLen = disassembler_disassembleBinary(asm_bin, vm, d, size * 2);
 
@@ -73,7 +81,7 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     {
         printf("%c", d[i]);
     }
-    printf("[[----------]]\n");
+    printf("[[-- End DIS --]]\n");
 
     clkwk_runBinary(vm, asm_bin);
 
