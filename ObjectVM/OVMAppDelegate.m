@@ -85,6 +85,9 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     clkwk_runBinary(vm, asm_bin);
 
+    free(s);
+    free(d);
+
 //    [self testForwardCrash];
 }
 
