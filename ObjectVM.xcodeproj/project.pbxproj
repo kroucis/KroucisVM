@@ -41,6 +41,8 @@
 		75A88B5A18431CD3007B7D7A /* tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B5918431CD3007B7D7A /* tokenizer.c */; };
 		75A88B6118434127007B7D7A /* input_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B6018434127007B7D7A /* input_stream.c */; };
 		75A88B661847DC14007B7D7A /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 75A88B651847DC14007B7D7A /* parser.c */; };
+		75B042981C82F25600F42F7C /* math.clkwkasm in Resources */ = {isa = PBXBuildFile; fileRef = 75B042971C82F25600F42F7C /* math.clkwkasm */; };
+		75B0429E1C83012100F42F7C /* binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 75B0429C1C83012100F42F7C /* binary.c */; };
 		75BE503C18ED089B007FBB13 /* memory_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BE503B18ED089B007FBB13 /* memory_manager.c */; };
 		75BE504218EF95E8007FBB13 /* symbols.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BE504118EF95E8007FBB13 /* symbols.c */; };
 /* End PBXBuildFile section */
@@ -120,6 +122,9 @@
 		75A88B6318472E4D007B7D7A /* ast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast.h; sourceTree = "<group>"; };
 		75A88B641847D824007B7D7A /* parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = parser.h; sourceTree = "<group>"; };
 		75A88B651847DC14007B7D7A /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
+		75B042971C82F25600F42F7C /* math.clkwkasm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = math.clkwkasm; sourceTree = "<group>"; };
+		75B0429C1C83012100F42F7C /* binary.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = binary.c; sourceTree = "<group>"; };
+		75B0429D1C83012100F42F7C /* binary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = binary.h; sourceTree = "<group>"; };
 		75BE503A18ED07D6007FBB13 /* memory_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_manager.h; sourceTree = "<group>"; };
 		75BE503B18ED089B007FBB13 /* memory_manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memory_manager.c; sourceTree = "<group>"; };
 		75BE504018EF9504007FBB13 /* symbols.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = symbols.h; sourceTree = "<group>"; };
@@ -221,6 +226,7 @@
 				75744056183044D10008416B /* main.m */,
 				75744058183044D10008416B /* ObjectVM-Prefix.pch */,
 				75744059183044D10008416B /* Credits.rtf */,
+				75B042971C82F25600F42F7C /* math.clkwkasm */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -279,6 +285,8 @@
 				75BE504018EF9504007FBB13 /* symbols.h */,
 				75BE504118EF95E8007FBB13 /* symbols.c */,
 				75C1E0FD18F39ADA0074867C /* clkwk_debug.h */,
+				75B0429C1C83012100F42F7C /* binary.c */,
+				75B0429D1C83012100F42F7C /* binary.h */,
 			);
 			name = vm;
 			sourceTree = "<group>";
@@ -414,6 +422,7 @@
 			files = (
 				75744055183044D10008416B /* InfoPlist.strings in Resources */,
 				752A321419BB9AEF008AC2BE /* test.clkwkasm in Resources */,
+				75B042981C82F25600F42F7C /* math.clkwkasm in Resources */,
 				75744063183044D10008416B /* Images.xcassets in Resources */,
 				7574405B183044D10008416B /* Credits.rtf in Resources */,
 				75744061183044D10008416B /* MainMenu.xib in Resources */,
@@ -447,6 +456,7 @@
 				757440801830450B0008416B /* object.c in Sources */,
 				75A7CE261852F25900D155A3 /* array.c in Sources */,
 				7541EAAD1839A07C0082A78F /* block.c in Sources */,
+				75B0429E1C83012100F42F7C /* binary.c in Sources */,
 				7541EAA118371D150082A78F /* str.c in Sources */,
 				75A88B6118434127007B7D7A /* input_stream.c in Sources */,
 				75744057183044D10008416B /* main.m in Sources */,

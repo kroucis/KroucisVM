@@ -10,16 +10,17 @@
 
 #include "vm.h"
 #include "assembler.h"
+#include "binary.h"
 #include "binary_internal.h"
 
 #include <stdio.h>
 #include <string.h>
 
-uint64_t disassembler_disassembleBinary(assembled_binary* bin, clockwork_vm* vm, char* disOUT, uint64_t limit)
+uint64_t disassembler_disassembleBinary(clockwork_binary* bin, clockwork_vm* vm, char* disOUT, uint64_t limit)
 {
     uint64_t inputIdx = 0;
-    uint64_t binLen = assembled_binary_size(bin);
-    const char* data = assembled_binary_data(bin);
+    uint64_t binLen = clockwork_binary_length(bin);
+    const char* data = clockwork_binary_data(bin);
     uint64_t disLen = 0;
 
 #ifdef VERIFY_BINARY_SIGNATURE

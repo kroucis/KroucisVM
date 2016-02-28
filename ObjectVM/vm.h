@@ -12,7 +12,7 @@
 
 struct object;
 struct str;
-struct assembled_binary;
+struct clockwork_binary;
 struct symbol;
 
 typedef struct clockwork_vm clockwork_vm;
@@ -114,7 +114,7 @@ void* clkwk_allocate(clockwork_vm* vm, vm_size bytes);
 void clkwk_free(clockwork_vm* vm, void* obj);
 
 // --- EXECUTION ---
-void clkwk_runBinary(clockwork_vm* vm, struct assembled_binary* binary);
+void clkwk_runBinary(clockwork_vm* vm, struct clockwork_binary* binary);
 
 // --- PROGRAM COUNTER ---
 void clkwk_jump(clockwork_vm* vm, vm_address location);

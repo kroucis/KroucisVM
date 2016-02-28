@@ -1,0 +1,8 @@
+push #5
+push #6
+disp mul: 1
+push #4
+disp add: 1
+disp description 0
+disp puts 0
+end

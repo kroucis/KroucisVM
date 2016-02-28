@@ -43,11 +43,10 @@ enum
     clkwk_SHUTDOWN,         // end
 };
 
-typedef struct assembled_binary assembled_binary;
 typedef struct assembler assembler;
 
 //assembled_binary* assembler_assemble_str(struct str* input);
-assembled_binary* assembler_assemble_cstr(const char* input, uint64_t length, struct clockwork_vm* vm);
+struct clockwork_binary* assembler_assemble_cstr(const char* input, uint64_t length, struct clockwork_vm* vm);
 assembler* assembler_init(struct clockwork_vm* vm);
 void assembler_noop(assembler* ar);
 void assembler_pop(assembler* ar);
@@ -71,7 +70,3 @@ void assembler_pushLocal(assembler* ar, uint8_t lcl);
 void assembler_setLocal(assembler* ar, uint8_t lcl);
 void assembler_popToLocal(assembler* ar, uint8_t lcl);
 void assembler_pushClockwork(assembler *ar);
-
-uint64_t assembled_binary_size(assembled_binary* asm_bin);
-char* assembled_binary_data(assembled_binary* asm_bin);
-void assembled_binary_dealloc(assembled_binary* asm_bin, struct clockwork_vm* vm);

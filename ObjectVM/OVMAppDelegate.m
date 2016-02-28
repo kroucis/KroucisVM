@@ -15,6 +15,7 @@
 #import "integer.h"
 #import "tokenizer.h"
 #import "input_stream.h"
+#import "binary.h"
 #import "assembler.h"
 #import "disassembler.h"
 #import "block.h"
@@ -53,6 +54,34 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     primitive_table* tbl = primitive_table_init(vm, 10);
     primitive_table_dealloc(tbl, vm, Yes);
 
+    // test.clkwkasm
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString* binaryPath = [documentsDirectory stringByAppendingPathComponent:@"binary.clkwk"];
+    NSData* binaryData = [NSData dataWithContentsOfFile:binaryPath];
+    unsigned long long len = [binaryData length];
+    const char* asm_data = [binaryData bytes];
+
+    clockwork_binary* asm_bin = clockwork_binary_init(asm_data, len, vm);
+
+    printf("[[-- Start ASM --]]\n");
+    for (int i = 0; i < len; i++)
+    {
+        printf("%d ", asm_data[i]);
+    }
+    printf("\n[[-- End ASM --]]\n");
+
+    printf("[[-- Start DIS --]]\n");
+    char* d = malloc(len * 2);
+    uint64_t disLen = disassembler_disassembleBinary(asm_bin, vm, d, len * 2);
+    for (int i = 0; i < disLen; i++)
+    {
+        printf("%c", d[i]);
+    }
+    printf("[[-- End DIS --]]\n");
+
+    clkwk_runBinary(vm, asm_bin);
+
     NSString* path = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"clkwkasm"];
 
     FILE* file = fopen([path UTF8String], "r");
@@ -63,20 +92,31 @@ static void test_class_method(object* instance, clockwork_vm* vm)
     char* s = malloc(size);
     fread(s, sizeof(char), size, file);
 
-    assembled_binary* asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
+
+    asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
     printf("[[-- Start ASM --]]\n");
-    unsigned long long len = assembled_binary_size(asm_bin);
-    const char* const asm_data = assembled_binary_data(asm_bin);
+    len = clockwork_binary_length(asm_bin);
+    asm_data = clockwork_binary_data(asm_bin);
     for (int i = 0; i < len; i++)
     {
         printf("%d ", asm_data[i]);
     }
     printf("\n[[-- End ASM --]]\n");
 
-    printf("[[-- Start DIS --]]\n");
-    char* d = malloc(size * 2);
-    uint64_t disLen = disassembler_disassembleBinary(asm_bin, vm, d, size * 2);
+    // Write binary to disk
+//    NSData* binary = [NSData dataWithBytes:asm_data length:len];
+//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+//    NSString *documentsDirectory = [paths objectAtIndex:0];
+//    NSString* binaryPath = [documentsDirectory stringByAppendingPathComponent:@"binary.clkwk"];
+//    if (![binary writeToFile:binaryPath atomically:true])
+//    {
+//        NSLog(@"UHOH!");
+//    }
 
+    printf("[[-- Start DIS --]]\n");
+    free(d);
+    d = malloc(size * 2);
+    disLen = disassembler_disassembleBinary(asm_bin, vm, d, size * 2);
     for (int i = 0; i < disLen; i++)
     {
         printf("%c", d[i]);
@@ -85,8 +125,33 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     clkwk_runBinary(vm, asm_bin);
 
+    clockwork_binary_dealloc(asm_bin, vm);
     free(s);
     free(d);
+    fclose(file);
+//
+//    // math.clkwkasm
+//    path = [[NSBundle mainBundle] pathForResource:@"math" ofType:@"clkwkasm"];
+//
+//    file = fopen([path UTF8String], "r");
+//    fseek(file, 0L, SEEK_END);
+//    size = ftell(file);
+//    rewind(file);
+//
+//    s = malloc(size);
+//    fread(s, sizeof(char), size, file);
+//
+//    asm_bin = assembler_assemble_cstr(s, strlen(s), vm);
+//    printf("[[-- Start ASM --]]\n");
+//    len = assembled_binary_size(asm_bin);
+//    const char* const asm_math = assembled_binary_data(asm_bin);
+//    for (int i = 0; i < len; i++)
+//    {
+//        printf("%d ", asm_math[i]);
+//    }
+//    printf("\n[[-- End ASM --]]\n");
+//
+//    clkwk_runBinary(vm, asm_bin);
 
 //    [self testForwardCrash];
 }

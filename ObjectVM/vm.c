@@ -1,4 +1,3 @@
-
 //
 //  vm.c
 //  ObjectVM
@@ -24,7 +23,8 @@
 #include "frame.h"
 #include "assembler.h"
 #include "symbols.h"
-#include "binary_internal.h"
+#include "binary.h"
+//#include "binary_internal.h"
 
 #include "memory_manager.h"
 
@@ -52,7 +52,7 @@ struct clockwork_vm
     primitive_table* constants;             /* 8 */
     object* currentSelf;                    /* 8 */
 
-    assembled_binary* binary;               /* 8 */
+    clockwork_binary* binary;               /* 8 */
 
     symbol_table* symbols;                  /* 8 */
 
@@ -278,12 +278,12 @@ void clkwk_free(clockwork_vm* vm, void* obj)
 }
 
 #pragma mark - EXECUTION
-void clkwk_runBinary(clockwork_vm* vm, assembled_binary* binary)
+void clkwk_runBinary(clockwork_vm* vm, clockwork_binary* binary)
 {
     vm->binary = binary;
     vm->pc = 0;
-    char* data = assembled_binary_data(vm->binary);
-    uint64_t len = assembled_binary_size(vm->binary);
+    binary_data data = clockwork_binary_data(vm->binary);
+    binary_size len = clockwork_binary_length(vm->binary);
 
 #ifdef VERIFY_BINARY_SIGNATURE
     // Verify binary signature

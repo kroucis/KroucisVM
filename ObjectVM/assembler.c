@@ -13,6 +13,7 @@
 #include "primitive_table.h"
 #include "object.h"
 #include "integer.h"
+#include "binary.h"
 #include "binary_internal.h"
 
 #include "clkwk_debug.h"
@@ -32,7 +33,7 @@ typedef char* assembler_output;
 static const char* magic_bytes = "CLKWK1";
 #endif
 
-struct assembled_binary
+struct binary_in_progress
 {
     assembler_output_size bytes;
     assembler_output binary_data;
@@ -46,7 +47,7 @@ struct unresolved_label
 
 struct assembler
 {
-    assembled_binary* binary;
+    struct binary_in_progress* binary;
     primitive_table* labels;
     struct unresolved_label unresolvedLabels[10];
     uint8_t unresolvedIndex;
@@ -105,35 +106,35 @@ static uint64_t read_word(assembler_input input, assembler_input_size length, in
     return index;
 }
 
-static void write_cstr(const char* value, uint64_t length, assembled_binary* asm_bin_OUT)
+static void write_cstr(const char* value, uint64_t length, struct binary_in_progress* asm_bin_OUT)
 {
     memcpy(&asm_bin_OUT->binary_data[asm_bin_OUT->bytes], value, length);
     asm_bin_OUT->bytes += length;
 }
 
-static void write_int64(int64_t value, assembled_binary* asm_bin_OUT)
+static void write_int64(int64_t value, struct binary_in_progress* asm_bin_OUT)
 {
     char* val_ptr = (char*)&value;
     write_cstr(val_ptr, sizeof(int64_t), asm_bin_OUT);
 }
 
-static void write_float64(double value, assembled_binary* asm_bin_OUT)
+static void write_float64(double value, struct binary_in_progress* asm_bin_OUT)
 {
     char* val_ptr = (char*)&value;
     write_cstr(val_ptr, sizeof(double), asm_bin_OUT);
 }
 
-static void write_char(char value, assembled_binary* asm_bin_OUT)
+static void write_char(char value, struct binary_in_progress* asm_bin_OUT)
 {
     asm_bin_OUT->binary_data[asm_bin_OUT->bytes++] = value;
 }
 
-static void write_unsigned_char(unsigned char value, assembled_binary* asm_bin_OUT)
+static void write_unsigned_char(unsigned char value, struct binary_in_progress* asm_bin_OUT)
 {
     asm_bin_OUT->binary_data[asm_bin_OUT->bytes++] = value;
 }
 
-static void write_op(char op, assembled_binary* asm_bin_OUT)
+static void write_op(char op, struct binary_in_progress* asm_bin_OUT)
 {
     write_char(op, asm_bin_OUT);
 }
@@ -241,7 +242,7 @@ static struct _result read_push(assembler_input input, assembler_input_size leng
     return result;
 }
 
-static input_index read_label(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm, assembled_binary* asm_bin)
+static input_index read_label(assembler_input input, assembler_input_size length, input_index index, primitive_table* labels, clockwork_vm* vm, struct binary_in_progress* asm_bin)
 {
     char label[255];
     index = read_word(input, length, index, label, 254);
@@ -480,23 +481,7 @@ static int64_t calculateLocationOffset(int64_t loc)
 #endif
 }
 
-uint64_t assembled_binary_size(assembled_binary* asm_bin)
-{
-    return asm_bin->bytes;
-}
-
-char* assembled_binary_data(assembled_binary* asm_bin)
-{
-    return asm_bin->binary_data;
-}
-
-void assembled_binary_dealloc(assembled_binary* asm_bin, clockwork_vm* vm)
-{
-    clkwk_free(vm, asm_bin->binary_data);
-    clkwk_free(vm, asm_bin);
-}
-
-assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input_size length, clockwork_vm* vm)
+clockwork_binary* assembler_assemble_cstr(assembler_input input, assembler_input_size length, clockwork_vm* vm)
 {
     assembler* a = assembler_init(vm);
 
@@ -516,7 +501,7 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
         index++;
     }
 
-    assembled_binary* binary = a->binary;
+    struct binary_in_progress* binary = a->binary;
 
     // Resolve unresolved label locations.
     for (int i = 0; i < a->unresolvedIndex; i++)
@@ -541,13 +526,13 @@ assembled_binary* assembler_assemble_cstr(assembler_input input, assembler_input
 
     printf("Assembled size: %lld\n", binary->bytes);
 
-    return binary;
+    return clockwork_binary_init(binary->binary_data, binary->bytes, vm);
 }
 
 assembler* assembler_init(struct clockwork_vm* vm)
 {
     assembler* a = clkwk_allocate(vm, sizeof(assembler));
-    a->binary = clkwk_allocate(vm, sizeof(assembled_binary));
+    a->binary = clkwk_allocate(vm, sizeof(struct binary_in_progress));
     a->binary->binary_data = clkwk_allocate(vm, 1000);      // ?
 #ifdef VERIFY_BINARY_SIGNATURE
     memcpy(a->binary->binary_data, magic_bytes, strlen(magic_bytes));

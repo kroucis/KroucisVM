@@ -11,6 +11,6 @@
 #include <stdint.h>
 
 struct clockwork_vm;
-struct assembled_binary;
+struct clockwork_binary;
 
-uint64_t disassembler_disassembleBinary(struct assembled_binary* bin, struct clockwork_vm* vm, char* disOUT, uint64_t limit);
+uint64_t disassembler_disassembleBinary(struct clockwork_binary* bin, struct clockwork_vm* vm, char* disOUT, uint64_t limit);
