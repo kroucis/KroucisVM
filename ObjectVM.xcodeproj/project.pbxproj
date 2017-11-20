@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7501CBE6183DD08C00CCFF42 /* class.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBE5183DD08C00CCFF42 /* class.c */; };
 		7501CBEB183DD97600CCFF42 /* nil.c in Sources */ = {isa = PBXBuildFile; fileRef = 7501CBEA183DD97600CCFF42 /* nil.c */; };
+		7508B15D1FC2C7EE001C74DD /* binary.clkwk in Resources */ = {isa = PBXBuildFile; fileRef = 7508B15C1FC2C7ED001C74DD /* binary.clkwk */; };
 		752A321419BB9AEF008AC2BE /* test.clkwkasm in Resources */ = {isa = PBXBuildFile; fileRef = 752A321319BB9AEF008AC2BE /* test.clkwkasm */; };
 		7541EAA118371D150082A78F /* str.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA018371D150082A78F /* str.c */; };
 		7541EAA4183727890082A78F /* dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 7541EAA3183727890082A78F /* dictionary.c */; };
@@ -62,6 +63,7 @@
 		7501CBE5183DD08C00CCFF42 /* class.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = class.c; sourceTree = "<group>"; };
 		7501CBE7183DD8DA00CCFF42 /* nil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nil.h; sourceTree = "<group>"; };
 		7501CBEA183DD97600CCFF42 /* nil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nil.c; sourceTree = "<group>"; };
+		7508B15C1FC2C7ED001C74DD /* binary.clkwk */ = {isa = PBXFileReference; lastKnownFileType = file; path = binary.clkwk; sourceTree = "<group>"; };
 		752A321319BB9AEF008AC2BE /* test.clkwkasm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.clkwkasm; sourceTree = "<group>"; };
 		752A321519BBD0FB008AC2BE /* binary_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_internal.h; sourceTree = "<group>"; };
 		7541EA9F18371C750082A78F /* str.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = str.h; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 		75744051183044D10008416B /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				7508B15C1FC2C7ED001C74DD /* binary.clkwk */,
 				752A321319BB9AEF008AC2BE /* test.clkwkasm */,
 				75744052183044D10008416B /* ObjectVM-Info.plist */,
 				75744053183044D10008416B /* InfoPlist.strings */,
@@ -388,7 +391,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = OVM;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0910;
 				ORGANIZATIONNAME = "Kyle Roucis";
 				TargetAttributes = {
 					75744067183044D10008416B = {
@@ -422,6 +425,7 @@
 			files = (
 				75744055183044D10008416B /* InfoPlist.strings in Resources */,
 				752A321419BB9AEF008AC2BE /* test.clkwkasm in Resources */,
+				7508B15D1FC2C7EE001C74DD /* binary.clkwk in Resources */,
 				75B042981C82F25600F42F7C /* math.clkwkasm in Resources */,
 				75744063183044D10008416B /* Images.xcassets in Resources */,
 				7574405B183044D10008416B /* Credits.rtf in Resources */,
@@ -535,18 +539,30 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -559,7 +575,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -572,26 +588,37 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -604,6 +631,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ObjectVM/ObjectVM-Prefix.pch";
 				INFOPLIST_FILE = "ObjectVM/ObjectVM-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bigbytestudios.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -617,6 +645,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ObjectVM/ObjectVM-Prefix.pch";
 				INFOPLIST_FILE = "ObjectVM/ObjectVM-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bigbytestudios.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -638,6 +667,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "ObjectVMTests/ObjectVMTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bigbytestudios.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
@@ -656,6 +686,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ObjectVM/ObjectVM-Prefix.pch";
 				INFOPLIST_FILE = "ObjectVMTests/ObjectVMTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bigbytestudios.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
