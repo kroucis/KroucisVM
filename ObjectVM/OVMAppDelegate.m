@@ -51,8 +51,8 @@ static void test_class_method(object* instance, clockwork_vm* vm)
 
     clockwork_vm* vm = clkwk_init();
 
-    primitive_table* tbl = primitive_table_init(vm, 10);
-    primitive_table_dealloc(tbl, vm, Yes);
+//    primitive_table* tbl = primitive_table_init(vm, 10);
+//    primitive_table_dealloc(tbl, vm, Yes);
 
     // test.clkwkasm
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);

@@ -24,16 +24,16 @@ uint32_t block_instance_size();
 
 typedef struct block block;
 
-//local_scope* local_scope_init(struct clockwork_vm*);
-//void local_scope_dealloc(local_scope*, struct clockwork_vm*);
-//void local_scope_addLocal(local_scope*, struct clockwork_vm*, char*);
-//uint8_t local_scope_count(local_scope*, struct clockwork_vm*);
-//char* local_scope_localAt(local_scope*, struct clockwork_vm*, uint8_t);
+// local_scope* local_scope_init(struct clockwork_vm*);
+// void local_scope_dealloc(local_scope*, struct clockwork_vm*);
+// void local_scope_addLocal(local_scope*, struct clockwork_vm*, char*);
+// uint8_t local_scope_count(local_scope*, struct clockwork_vm*);
+// char* local_scope_localAt(local_scope*, struct clockwork_vm*, uint8_t);
 
-block* block_init_compiled(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, struct object** upvals, uint64_t pc, struct object* enclosedSelf, struct object* enclosedSuper); //, struct class* declaringClass);  ?
+block* block_init_compiled(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, struct object** upvals, uint64_t pc, struct object* enclosedSelf, struct object* enclosedSuper); // , struct class* declaringClass);  ?
 block* block_init_native(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, native_block func);
-//block* block_init_compiled(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, uint64_t pc);
-//block* block_initAST(struct clockwork_vm*, local_scope*, struct ast*);
+// block* block_init_compiled(struct clockwork_vm* vm, uint8_t localsCount, uint8_t upvalsCount, uint64_t pc);
+// block* block_initAST(struct clockwork_vm*, local_scope*, struct ast*);
 
 void block_dealloc(block* blk, struct clockwork_vm* vm);
 instruction_sequence* block_instructions(block* blk, struct clockwork_vm* vm);

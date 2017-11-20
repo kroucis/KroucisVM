@@ -18,8 +18,9 @@ typedef struct clockwork_binary clockwork_binary;
 typedef const char* binary_data;
 typedef uint64_t binary_size;
 
+struct class* clockwork_binary_class(struct clockwork_vm*);
+
 clockwork_binary* clockwork_binary_init(const char* const data, uint64_t length, struct clockwork_vm* vm);
 void clockwork_binary_dealloc(clockwork_binary* bin, struct clockwork_vm* vm);
 uint64_t clockwork_binary_length(clockwork_binary* bin);
 const char* const clockwork_binary_data(clockwork_binary* bin);
-

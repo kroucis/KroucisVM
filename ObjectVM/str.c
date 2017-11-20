@@ -28,9 +28,9 @@ struct str
 {
     struct object_header header;    /* 40 */
 
-    uint32_t length;                /* 8 */
-    char* data;                     /* 8 */
-                                 /* = 56 */
+    str_len length;                /* 16 */
+    str_data data;                 /* 16 */
+                                 /* = 72 */
 };
 
 /*
@@ -61,14 +61,16 @@ static void string_length_native(object* instance, clockwork_vm* vm)
 
 static void string_dealloc_native(object* instance, clockwork_vm* vm)
 {
-    str* string = (str*)instance;
-    if (str_length(string, vm) > 0)
-    {
-        clkwk_free(vm, string->data);
-    }
     clkwk_pushSuper(vm);
     clkwk_dispatch(vm, "dealloc", 0);
-    clkwk_free(vm, instance);
+
+    str* string = (str*)instance;
+    str_dealloc(string, vm);
+//    if (str_length(string, vm) > 0)
+//    {
+//        clkwk_free(vm, (void*)string->data);
+//    }
+//    clkwk_free(vm, instance);
     clkwk_pop(vm);
     clkwk_pushNil(vm);
     clkwk_return(vm);
@@ -145,7 +147,7 @@ str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
     if (len > 0)
     {
         string->data = clkwk_allocate(vm, len);
-        memcpy(string->data, (void*)data, len);
+        memcpy((void*)string->data, (void*)data, len);
     }
     string->length = len;
     string->header.size = sizeof(str);
@@ -160,12 +162,12 @@ void str_dealloc(str* string, clockwork_vm* vm)
 
     if (str_length(string, vm) > 0)
     {
-        clkwk_free(vm, string->data);
+        clkwk_free(vm, (void*)string->data);
     }
     clkwk_free(vm, (object*)string);
 }
 
-uint32_t str_length(str* string, clockwork_vm* vm)
+str_len str_length(str* string, clockwork_vm* vm)
 {
     assert(string);
     assert(vm);
@@ -173,7 +175,7 @@ uint32_t str_length(str* string, clockwork_vm* vm)
     return string->length;
 }
 
-char* str_raw_bytes(str* string, clockwork_vm* vm)
+str_data str_raw_bytes(str* string, clockwork_vm* vm)
 {
     assert(string);
     assert(vm);
@@ -215,7 +217,7 @@ int64_t str_hash(str* string, clockwork_vm* vm)
     
     int64_t hashval = 0;
 
-    int len_plus_one = str_length(string, vm) + 1;
+    str_len len_plus_one = str_length(string, vm) + 1;
     char temp[len_plus_one];
     str_into_cstr(string, vm, (char*)&temp);
 

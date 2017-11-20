@@ -180,7 +180,7 @@ static void integer_description_native(object* self, clockwork_vm* vm)
 {
     integer* self_i = (integer*)self;
     int64_t value = integer_toInt64(self_i, vm);
-    char buffer[(value / 10) + 1];
+    char buffer[32];
     sprintf(buffer, "%lld", value);
     clkwk_pushStringCstr(vm, buffer);
     clkwk_return(vm);
