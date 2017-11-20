@@ -131,7 +131,6 @@ struct class* string_class(clockwork_vm* vm)
 str* str_init(clockwork_vm* vm, const char* const data)
 {
     assert(vm);
-    assert(data);
 
     uint32_t len = data ? (uint32_t)strlen(data) : 0;
     return str_init_len(vm, data, len);
@@ -140,7 +139,6 @@ str* str_init(clockwork_vm* vm, const char* const data)
 str* str_init_len(clockwork_vm* vm, const char* const data, uint32_t len)
 {
     assert(vm);
-    assert(data);
 
     object* strSuper = object_init(vm);
     str* string = (str*)object_create_super(vm, strSuper, (class*)clkwk_getConstant(vm, "String"), sizeof(str));
