@@ -57,6 +57,11 @@ object* stack_pop(stack* s)
 	return val;
 }
 
+struct object* stack_top(stack* s)
+{
+    return s->values[s->count - 1];
+}
+
 void stack_purge(stack* s)
 {
     free(s->values);
