@@ -20,7 +20,7 @@ typedef struct local_scope local_scope;
 typedef void(*native_block)(struct object*, struct clockwork_vm*);
 
 struct class* block_class(struct clockwork_vm*);
-uint32_t block_instance_size();
+uint32_t block_instance_size(void);
 
 typedef struct block block;
 
