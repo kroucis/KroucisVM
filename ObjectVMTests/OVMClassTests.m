@@ -14,6 +14,7 @@
 #import "class.h"
 #import "instruction.h"
 #import "assembler.h"
+#import "symbols.h"
 
 static void test_class_method(object* instance, clockwork_vm* vm)
 {
@@ -46,17 +47,22 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
 
 - (void)tearDown
 {
-    class_dealloc(_class, _vm);
-    clkwk_dealloc(_vm);
+    if (_class && _vm)
+    {
+        class_dealloc(_class, _vm);
+    }
+
+    if (_vm)
+    {
+        clkwk_dealloc(_vm);
+    }
 
     [super tearDown];
 }
 
 - (void) testClassOpen
 {
-    clkwk_openClass(_vm, "Foo", "Object");
-
-    _class = (class*)clkwk_pop(_vm);
+    _class = clkwk_openClass(_vm, "Foo", "Object");
     XCTAssert(_class);
 
     class* classObj = (class*)clkwk_getConstant(_vm, "Foo");
@@ -77,60 +83,56 @@ static void test_instance_method(object* instance, clockwork_vm* vm)
     clkwk_dispatch(_vm, "release", 0);
 }
 
-#warning CRASH?!
-//- (void) testClassAddClassMethod
-//{
-//    clkwk_openClass(_vm, "Foo", "Object");
-//
-//    _class = (class*)clkwk_pop(_vm);
-//    clkwk_push(_vm, (object*)_class);
-//
-//    block* blk = block_init_native(_vm, NULL, &test_class_method);
-//    clkwk_push(_vm, (object*)blk);
-//
-//    clkwk_pushStringCstr(_vm, "bar");
-//
-//    clkwk_dispatch(_vm, "addClassMethod:withImpl:", 2);
-//
-//    object* klass = (object*)_class;
-//    XCTAssertTrue(object_respondsToSelector(klass, _vm, "bar"));
-//    clkwk_push(_vm, klass);
-//
-//    clkwk_push(_vm, clkwk_getConstant(_vm, "Foo"));
-//    clkwk_dispatch(_vm, "bar", 0);
-//
-//    object* tru = clkwk_pop(_vm);
-//    XCTAssertTrue(object_isTrue(tru, _vm));
-//}
-
-- (void) testClassAddInstanceMethod
+- (void) testClassAddClassMethod
 {
-    clkwk_openClass(_vm, "Foo", "Object");
+    class* foo_class = clkwk_openClass(_vm, "Foo", "Object");
+    XCTAssert(foo_class);
+    clkwk_push(_vm, (object*)foo_class);
 
-    _class = (class*)clkwk_pop(_vm);
-    clkwk_push(_vm, (object*)_class);
+    symbol* bar_symbol = clkwk_getSymbolCstr(_vm, "bar");
+    clkwk_push(_vm, (object*)bar_symbol);
 
-    block* blk = block_init_native(_vm, 0, 0, &test_instance_method);
+    block* blk = block_init_native(_vm, 0, 0, &test_class_method);
     clkwk_push(_vm, (object*)blk);
 
-    clkwk_pushStringCstr(_vm, "bar");
+    clkwk_dispatch(_vm, "addClassMethod:withImplBlock:", 2);
 
-    clkwk_dispatch(_vm, "addInstanceMethod:withImpl:", 2);
+    XCTAssertTrue(object_respondsToSelector((object*)foo_class, _vm, bar_symbol));
 
-    clkwk_dispatch(_vm, "alloc", 0);
-    clkwk_dispatch(_vm, "init", 0);
-
-    object* instance = clkwk_pop(_vm);
-    XCTAssertTrue(object_respondsToSelector(instance, _vm, clkwk_getSymbolCstr(_vm, "bar")));
-    clkwk_push(_vm, instance);
-
+    class* maybe_foo_class = (class*)clkwk_getConstant(_vm, "Foo");
+    XCTAssert(maybe_foo_class);
+    XCTAssertTrue(foo_class == maybe_foo_class);
+    clkwk_push(_vm, (object*)maybe_foo_class);
     clkwk_dispatch(_vm, "bar", 0);
 
     object* tru = clkwk_pop(_vm);
-    XCTAssertTrue(object_isTrue(tru, _vm));
+    XCTAssert(object_isTrue(tru, _vm));
+}
 
-    clkwk_push(_vm, instance);
-    clkwk_dispatch(_vm, "release", 0);
+- (void) testClassAddInstanceMethod
+{
+    clockwork_vm* vm = clkwk_init();
+
+    class* foo_class = clkwk_openClass(vm, "Foo", "Object");
+    clkwk_push(vm, (object*)foo_class);
+
+    symbol* bar_symbol = clkwk_getSymbolCstr(vm, "bar");
+    clkwk_push(vm, (object*)bar_symbol);
+
+    block* blk = block_init_native(vm, 0, 0, &test_class_method);
+    clkwk_push(vm, (object*)blk);
+
+    clkwk_dispatch(vm, "addInstanceMethod:withImplBlock:", 2);
+
+    clkwk_dispatch(vm, "alloc", 0);
+    clkwk_dispatch(vm, "init", 0);
+
+    clkwk_dispatch(vm, "bar", 0);
+
+    object* tru = clkwk_pop(vm);
+    XCTAssert(object_isTrue(tru, vm));
+
+    clkwk_dealloc(vm);
 }
 
 @end

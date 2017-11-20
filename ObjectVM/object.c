@@ -188,6 +188,7 @@ static void object_forwardMessage_withArguments_native(object* klass, clockwork_
     symbol* msg = (symbol*)clkwk_getLocal(vm, 0);
     printf("Object of class %s does not respond to selector '%s'\n", class_name(object_getClass(klass, vm), vm), symbol_cstr(msg));
 
+    // Wow. Rough. Not very testable or informative. Thanks a lot, past me :|
     exit(EXIT_FAILURE);
 
     clkwk_return(vm);

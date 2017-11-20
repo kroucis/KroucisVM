@@ -46,8 +46,7 @@
     XCTAssertTrue(object_isKindOfClass_native((object*)i, (class*)clkwk_getConstant(_vm, "Integer")));
     XCTAssertEqual((int64_t)integer_toInt64(i, _vm), (int64_t)42);
 
-    instruction inst = (instruction){ .op = clkwk_PUSH_INT, .param_count = 1, .params[0] = "42" };
-    assembler_run_instruction(&inst, _vm);
+    clkwk_push(_vm, (object*)integer_init(_vm, 42));
 
     integer* oi = (integer*)clkwk_pop(_vm);
 

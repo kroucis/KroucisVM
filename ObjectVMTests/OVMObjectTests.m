@@ -14,6 +14,7 @@
 #import "class.h"
 #import "instruction.h"
 #import "assembler.h"
+#import "symbols.h"
 
 static void foo_initWithArgs_native(object* instance, clockwork_vm* vm)
 {
@@ -99,16 +100,17 @@ static void foo_initWithArgs_native(object* instance, clockwork_vm* vm)
 
 - (void) testObjectNewWithArgs
 {
-    clkwk_openClass(_vm, "Foo", "Object");
+    class* foo_class = clkwk_openClass(_vm, "Foo", "Object");
+    XCTAssert(foo_class);
+    clkwk_push(_vm, (object*)foo_class);
 
-    local_scope* iwa_ls = local_scope_init(_vm);
-    local_scope_addLocal(iwa_ls, _vm, "x");
-    block* blk = block_init_native(_vm, iwa_ls, &foo_initWithArgs_native);
+    symbol* initWithArgs_symbol = clkwk_getSymbolCstr(_vm, "initWithArgs:");
+    clkwk_push(_vm, (object*)initWithArgs_symbol);
+
+    block* blk = block_init_native(_vm, 1, 0, &foo_initWithArgs_native);
     clkwk_push(_vm, (object*)blk);
 
-    clkwk_pushStringCstr(_vm, "initWithArgs:");
-
-    clkwk_dispatch(_vm, "addInstanceMethod:withImpl:", 2);
+    clkwk_dispatch(_vm, "addInstanceMethod:withImplBlock:", 2);
 
     clkwk_pushTrue(_vm);
     clkwk_dispatch(_vm, "newWithArgs:", 1);
